@@ -70,7 +70,7 @@
       ]
     },
     "configuration": {
-      "title": "Flex Chat Bot",
+      "title": "Flex Chatbot",
       "properties": {
         "flexChatbot.apiKey": {
           "type": "string",
@@ -79,32 +79,8 @@
         },
         "flexChatbot.model": {
           "type": "string",
-          "default": "openai/gpt-3.5-turbo",
-          "enum": [
-            "openai/gpt-3.5-turbo",
-            "openai/gpt-4",
-            "anthropic/claude-3-opus",
-            "anthropic/claude-3-sonnet",
-            "anthropic/claude-3-haiku",
-            "google/gemma-7b",
-            "meta-llama/llama-3-70b",
-            "meta-llama/llama-3-8b",
-            "mistralai/mistral-small",
-            "mistralai/mistral-large"
-          ],
-          "enumDescriptions": [
-            "OpenAI GPT-3.5 Turbo - Fast and cost-effective",
-            "OpenAI GPT-4 - More capable but slower and more expensive",
-            "Anthropic Claude 3 Opus - Most powerful Claude model",
-            "Anthropic Claude 3 Sonnet - Balance of intelligence and speed",
-            "Anthropic Claude 3 Haiku - Fastest Claude model",
-            "Google Gemma 7B - Lightweight and efficient",
-            "Meta Llama 3 70B - Large and capable open model",
-            "Meta Llama 3 8B - Smaller, faster open model",
-            "Mistral Small - Efficient and fast",
-            "Mistral Large - More powerful Mistral model"
-          ],
-          "description": "AI model to use for chat responses"
+          "default": "openai/gpt-4.1-mini",
+          "markdownDescription": "AI model to use for chat responses. You can search for available models in OpenRouter, or use the 'Flex Chat Bot: Select AI Model' command to see a list of models.\n\n[Browse models on OpenRouter](https://openrouter.ai/models)"
         },
         "flexChatbot.enableWebSearch": {
           "type": "boolean",

@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
 import axios from "axios";
+import * as fs from 'fs';
+import * as path from 'path';
 
 export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "flexChatbot.openview";
@@ -8,10 +10,14 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
   private _conversationHistory: {role: string, content: string}[] = [];
   private _availableModels: any[] = [];
   private _isModelListLoaded = false;
+  private _datasetCache: any = {};
+  private _isDatasetLoaded = false;
 
   constructor(private readonly _extensionUri: vscode.Uri) {
     // Fetch available models when the extension is loaded
     this.fetchAvailableModels();
+    // Load the datasets
+    this.loadDatasets();
   }
 
   // Public methods
@@ -34,6 +40,212 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
     if (this._view) {
       this._view.webview.html = this.getHtmlContent(this._view.webview);
     }
+  }
+
+  // Load all datasets from the specified paths
+  private async loadDatasets() {
+    try {
+      const datasetPaths = [
+        // path.join(this._extensionUri.fsPath, 'dataset', 'combined_data.json'),
+        path.join(this._extensionUri.fsPath, 'dataset', 'data.json'),
+        path.join(this._extensionUri.fsPath, 'dataset', 'data.txt'),
+        path.join(this._extensionUri.fsPath, 'dataset', 'dataset.json'),
+        path.join(this._extensionUri.fsPath, 'dataset', 'datset_finetune_gpt.jsonl')
+      ];
+
+      for (const datasetPath of datasetPaths) {
+        try {
+          if (fs.existsSync(datasetPath)) {
+            const fileContent = fs.readFileSync(datasetPath, 'utf8');
+            const fileExt = path.extname(datasetPath).toLowerCase();
+            
+            if (fileExt === '.json') {
+              this._datasetCache[datasetPath] = JSON.parse(fileContent);
+            } else if (fileExt === '.jsonl') {
+              // Parse JSONL (one JSON object per line)
+              this._datasetCache[datasetPath] = fileContent
+                .split('\n')
+                .filter(line => line.trim())
+                .map(line => JSON.parse(line));
+            } else {
+              // Plain text file
+              this._datasetCache[datasetPath] = fileContent;
+            }
+            
+            console.log(`Loaded dataset: ${datasetPath}`);
+          }
+        } catch (err) {
+          console.error(`Error loading dataset ${datasetPath}:`, err);
+        }
+      }
+      
+      this._isDatasetLoaded = Object.keys(this._datasetCache).length > 0;
+      console.log(`Dataset loaded: ${this._isDatasetLoaded}`);
+    } catch (error) {
+      console.error("Error loading datasets:", error);
+    }
+  }
+
+  // Perform a search in the loaded datasets
+  private searchDatasets(query: string): string {
+    if (!this._isDatasetLoaded) {
+      return "No dataset loaded for reference.";
+    }
+
+    try {
+      // Convert the query to lowercase for case-insensitive search
+      const searchTerms = query.toLowerCase().split(/\s+/);
+      
+      let results: {content: string, score: number}[] = [];
+      
+      // Search through each dataset
+      for (const [datasetPath, dataContent] of Object.entries(this._datasetCache)) {
+        // Different search strategies based on data type
+        if (typeof dataContent === 'string') {
+          // For plain text
+          const score = this.calculateRelevanceScore(dataContent.toLowerCase(), searchTerms);
+          if (score > 0) {
+            // Extract relevant portion
+            const excerpt = this.extractRelevantSection(dataContent, searchTerms);
+            results.push({
+              content: `From ${path.basename(datasetPath)}:\n${excerpt}`,
+              score
+            });
+          }
+        } else if (Array.isArray(dataContent)) {
+          // For array data (like JSONL)
+          for (const item of dataContent) {
+            const itemStr = JSON.stringify(item);
+            const score = this.calculateRelevanceScore(itemStr.toLowerCase(), searchTerms);
+            if (score > 0) {
+              results.push({
+                content: `From ${path.basename(datasetPath)}:\n${JSON.stringify(item, null, 2)}`,
+                score
+              });
+            }
+          }
+        } else if (typeof dataContent === 'object') {
+          // For JSON objects, do a recursive search
+          this.searchNestedObject(dataContent, searchTerms, path.basename(datasetPath), results);
+        }
+      }
+      
+      // Sort results by relevance score (highest first)
+      results.sort((a, b) => b.score - a.score);
+      
+      // Return the top results, limited to keep context size reasonable
+      const maxResults = 5;
+      const topResults = results.slice(0, maxResults);
+      
+      if (topResults.length === 0) {
+        return "No relevant information found in the dataset.";
+      }
+      
+      return topResults.map(r => r.content).join("\n\n");
+    } catch (error) {
+      console.error("Error searching datasets:", error);
+      return "Error searching the reference dataset.";
+    }
+  }
+
+  // Search nested objects recursively
+  private searchNestedObject(obj: any, searchTerms: string[], datasetName: string, results: {content: string, score: number}[], path: string[] = []) {
+    if (!obj) return;
+    
+    if (typeof obj === 'object') {
+      if (Array.isArray(obj)) {
+        // For arrays, search each element
+        for (let i = 0; i < obj.length; i++) {
+          this.searchNestedObject(obj[i], searchTerms, datasetName, results, [...path, i.toString()]);
+        }
+      } else {
+        // For objects, scan properties
+        for (const key in obj) {
+          if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            // Check if the key itself matches any search term
+            const keyStr = key.toLowerCase();
+            let keyScore = 0;
+            for (const term of searchTerms) {
+              if (keyStr.includes(term)) {
+                keyScore += 2; // Give higher weight to key matches
+              }
+            }
+            
+            const value = obj[key];
+            // If value is a primitive, check for matches
+            if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+              const valueStr = String(value).toLowerCase();
+              const valueScore = this.calculateRelevanceScore(valueStr, searchTerms);
+              
+              if (keyScore > 0 || valueScore > 0) {
+                // If key or value matched, add the full object or specific property
+                const totalScore = keyScore + valueScore;
+                let contextObj: any;
+                
+                // Get the parent object to provide context
+                if (path.length === 0) {
+                  // If at root, or direct child of root, include the full object
+                  contextObj = key ? { [key]: value } : obj;
+                } else {
+                  // Otherwise, navigate to parent
+                  let parent = obj;
+                  let pathCopy = [...path];
+                  contextObj = { [key]: value };
+                }
+                
+                results.push({
+                  content: `From ${datasetName} (matched '${key}'):\n${JSON.stringify(contextObj, null, 2)}`,
+                  score: totalScore
+                });
+              }
+            }
+            
+            // Recursively search nested objects
+            this.searchNestedObject(value, searchTerms, datasetName, results, [...path, key]);
+          }
+        }
+      }
+    }
+  }
+
+  // Calculate a relevance score based on term matches
+  private calculateRelevanceScore(text: string, searchTerms: string[]): number {
+    let score = 0;
+    for (const term of searchTerms) {
+      if (term.length < 3) continue; // Skip very short terms
+      
+      const regex = new RegExp(term, 'g');
+      const matches = text.match(regex);
+      if (matches) {
+        // Award points based on number of matches
+        score += matches.length;
+      }
+    }
+    return score;
+  }
+
+  // Extract a relevant section of text around the search terms
+  private extractRelevantSection(text: string, searchTerms: string[]): string {
+    // Find the position of the first matching term
+    let position = -1;
+    for (const term of searchTerms) {
+      if (term.length < 3) continue;
+      const pos = text.toLowerCase().indexOf(term);
+      if (pos !== -1 && (position === -1 || pos < position)) {
+        position = pos;
+      }
+    }
+    
+    if (position === -1) {
+      return text.substring(0, 500) + (text.length > 500 ? "..." : "");
+    }
+    
+    // Extract a window of text around the match
+    const contextSize = 500; // Characters before and after the match
+    const start = Math.max(0, position - contextSize);
+    const end = Math.min(text.length, position + contextSize);
+    
+    return (start > 0 ? "..." : "") + text.substring(start, end) + (end < text.length ? "..." : "");
   }
 
   // Fetch available models from OpenRouter API
@@ -135,8 +347,24 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
               webSearchResults = await this.performWebSearch(searchQuery);
             }
 
+            // Search the Flex language dataset for relevant information
+            webviewView.webview.postMessage({ 
+              command: 'statusUpdate', 
+              text: 'Searching Flex language documentation...' 
+            });
+            
+            const datasetResults = this.searchDatasets(userMessage);
+            
             // Generate a message to send to the AI
             let messageForAI = userMessage;
+            let systemMessage = "You are bor3i, a helpful AI assistant created by Flex to assist with the Flex programming language. ";
+            
+            // Add dataset context to the system message
+            if (datasetResults) {
+              systemMessage += "Use the following information from the Flex language documentation to answer the query. ONLY provide information that is supported by this documentation and do not hallucinate or make up details. If you don't find relevant information, admit that you don't know:\n\n" + datasetResults;
+            }
+            
+            // Add web search results if available
             if (webSearchResults) {
               messageForAI = `The user asked: ${userMessage.replace(/\[web\]/gi, '').trim()}\n\nHere are some search results that might help answer the query:\n${webSearchResults}\n\nPlease synthesize this information to provide a helpful answer.`;
             }
@@ -148,7 +376,10 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
             });
 
             // Prepare messages for the API
-            const messages = [...this._conversationHistory];
+            const messages = [
+              { role: "system", content: systemMessage },
+              ...this._conversationHistory
+            ];
             
             // Send request to OpenRouter API
             const response = await this.callOpenRouterAPI(messages, selectedModel, temperature, apiKey);
@@ -255,6 +486,11 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
     
     // Check if we have models loaded to display the model selection button
     const showModelSelector = this._isModelListLoaded && this._availableModels.length > 0;
+    
+    // Include dataset status
+    const datasetStatus = this._isDatasetLoaded ? 
+      '<div class="dataset-info">Flex documentation loaded</div>' : 
+      '<div class="dataset-info warning">Flex documentation not loaded</div>';
 
     // Use a nonce to only allow a specific script to be run
     const nonce = getNonce();
@@ -285,6 +521,7 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
             <div id="ask">
               ........... < bor3i is here to help />
               <p class="me"><i>Powered by Flex</i></p>
+              ${datasetStatus}
             </div>
           </div>
         </div>
