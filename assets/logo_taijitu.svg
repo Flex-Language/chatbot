@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" xml:space="preserve">
+  <!-- Yin-Yang (Taijitu) symbol -->
+  <g transform="translate(64,64)">
+    <!-- Outer circle with thin border -->
+    <circle r="60" stroke="#333333" stroke-width="1" fill="none" />
+    
+    <!-- Main circle split into yin and yang -->
+    <circle r="60" fill="#000000" />
+    
+    <!-- White half of yin-yang -->
+    <path d="M0,60 A60,60 0 0,1 0,-60 A30,30 0 0,0 0,0 A30,30 0 0,1 0,60Z" fill="#FFFFFF" />
+    
+    <!-- The two dots -->
+    <circle cx="0" cy="-30" r="10" fill="#FFFFFF" />
+    <circle cx="0" cy="30" r="10" fill="#000000" />
+  </g>
+</svg>

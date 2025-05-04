@@ -1,0 +1,86 @@
+{
+  "name": "flex-chatbot",
+  "displayName": "Flex Chat Bot",
+  "description": "Start your conversation with bor3i",
+  "version": "1.0.0",
+  "publisher": "flex",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/flex/flex-chatbot.git"
+  },
+  "icon": "logo.png",
+  "engines": {
+    "vscode": "^1.61.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:flexChatbot.openview",
+    "onView:flexChatbot.openview"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "flex-chatbot",
+          "title": "Flex Chat Bot",
+          "icon": "assets/logo_flex.svg"
+        }
+      ]
+    },
+    "views": {
+      "flex-chatbot": [
+        {
+          "type": "webview",
+          "id": "flexChatbot.openview",
+          "name": "View",
+          "contextualTitle": "View"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "flexChatbot.openview",
+        "title": "Flex Chat Bot"
+      },
+      {
+        "command": "flexChatbot.menu.view",
+        "category": "flex-chatbot",
+        "title": "Flex Chat Bot in VS Code Sidebar",
+        "icon": "$(clear-all)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "flexChatbot.menu.view",
+          "group": "navigation",
+          "when": "view == flexChatbot.openview"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.61.0",
+    "@types/glob": "^7.1.4",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "14.x",
+    "@typescript-eslint/eslint-plugin": "^4.31.1",
+    "@typescript-eslint/parser": "^4.31.1",
+    "eslint": "^7.32.0",
+    "glob": "^7.1.7",
+    "mocha": "^9.1.1",
+    "typescript": "^4.4.3",
+    "@vscode/test-electron": "^1.6.2"
+  }
+}
