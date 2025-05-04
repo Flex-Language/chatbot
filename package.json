@@ -1,19 +1,40 @@
 {
   "name": "flex-chatbot",
   "displayName": "Flex Chat Bot",
-  "description": "Start your conversation with bor3i",
+  "description": "AI assistant for the Flex programming language with multilingual syntax support",
   "version": "1.0.0",
-  "publisher": "flex",
+  "publisher": "Flex-proagramming-language",
+  "author": {
+    "name": "mikawi",
+    "email": "hassansherif122202@gmail.com"
+  },
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/flex/flex-chatbot.git"
+    "url": "https://github.com/Flex-Language/chatbot.git"
   },
-  "icon": "flex_logo.png",
+  "bugs": {
+    "url": "https://github.com/Flex-Language/chatbot/issues"
+  },
+  "homepage": "https://github.com/Flex-Language/chatbot",
+  "icon": "assets/data.png",
   "engines": {
     "vscode": "^1.61.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Programming Languages",
+    "Education",
+    "Snippets"
+  ],
+  "keywords": [
+    "flex",
+    "programming language",
+    "chatbot",
+    "assistant",
+    "AI",
+    "multilingual",
+    "code assistance"
   ],
   "activationEvents": [
     "onCommand:flexChatbot.openview",
@@ -26,13 +47,14 @@
         {
           "id": "flex-chatbot",
           "title": "Flex Chat Bot",
-          "icon": "assets/logo_flex.svg"
+          "icon": "assets/logo_taijitu.svg"
         }
       ]
     },
     "views": {
       "flex-chatbot": [
         {
+          "icon": "assets/logo_taijitu.svg",
           "type": "webview",
           "id": "flexChatbot.openview",
           "name": "View",

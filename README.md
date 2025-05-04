@@ -1,14 +1,14 @@
 # Flex Chat Bot - VS Code Extension
 
-A VS Code extension that brings AI-powered chat capabilities directly into your development environment. With bor3i, you can have interactive conversations with an AI assistant while coding, getting instant assistance, suggestions, and even a bit of fun along the way.
+A VS Code extension that provides AI-powered assistance for the Flex programming language directly in your development environment. With bor3i, you can have interactive conversations about Flex while coding, getting instant help with syntax, examples, and programming guidance.
 
 ## Features
 
-- **Chat with bor3i:** The Flex Chat Bot allows you to chat directly within VS Code, enabling you to interact with the bor3i AI assistant seamlessly.
+- **Chat with bor3i:** The Flex Chat Bot allows you to chat directly within VS Code, enabling you to interact with an AI assistant specialized in the Flex programming language.
   
-- **Custom Data Integration:** bor3i is equipped with custom data tailored for engineering and development contexts, providing relevant responses and assistance specific to your coding needs.
+- **Built-in Flex Documentation:** bor3i is equipped with comprehensive knowledge of the Flex programming language, including its multilingual syntax (Franko Arabic and English), data types, control structures, and common patterns.
   
-- **Node.js and TypeScript:** Built using Node.js and TypeScript, the Flex Chat Bot leverages the power of these technologies to ensure efficiency, reliability, and scalability.
+- **Code Examples:** Get practical Flex code examples and learn how to implement various programming tasks in both English and Arabic syntax styles.
 
 ## Installation
 
@@ -20,19 +20,20 @@ A VS Code extension that brings AI-powered chat capabilities directly into your 
 ## Usage
 
 1. Open Visual Studio Code.
-2. Launch the Flex Chat Bot either by clicking on its icon in the Sidebar or by using the keyboard shortcut.
-3. Start chatting with bor3i by typing your messages in the chat window.
+2. Launch the Flex Chat Bot by clicking on its icon in the Sidebar.
+3. Start chatting with bor3i by typing your questions about Flex programming in the chat window.
+4. Ask about syntax, get code examples, or request help debugging your Flex code.
 
 ## Configuration
 
-The Flex Chat Bot comes pre-configured with default settings. However, you can customize its behavior by modifying the settings in your VS Code preferences.
+The Flex Chat Bot requires an OpenRouter API key which you can configure in the VS Code settings.
 
 ## Screenshots
 Coming soon!
 
 ## Contributing
 
-Contributions are welcome! If you have any suggestions, ideas, or bug fixes, feel free to open an issue or submit a pull request on the [GitHub repository](https://github.com/flex/flex-chatbot).
+Contributions are welcome! If you have any suggestions, ideas, or bug fixes, feel free to open an issue or submit a pull request on the [GitHub repository](https://github.com/Flex-Language/chatbot).
 
 ## Acknowledgements
 
@@ -41,6 +42,8 @@ The Flex Chat Bot was made possible thanks to the following open-source projects
 - [Node.js](https://nodejs.org/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [VS Code API](https://code.visualstudio.com/api)
+- [OpenRouter API](https://openrouter.ai/)
 
-## Installation 
-Coming soon to the VS Code Marketplace
+## License
+
+This extension is licensed under the MIT License. See the LICENSE file for details.

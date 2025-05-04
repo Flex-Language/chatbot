@@ -8,3 +8,23 @@ vsc-extension-quickstart.md
 **/.eslintrc.json
 **/*.map
 **/*.ts
+
+# Exclude dataset files
+dataset/**
+**/node_modules/**
+**/out/test/**
+**/coverage/**
+**/.nyc_output/**
+**/*.vsix
+**/.github/**
+**/.git/**
+**/.idea/**
+**/.DS_Store
+**/thumbs.db
+**/Thumbs.db
+**/*.log
+**/*.lock
+**/.prettier*
+**/.eslint*
+**/.webpack*
+**/.vscode*
