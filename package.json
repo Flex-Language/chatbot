@@ -50,6 +50,14 @@
         "category": "flex-chatbot",
         "title": "Flex Chat Bot in VS Code Sidebar",
         "icon": "$(clear-all)"
+      },
+      {
+        "command": "flexChatbot.resetChat",
+        "title": "Flex Chat Bot: Reset Chat"
+      },
+      {
+        "command": "flexChatbot.selectModel",
+        "title": "Flex Chat Bot: Select AI Model"
       }
     ],
     "menus": {
@@ -60,6 +68,57 @@
           "when": "view == flexChatbot.openview"
         }
       ]
+    },
+    "configuration": {
+      "title": "Flex Chat Bot",
+      "properties": {
+        "flexChatbot.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "OpenRouter API key for accessing AI models"
+        },
+        "flexChatbot.model": {
+          "type": "string",
+          "default": "openai/gpt-3.5-turbo",
+          "enum": [
+            "openai/gpt-3.5-turbo",
+            "openai/gpt-4",
+            "anthropic/claude-3-opus",
+            "anthropic/claude-3-sonnet",
+            "anthropic/claude-3-haiku",
+            "google/gemma-7b",
+            "meta-llama/llama-3-70b",
+            "meta-llama/llama-3-8b",
+            "mistralai/mistral-small",
+            "mistralai/mistral-large"
+          ],
+          "enumDescriptions": [
+            "OpenAI GPT-3.5 Turbo - Fast and cost-effective",
+            "OpenAI GPT-4 - More capable but slower and more expensive",
+            "Anthropic Claude 3 Opus - Most powerful Claude model",
+            "Anthropic Claude 3 Sonnet - Balance of intelligence and speed",
+            "Anthropic Claude 3 Haiku - Fastest Claude model",
+            "Google Gemma 7B - Lightweight and efficient",
+            "Meta Llama 3 70B - Large and capable open model",
+            "Meta Llama 3 8B - Smaller, faster open model",
+            "Mistral Small - Efficient and fast",
+            "Mistral Large - More powerful Mistral model"
+          ],
+          "description": "AI model to use for chat responses"
+        },
+        "flexChatbot.enableWebSearch": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable web search capability when [web] is included in the query"
+        },
+        "flexChatbot.temperature": {
+          "type": "number",
+          "default": 0.7,
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Controls randomness of responses. Lower is more deterministic, higher is more creative."
+        }
+      }
     }
   },
   "scripts": {
@@ -71,16 +130,19 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@types/vscode": "^1.61.0",
     "@types/glob": "^7.1.4",
     "@types/mocha": "^9.0.0",
     "@types/node": "14.x",
+    "@types/vscode": "^1.61.0",
     "@typescript-eslint/eslint-plugin": "^4.31.1",
     "@typescript-eslint/parser": "^4.31.1",
+    "@vscode/test-electron": "^1.6.2",
     "eslint": "^7.32.0",
     "glob": "^7.1.7",
     "mocha": "^9.1.1",
-    "typescript": "^4.4.3",
-    "@vscode/test-electron": "^1.6.2"
+    "typescript": "^4.4.3"
+  },
+  "dependencies": {
+    "axios": "^1.9.0"
   }
 }
