@@ -823,7 +823,6 @@
         a = await this.fetchWithTimeout(s, n, o, i).catch(oe);
       if (a instanceof Error) {
         if (r.signal?.aborted) throw new R();
-        if (t) return this.retryRequest(r, t);
         if ("AbortError" === a.name) throw new E();
         throw new x({ cause: a });
       }
@@ -1302,40 +1301,88 @@
         .replace(/```([\s\S]*?)```/g, '<div class="code-block">$1</div>')
         .replace(/\n/g, "<br>");
     }
+    function scrollChatToBottom() {
+      const chatBox = document.getElementById("chat-box");
+      chatBox.scrollTop = chatBox.scrollHeight;
+      setTimeout(() => {
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }, 100);
+    }
     document
       .getElementById("send-button")
       .addEventListener("click", async () => {
         const n = t.value.trim();
-        n &&
-          ((function (t, r, n) {
+        if (n) {
+          (function (t, r, n) {
             const s = document.createElement("div");
-            s.classList.add("message", "user-message"),
-              (s.innerHTML = `<strong>User:</strong> ${r}`),
-              e.appendChild(s),
-              (e.scrollTop = e.scrollHeight);
-          })(0, n),
-          (t.value = ""),
+            s.classList.add("message", "user-message");
+            s.innerHTML = `<div class="user-label">User:</div>${r}`;
+            e.appendChild(s);
+            scrollChatToBottom();
+          })(0, n);
+          t.value = "";
           await (async function (t) {
-            const n = await Ue.chat.completions.create({
-                messages: [{ role: "user", content: t }],
-                model: "llama3-8b-8192",
-                temperature: 1,
-                max_tokens: 1024,
-                top_p: 1,
-                stream: !0,
-                stop: null
-              }),
-              s = document.createElement("div");
-            s.classList.add("message", "ai-message"),
-              (s.innerHTML = "<strong>AI:</strong> "),
+            try {
+              const n = await Ue.chat.completions.create({
+                  messages: [{ role: "user", content: t }],
+                  model: "llama3-8b-8192",
+                  temperature: 1,
+                  max_tokens: 1024,
+                  top_p: 1,
+                  stream: !0,
+                  stop: null
+                }),
+                s = document.createElement("div");
+              s.classList.add("message", "ai-message");
+              s.innerHTML = "<div class=\"bot-label\">bor3i:</div><div class=\"ai-content\"></div>";
               e.appendChild(s);
-            let o = "";
-            for await (const t of n)
-              (o += t.choices[0]?.delta?.content || ""),
-                (s.innerHTML = r(o)),
-                (e.scrollTop = e.scrollHeight);
-            return console.log(o), o;
-          })(n));
+              scrollChatToBottom();
+              const aiContent = s.querySelector('.ai-content');
+              let o = "";
+              for await (const t of n) {
+                o += t.choices[0]?.delta?.content || "";
+                aiContent.innerHTML = r(o);
+                scrollChatToBottom();
+              }
+              return o;
+            } catch (error) {
+              console.error("Error calling API:", error);
+              const errorDiv = document.createElement("div");
+              errorDiv.classList.add("message", "ai-message", "error");
+              errorDiv.innerHTML = "<div class=\"bot-label\">bor3i:</div><div class=\"ai-content\">Sorry, I encountered an error. Please try again later.</div>";
+              e.appendChild(errorDiv);
+              scrollChatToBottom();
+              return "Error occurred";
+            }
+          })(n);
+        }
       });
+    document
+      .getElementById("user-input")
+      .addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          document.getElementById("send-button").click();
+        }
+      });
+    window.addEventListener("load", function () {
+      document.getElementById("user-input").focus();
+    });
+    function adjustUIForScreenSize() {
+      const windowWidth = window.innerWidth;
+      const chatBox = document.getElementById("chat-box");
+      const upbox = document.getElementById("upbox");
+      if (windowWidth <= 600) {
+        chatBox.style.maxHeight = "calc(100vh - 180px)";
+        upbox.style.maxHeight = "180px";
+      } else {
+        chatBox.style.maxHeight = "none";
+        upbox.style.maxHeight = "230px";
+      }
+      scrollChatToBottom();
+    }
+    adjustUIForScreenSize();
+    window.addEventListener("resize", adjustUIForScreenSize);
+    scrollChatToBottom();
   });
 })();
