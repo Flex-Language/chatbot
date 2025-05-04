@@ -1,7 +1,5 @@
 import * as vscode from "vscode";
 import axios from "axios";
-import * as fs from 'fs';
-import * as path from 'path';
 
 export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "flexChatbot.openview";
@@ -10,14 +8,226 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
   private _conversationHistory: {role: string, content: string}[] = [];
   private _availableModels: any[] = [];
   private _isModelListLoaded = false;
-  private _datasetCache: any = {};
-  private _isDatasetLoaded = false;
+
+  // Comprehensive system prompt about the Flex language
+  private readonly _flexSystemPrompt = `You are bor3i, a helpful AI assistant created by Flex to assist with the Flex programming language.
+
+Flex is a flexible programming language designed to support multiple syntax styles, including Franko Arabic, English, and other common programming syntax conventions. Here's comprehensive information about Flex:
+
+LANGUAGE DESCRIPTION:
+Flex is designed to enable users to write code in a syntax they are comfortable with while maintaining a consistent logic structure. The core idea is to support multilingual syntax, especially focusing on Franko Arabic and English conventions. The language does not require semicolons at the end of lines and uses curly braces {} for code blocks.
+
+KEY FEATURES:
+- Support for multiple syntaxes (Franko Arabic, English, C-style)
+- Regular expressions (regex) for efficient tokenization
+- No semicolons required at end of lines
+- Control flow structures (if-else, loops, functions)
+- Variable declarations with intuitive keywords
+- Built-in functions for input and output
+- Blocks enclosed within {}
+- Automatic type detection
+
+DATA TYPES:
+1. Integer:
+   - Keywords: "int", "rakm"
+   - Example: "int x = 5" or "rakm x = 5"
+
+2. Float:
+   - Keywords: "float", "kasr", "3ashary"
+   - Example: "float y = 3.14" or "kasr y = 3.14"
+
+3. String:
+   - Keywords: "string", "klma", "nass"
+   - Example: "string name = 'John'" or "klma name = 'John'"
+
+4. Boolean:
+   - Keywords: "bool", "so2al", "mantky"
+   - Values: "true"/"false" or "sa7"/"8alat"
+   - Example: "bool isValid = true" or "so2al isValid = sa7"
+
+5. List/Array:
+   - Keywords: "list", "dorg", "array", "safoufa"
+   - Example: "dorg numbers = [1, 2, 3]" or "list names = ['Ali', 'Omar']"
+
+CONTROL STRUCTURES:
+
+1. If-Else Statements:
+   - If: "if" or "lw"
+   - Else: "else" or "gher"
+   - Elif: "elif" or "aw"
+   - Example:
+     \`\`\`
+     lw x > 5 {
+         etb3("Greater than 5")
+     } aw x == 5 {
+         etb3("Equal to 5")
+     } gher {
+         etb3("Less than 5")
+     }
+     \`\`\`
+
+2. Loops:
+   - For Loop (C-style): 
+     \`\`\`
+     for(i=0; i<5; i++) {
+         etb3(i)
+     }
+     \`\`\`
+   - For Loop (Arabic style): 
+     \`\`\`
+     karr i=0 l7d 5 {
+         etb3(i)
+     }
+     \`\`\`
+   - While Loop: "while" or "talama"
+     \`\`\`
+     talama x < 10 {
+         etb3(x)
+         x = x + 1
+     }
+     \`\`\`
+
+3. Functions:
+   - Declaration: "fun" or "sndo2" or "sando2"
+   - Return: "return" or "rg3"
+   - Example:
+     \`\`\`
+     sndo2 add(rakm a, rakm b) {
+         rg3 a + b
+     }
+     \`\`\`
+
+OPERATORS:
+1. Arithmetic:
+   - Addition: +
+   - Subtraction: -
+   - Multiplication: *
+   - Division: /
+   - Modulus: %
+
+2. Comparison:
+   - Equal: ==
+   - Not equal: !=
+   - Greater than: >
+   - Less than: <
+   - Greater than or equal: >=
+   - Less than or equal: <=
+
+3. Logical:
+   - AND: "and" (not "&&")
+   - OR: "or" (not "||")
+   - NOT: "not" (not "!")
+
+BUILT-IN FUNCTIONS:
+1. Output:
+   - "etb3()" or "print()" or "out()"
+   - Example: etb3("Hello World")
+
+2. Input:
+   - "da5l()" or "input()"
+   - Example: 
+     \`\`\`
+     etb3("Enter your name:")
+     name = da5l()
+     \`\`\`
+   - Note: Input function doesn't take parameters
+
+3. List Operations:
+   - Add element: list.push(item) or list.append(item)
+   - Remove last: list.pop()
+   - Remove specific: list.remove(item) or list.delete(item)
+   - Get length: list.length
+
+COMMON ERRORS AND FIXES:
+1. Missing curly braces:
+   - Error: "lw x > 5 etb3(x)"
+   - Fix: "lw x > 5 { etb3(x) }"
+
+2. Using wrong boolean literals:
+   - Error: "so2al isTrue = true"
+   - Fix: "so2al isTrue = sa7"
+
+3. Using wrong logical operators:
+   - Error: "lw x > 5 && y < 10"
+   - Fix: "lw x > 5 and y < 10"
+
+4. Using input function incorrectly:
+   - Error: "da5l()" without assignment
+   - Fix: "x = da5l()"
+   - Error: "name = da5l("Enter your name: ")"
+   - Fix: "etb3("Enter your name: ") name = da5l()"
+
+5. Incorrect array iteration:
+   - Error: "for (i=0; i<lines.length; i++)"
+   - Fix: Use "for(i=0; i<lines.length; i++)" or "karr i=0 l7d lines.length"
+
+EXAMPLE PROGRAMS:
+
+1. Simple Calculator:
+\`\`\`
+sndo2 calculator(klma op, rakm a, rakm b) {
+  lw op == "add" {
+    rg3 a + b
+  } aw op == "sub" {
+    rg3 a - b
+  } aw op == "mul" {
+    rg3 a * b
+  } aw op == "div" {
+    lw b != 0 {
+      rg3 a / b
+    } gher {
+      etb3("Cannot divide by zero")
+      rg3 0
+    }
+  }
+}
+\`\`\`
+
+2. Check Prime Number:
+\`\`\`
+sndo2 isprime(rakm num) {
+  rakm pos = absolute(num)
+  lw num <= 1 {
+    etb3("{num} is not a prime number")
+    rg3 false
+  }
+  rakm i = 2
+  rakm mul = i * i
+  talama mul <= num {
+    lw do_modulus(pos, i) == 0 {
+      etb3("{num} is not a prime number")
+      rg3 false
+    }
+    i = i + 1
+    mul = i * i
+  }
+  etb3("{num} is a prime number")
+  rg3 true
+}
+\`\`\`
+
+3. Factorial Function:
+\`\`\`
+sndo2 factorial(rakm n) {
+  lw n <= 1 {
+    rg3 1
+  }
+  rg3 n * factorial(n - 1)
+}
+\`\`\`
+
+When answering questions about Flex code or helping users with Flex programming:
+1. Provide clear examples in both English and Arabic syntax styles when appropriate
+2. Always check for common errors in the user's code
+3. Explain why an error occurs and how to fix it
+4. Respect the language's flexible nature and support both syntax styles
+5. Prioritize educational explanations that help the user understand the language better
+
+Remember that Flex is designed to be accessible across different linguistic and cultural contexts, so always provide inclusive explanations.`;
 
   constructor(private readonly _extensionUri: vscode.Uri) {
     // Fetch available models when the extension is loaded
     this.fetchAvailableModels();
-    // Load the datasets
-    this.loadDatasets();
   }
 
   // Public methods
@@ -40,212 +250,6 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
     if (this._view) {
       this._view.webview.html = this.getHtmlContent(this._view.webview);
     }
-  }
-
-  // Load all datasets from the specified paths
-  private async loadDatasets() {
-    try {
-      const datasetPaths = [
-        // path.join(this._extensionUri.fsPath, 'dataset', 'combined_data.json'),
-        path.join(this._extensionUri.fsPath, 'dataset', 'data.json'),
-        path.join(this._extensionUri.fsPath, 'dataset', 'data.txt'),
-        path.join(this._extensionUri.fsPath, 'dataset', 'dataset.json'),
-        path.join(this._extensionUri.fsPath, 'dataset', 'datset_finetune_gpt.jsonl')
-      ];
-
-      for (const datasetPath of datasetPaths) {
-        try {
-          if (fs.existsSync(datasetPath)) {
-            const fileContent = fs.readFileSync(datasetPath, 'utf8');
-            const fileExt = path.extname(datasetPath).toLowerCase();
-            
-            if (fileExt === '.json') {
-              this._datasetCache[datasetPath] = JSON.parse(fileContent);
-            } else if (fileExt === '.jsonl') {
-              // Parse JSONL (one JSON object per line)
-              this._datasetCache[datasetPath] = fileContent
-                .split('\n')
-                .filter(line => line.trim())
-                .map(line => JSON.parse(line));
-            } else {
-              // Plain text file
-              this._datasetCache[datasetPath] = fileContent;
-            }
-            
-            console.log(`Loaded dataset: ${datasetPath}`);
-          }
-        } catch (err) {
-          console.error(`Error loading dataset ${datasetPath}:`, err);
-        }
-      }
-      
-      this._isDatasetLoaded = Object.keys(this._datasetCache).length > 0;
-      console.log(`Dataset loaded: ${this._isDatasetLoaded}`);
-    } catch (error) {
-      console.error("Error loading datasets:", error);
-    }
-  }
-
-  // Perform a search in the loaded datasets
-  private searchDatasets(query: string): string {
-    if (!this._isDatasetLoaded) {
-      return "No dataset loaded for reference.";
-    }
-
-    try {
-      // Convert the query to lowercase for case-insensitive search
-      const searchTerms = query.toLowerCase().split(/\s+/);
-      
-      let results: {content: string, score: number}[] = [];
-      
-      // Search through each dataset
-      for (const [datasetPath, dataContent] of Object.entries(this._datasetCache)) {
-        // Different search strategies based on data type
-        if (typeof dataContent === 'string') {
-          // For plain text
-          const score = this.calculateRelevanceScore(dataContent.toLowerCase(), searchTerms);
-          if (score > 0) {
-            // Extract relevant portion
-            const excerpt = this.extractRelevantSection(dataContent, searchTerms);
-            results.push({
-              content: `From ${path.basename(datasetPath)}:\n${excerpt}`,
-              score
-            });
-          }
-        } else if (Array.isArray(dataContent)) {
-          // For array data (like JSONL)
-          for (const item of dataContent) {
-            const itemStr = JSON.stringify(item);
-            const score = this.calculateRelevanceScore(itemStr.toLowerCase(), searchTerms);
-            if (score > 0) {
-              results.push({
-                content: `From ${path.basename(datasetPath)}:\n${JSON.stringify(item, null, 2)}`,
-                score
-              });
-            }
-          }
-        } else if (typeof dataContent === 'object') {
-          // For JSON objects, do a recursive search
-          this.searchNestedObject(dataContent, searchTerms, path.basename(datasetPath), results);
-        }
-      }
-      
-      // Sort results by relevance score (highest first)
-      results.sort((a, b) => b.score - a.score);
-      
-      // Return the top results, limited to keep context size reasonable
-      const maxResults = 5;
-      const topResults = results.slice(0, maxResults);
-      
-      if (topResults.length === 0) {
-        return "No relevant information found in the dataset.";
-      }
-      
-      return topResults.map(r => r.content).join("\n\n");
-    } catch (error) {
-      console.error("Error searching datasets:", error);
-      return "Error searching the reference dataset.";
-    }
-  }
-
-  // Search nested objects recursively
-  private searchNestedObject(obj: any, searchTerms: string[], datasetName: string, results: {content: string, score: number}[], path: string[] = []) {
-    if (!obj) return;
-    
-    if (typeof obj === 'object') {
-      if (Array.isArray(obj)) {
-        // For arrays, search each element
-        for (let i = 0; i < obj.length; i++) {
-          this.searchNestedObject(obj[i], searchTerms, datasetName, results, [...path, i.toString()]);
-        }
-      } else {
-        // For objects, scan properties
-        for (const key in obj) {
-          if (Object.prototype.hasOwnProperty.call(obj, key)) {
-            // Check if the key itself matches any search term
-            const keyStr = key.toLowerCase();
-            let keyScore = 0;
-            for (const term of searchTerms) {
-              if (keyStr.includes(term)) {
-                keyScore += 2; // Give higher weight to key matches
-              }
-            }
-            
-            const value = obj[key];
-            // If value is a primitive, check for matches
-            if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-              const valueStr = String(value).toLowerCase();
-              const valueScore = this.calculateRelevanceScore(valueStr, searchTerms);
-              
-              if (keyScore > 0 || valueScore > 0) {
-                // If key or value matched, add the full object or specific property
-                const totalScore = keyScore + valueScore;
-                let contextObj: any;
-                
-                // Get the parent object to provide context
-                if (path.length === 0) {
-                  // If at root, or direct child of root, include the full object
-                  contextObj = key ? { [key]: value } : obj;
-                } else {
-                  // Otherwise, navigate to parent
-                  let parent = obj;
-                  let pathCopy = [...path];
-                  contextObj = { [key]: value };
-                }
-                
-                results.push({
-                  content: `From ${datasetName} (matched '${key}'):\n${JSON.stringify(contextObj, null, 2)}`,
-                  score: totalScore
-                });
-              }
-            }
-            
-            // Recursively search nested objects
-            this.searchNestedObject(value, searchTerms, datasetName, results, [...path, key]);
-          }
-        }
-      }
-    }
-  }
-
-  // Calculate a relevance score based on term matches
-  private calculateRelevanceScore(text: string, searchTerms: string[]): number {
-    let score = 0;
-    for (const term of searchTerms) {
-      if (term.length < 3) continue; // Skip very short terms
-      
-      const regex = new RegExp(term, 'g');
-      const matches = text.match(regex);
-      if (matches) {
-        // Award points based on number of matches
-        score += matches.length;
-      }
-    }
-    return score;
-  }
-
-  // Extract a relevant section of text around the search terms
-  private extractRelevantSection(text: string, searchTerms: string[]): string {
-    // Find the position of the first matching term
-    let position = -1;
-    for (const term of searchTerms) {
-      if (term.length < 3) continue;
-      const pos = text.toLowerCase().indexOf(term);
-      if (pos !== -1 && (position === -1 || pos < position)) {
-        position = pos;
-      }
-    }
-    
-    if (position === -1) {
-      return text.substring(0, 500) + (text.length > 500 ? "..." : "");
-    }
-    
-    // Extract a window of text around the match
-    const contextSize = 500; // Characters before and after the match
-    const start = Math.max(0, position - contextSize);
-    const end = Math.min(text.length, position + contextSize);
-    
-    return (start > 0 ? "..." : "") + text.substring(start, end) + (end < text.length ? "..." : "");
   }
 
   // Fetch available models from OpenRouter API
@@ -298,8 +302,8 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
 
   resolveWebviewView(
     webviewView: vscode.WebviewView,
-    context: vscode.WebviewViewResolveContext<unknown>,
-    token: vscode.CancellationToken
+    context: vscode.WebviewViewResolveContext,
+    _token: vscode.CancellationToken,
   ): void | Thenable<void> {
     this._view = webviewView;
 
@@ -347,22 +351,8 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
               webSearchResults = await this.performWebSearch(searchQuery);
             }
 
-            // Search the Flex language dataset for relevant information
-            webviewView.webview.postMessage({ 
-              command: 'statusUpdate', 
-              text: 'Searching Flex language documentation...' 
-            });
-            
-            const datasetResults = this.searchDatasets(userMessage);
-            
             // Generate a message to send to the AI
             let messageForAI = userMessage;
-            let systemMessage = "You are bor3i, a helpful AI assistant created by Flex to assist with the Flex programming language. ";
-            
-            // Add dataset context to the system message
-            if (datasetResults) {
-              systemMessage += "Use the following information from the Flex language documentation to answer the query. ONLY provide information that is supported by this documentation and do not hallucinate or make up details. If you don't find relevant information, admit that you don't know:\n\n" + datasetResults;
-            }
             
             // Add web search results if available
             if (webSearchResults) {
@@ -377,7 +367,7 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
 
             // Prepare messages for the API
             const messages = [
-              { role: "system", content: systemMessage },
+              { role: "system", content: this._flexSystemPrompt },
               ...this._conversationHistory
             ];
             
@@ -486,11 +476,6 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
     
     // Check if we have models loaded to display the model selection button
     const showModelSelector = this._isModelListLoaded && this._availableModels.length > 0;
-    
-    // Include dataset status
-    const datasetStatus = this._isDatasetLoaded ? 
-      '<div class="dataset-info">Flex documentation loaded</div>' : 
-      '<div class="dataset-info warning">Flex documentation not loaded</div>';
 
     // Use a nonce to only allow a specific script to be run
     const nonce = getNonce();
@@ -521,7 +506,7 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
             <div id="ask">
               ........... < bor3i is here to help />
               <p class="me"><i>Powered by Flex</i></p>
-              ${datasetStatus}
+              <div class="system-prompt-info">Using built-in Flex documentation</div>
             </div>
           </div>
         </div>

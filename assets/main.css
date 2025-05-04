@@ -1,4 +1,4 @@
-body{
+body {
 	background: linear-gradient(45deg, #041322, #022319);
 	margin: 0;
 	padding: 0;
@@ -9,7 +9,7 @@ body{
 	flex-direction: column;
 }
 
-#maincont{
+#maincont {
 	display: flex;
 	flex-direction: column;
 	flex: 1;
@@ -17,7 +17,7 @@ body{
 	height: calc(100vh - 60px);
 }
 
-#upbox{
+#upbox {
 	background: linear-gradient(45deg, #041322, #022319);
 	min-height: 150px;
 	max-height: 230px;
@@ -30,7 +30,7 @@ body{
 	padding: 10px;
 }
 
-#item-1{
+#item-1 {
 	width: auto;
 	background: linear-gradient(45deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 5%, #022319 50%, rgba(255, 255, 255, 0) 95%, rgba(255, 255, 255, 0.3) 100%), linear-gradient(45deg, #11477d, #022319);
 	color: white;
@@ -47,7 +47,7 @@ body{
 	font-weight: bold;
 }
 
-#item-2{
+#item-2 {
 	width: 100%;
 	display: flex;
 	justify-content: space-between;
@@ -68,7 +68,7 @@ body{
 	object-fit: contain;
 }
 
-#ask{
+#ask {
 	flex: 1;
 	margin-top: 10px;
 	font-size: clamp(14px, 3vw, 20px);
@@ -80,7 +80,7 @@ body{
 	line-height: 1.2;
 }
 
-.me{
+.me {
 	margin-left: 10px;
 	padding: 5px;
 	background: linear-gradient(45deg, rgba(255, 255, 255, 0.3) 0%, rgba(0, 127, 89, 0) 5%, #1dad82 50%, rgba(255, 255, 255, 0) 95%, rgba(255, 255, 255, 0.3) 100%), linear-gradient(45deg, #11477d, #022319);
@@ -121,7 +121,8 @@ body{
 	overflow-x: auto;
 }
 
-.user-message, .ai-message {
+.user-message,
+.ai-message {
 	padding: 8px 12px;
 	border-radius: 8px;
 	margin-bottom: 12px;
@@ -141,7 +142,8 @@ body{
 	align-self: flex-start;
 }
 
-.user-label, .ai-label {
+.user-label,
+.ai-label {
 	font-weight: bold;
 	margin-bottom: 5px;
 	display: block;
@@ -169,7 +171,7 @@ body{
 	line-height: 1.4;
 }
 
-#cont{
+#cont {
 	display: flex;
 	padding: 10px;
 	position: sticky;
@@ -183,7 +185,7 @@ body{
 	background-color: var(--vscode-editor-background);
 }
 
-#user-input{
+#user-input {
 	padding: 12px;
 	border: 1px solid #34495e;
 	border-radius: 4px;
@@ -211,7 +213,7 @@ body{
 	box-shadow: 0 0 0 1px var(--vscode-focusBorder);
 }
 
-#send-button{
+#send-button {
 	border-radius: 5px;
 	background-color: rgb(14, 141, 141);
 	color: white;
@@ -300,27 +302,27 @@ body{
 
 /* Status message */
 .status-message {
-  align-self: center;
-  font-style: italic;
-  color: #888;
-  margin: 5px 0;
-  font-size: 0.85em;
+	align-self: center;
+	font-style: italic;
+	color: #888;
+	margin: 5px 0;
+	font-size: 0.85em;
 }
 
 /* Dataset info indicator */
 .dataset-info {
-  font-size: 0.7em;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background-color: rgba(0, 128, 0, 0.2);
-  color: #4caf50;
-  margin-top: 5px;
-  display: inline-block;
+	font-size: 0.7em;
+	padding: 2px 6px;
+	border-radius: 4px;
+	background-color: rgba(0, 128, 0, 0.2);
+	color: #4caf50;
+	margin-top: 5px;
+	display: inline-block;
 }
 
 .dataset-info.warning {
-  background-color: rgba(255, 153, 0, 0.2);
-  color: #ff9900;
+	background-color: rgba(255, 153, 0, 0.2);
+	color: #ff9900;
 }
 
 /* Media queries for responsiveness */
@@ -329,32 +331,32 @@ body{
 		min-height: 120px;
 		height: auto;
 	}
-	
+
 	#item-2 {
 		flex-direction: column;
 		align-items: center;
 	}
-	
+
 	#ask {
 		text-align: center;
 		padding-right: 0;
 		margin-top: 5px;
 	}
-	
+
 	.message {
 		max-width: 95%;
 	}
-	
+
 	#cont {
 		flex-direction: column;
 	}
-	
+
 	#user-input {
 		margin-right: 0;
 		margin-bottom: 10px;
 		width: 100%;
 	}
-	
+
 	#send-button {
 		width: 100%;
 		padding: 10px;
@@ -365,23 +367,25 @@ body{
 	#item-1 {
 		font-size: 1em;
 	}
-	
+
 	#item-2 img {
 		width: 40px;
 		height: 40px;
 	}
-	
+
 	#ask {
 		font-size: 0.9em;
 	}
-	
-	.user-message, .ai-message {
+
+	.user-message,
+	.ai-message {
 		max-width: 90%;
 	}
 }
 
 /* Add a class to identify user and bot in the chat */
-.user-label, .bot-label {
+.user-label,
+.bot-label {
 	font-weight: bold;
 	margin-bottom: 5px;
 	display: block;
