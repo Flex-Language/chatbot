@@ -8,22 +8,73 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "flexChatbot.openview";
 
   private _view?: vscode.WebviewView;
-  private _conversationHistory: {role: string, content: string}[] = [];
+  private _conversationHistory: { role: string, content: string }[] = [];
   private _availableModels: any[] = [];
   private _isModelListLoaded = false;
 
-  // Comprehensive system prompt about the Flex language
-
-
+  // Comprehensive system prompt about the Flex language loaded from JSON dataset
   private readonly _flexSystemPrompt = (() => {
-    const datasetDir = path.resolve(__dirname, '../dataset');
-    if (!fs.existsSync(datasetDir)) return '';
-    return fs.readdirSync(datasetDir)
-      .filter(file => file.endsWith('.txt') && fs.statSync(path.join(datasetDir, file)).isFile())
-      .map(file => fs.readFileSync(path.join(datasetDir, file), 'utf-8'))
-      .join('\n');
+    try {
+      const datasetPath = path.resolve(__dirname, '../dataset/flex_language_spec.json');
+      if (!fs.existsSync(datasetPath)) {
+        console.warn('Flex language specification not found at:', datasetPath);
+        return 'Flex programming language assistant. Please refer to official documentation for syntax and examples.';
+      }
+
+      const rawData = fs.readFileSync(datasetPath, 'utf-8');
+      const flexSpec = JSON.parse(rawData);
+
+      // Extract the AI system prompt and build comprehensive context
+      let systemPrompt = '';
+
+      // Add the main AI system prompt if available
+      if (flexSpec.ai_system_prompt) {
+        systemPrompt += `${JSON.stringify(flexSpec.ai_system_prompt, null, 2)}\n\n`;
+      }
+
+      // Add essential language knowledge
+      if (flexSpec.ESSENTIAL_FLEX_KNOWLEDGE) {
+        systemPrompt += `ESSENTIAL FLEX KNOWLEDGE:\n${JSON.stringify(flexSpec.ESSENTIAL_FLEX_KNOWLEDGE, null, 2)}\n\n`;
+      }
+
+      // Add critical syntax patterns
+      if (flexSpec.CRITICAL_SYNTAX_PATTERNS) {
+        systemPrompt += `CRITICAL SYNTAX PATTERNS:\n${JSON.stringify(flexSpec.CRITICAL_SYNTAX_PATTERNS, null, 2)}\n\n`;
+      }
+
+      // Add common error solutions
+      if (flexSpec.COMMON_ERROR_SOLUTIONS) {
+        systemPrompt += `COMMON ERROR SOLUTIONS:\n${JSON.stringify(flexSpec.COMMON_ERROR_SOLUTIONS, null, 2)}\n\n`;
+      }
+
+      // Add syntax rules
+      if (flexSpec.syntax_rules) {
+        systemPrompt += `SYNTAX RULES:\n${JSON.stringify(flexSpec.syntax_rules, null, 2)}\n\n`;
+      }
+
+      // Add code examples
+      if (flexSpec.code_examples) {
+        systemPrompt += `CODE EXAMPLES:\n${JSON.stringify(flexSpec.code_examples, null, 2)}\n\n`;
+      }
+
+      // Add error handling patterns
+      if (flexSpec.error_handling) {
+        systemPrompt += `ERROR HANDLING:\n${JSON.stringify(flexSpec.error_handling, null, 2)}\n\n`;
+      }
+
+      // Add best practices
+      if (flexSpec.best_practices) {
+        systemPrompt += `BEST PRACTICES:\n${JSON.stringify(flexSpec.best_practices, null, 2)}\n\n`;
+      }
+
+      return systemPrompt;
+
+    } catch (error) {
+      console.error('Error loading Flex language specification:', error);
+      return 'Flex programming language assistant. Error loading language specification - please refer to official documentation.';
+    }
   })();
-  
+
   constructor(private readonly _extensionUri: vscode.Uri) {
     // Fetch available models when the extension is loaded
     this.fetchAvailableModels();
@@ -55,7 +106,7 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
   private async fetchAvailableModels() {
     try {
       const apiKey = vscode.workspace.getConfiguration('flexChatbot').get('apiKey') as string;
-      
+
       if (apiKey && apiKey.trim() !== '') {
         const response = await axios.get('https://openrouter.ai/api/v1/models', {
           headers: {
@@ -64,24 +115,24 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
             'X-Title': 'Flex Chat Bot'
           }
         });
-        
+
         if (response.data && Array.isArray(response.data.data)) {
           this._availableModels = response.data.data;
           this._isModelListLoaded = true;
 
           // Get the current selected model
           const currentModel = vscode.workspace.getConfiguration('flexChatbot').get('model') as string;
-          
+
           // Create QuickPick items from the available models
           const items = this._availableModels.map(model => ({
             label: model.id,
             description: `${model.context_length} tokens - ${model.pricing?.prompt ? '$' + model.pricing.prompt.toFixed(6) + '/1K prompt tokens' : 'Pricing N/A'}`,
             detail: model.description || ''
           }));
-          
+
           // Update the configuration schema with available models
           this.updateModelConfigurationSchema(items);
-          
+
           // Refresh the webview if it exists
           if (this._view) {
             this._view.webview.html = this.getHtmlContent(this._view.webview);
@@ -119,10 +170,10 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
         case 'sendMessage':
           const userMessage = message.text;
           this._conversationHistory.push({ role: "user", content: userMessage });
-          
+
           // Check if user wants to search the web
           const isWebSearch = userMessage.toLowerCase().includes('[web]');
-          
+
           try {
             // Get config values
             const apiKey = vscode.workspace.getConfiguration('flexChatbot').get('apiKey') as string;
@@ -130,9 +181,9 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
             const temperature = vscode.workspace.getConfiguration('flexChatbot').get('temperature') as number;
 
             if (!apiKey || apiKey.trim() === '') {
-              webviewView.webview.postMessage({ 
-                command: 'aiResponse', 
-                text: "Please set your OpenRouter API key in the settings (File > Preferences > Settings > Extensions > Flex Chat Bot)." 
+              webviewView.webview.postMessage({
+                command: 'aiResponse',
+                text: "Please set your OpenRouter API key in the settings (File > Preferences > Settings > Extensions > Flex Chat Bot)."
               });
               return;
             }
@@ -140,11 +191,11 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
             // If web search is requested and enabled in settings
             let webSearchResults = null;
             if (isWebSearch && vscode.workspace.getConfiguration('flexChatbot').get('enableWebSearch')) {
-              webviewView.webview.postMessage({ 
-                command: 'statusUpdate', 
-                text: 'Searching the web...' 
+              webviewView.webview.postMessage({
+                command: 'statusUpdate',
+                text: 'Searching the web...'
               });
-              
+
               // Extract the search query by removing the [web] tag
               const searchQuery = userMessage.replace(/\[web\]/gi, '').trim();
               webSearchResults = await this.performWebSearch(searchQuery);
@@ -152,16 +203,16 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
 
             // Generate a message to send to the AI
             let messageForAI = userMessage;
-            
+
             // Add web search results if available
             if (webSearchResults) {
               messageForAI = `The user asked: ${userMessage.replace(/\[web\]/gi, '').trim()}\n\nHere are some search results that might help answer the query:\n${webSearchResults}\n\nPlease synthesize this information to provide a helpful answer.`;
             }
 
             // Send a message to the AI service
-            webviewView.webview.postMessage({ 
-              command: 'statusUpdate', 
-              text: 'bor3i is thinking...' 
+            webviewView.webview.postMessage({
+              command: 'statusUpdate',
+              text: 'bor3i is thinking...'
             });
 
             // Prepare messages for the API
@@ -171,14 +222,14 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
             const messages = [
               {
                 role: "system",
-                content: "You are an assistant for the Flex programming language. Here are examples of Flex code to help you understand the language syntax and features:\n\n" + flex_data
+                content: "You are a specialized assistant for the Flex programming language. You have access to the complete Flex language specification including syntax rules, examples, error handling patterns, and best practices. Use this comprehensive knowledge to provide accurate, helpful responses about Flex programming.\n\nFLEX LANGUAGE SPECIFICATION:\n" + flex_data
               },
               ...this._conversationHistory
             ];
-            
+
             // Send request to OpenRouter API
             const response = await this.callOpenRouterAPI(messages, selectedModel, temperature, apiKey);
-            
+
             // Add AI response to conversation history
             if (response) {
               this._conversationHistory.push({ role: "assistant", content: response });
@@ -186,18 +237,18 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
             }
           } catch (error) {
             console.error('Error in AI request:', error);
-            webviewView.webview.postMessage({ 
-              command: 'aiResponse', 
-              text: `Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}` 
+            webviewView.webview.postMessage({
+              command: 'aiResponse',
+              text: `Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}`
             });
           }
           break;
-          
+
         case 'clearChat':
           this._conversationHistory = [];
           webviewView.webview.postMessage({ command: 'chatCleared' });
           break;
-          
+
         case 'selectModel':
           vscode.commands.executeCommand('flexChatbot.selectModel');
           break;
@@ -206,8 +257,8 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
   }
 
   private async callOpenRouterAPI(
-    messages: {role: string, content: string}[], 
-    model: string, 
+    messages: { role: string, content: string }[],
+    model: string,
     temperature: number,
     apiKey: string
   ): Promise<string | null> {
@@ -225,7 +276,7 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
           'X-Title': 'Flex Chat Bot'
         }
       });
-      
+
       return response.data.choices[0].message.content;
     } catch (error) {
       console.error('OpenRouter API Error:', error);
@@ -240,14 +291,14 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
     try {
       // Using the SerpAPI for search results
       const searchResponse = await axios.get(`https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=demo`);
-      
+
       if (searchResponse.data && searchResponse.data.organic_results) {
         const results = searchResponse.data.organic_results.slice(0, 5);
-        return results.map((result: any, index: number) => 
+        return results.map((result: any, index: number) =>
           `[${index + 1}] ${result.title}\n${result.snippet}\nURL: ${result.link}\n`
         ).join('\n');
       }
-      
+
       return "No search results found";
     } catch (error) {
       console.error('Web search error:', error);
@@ -275,10 +326,10 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
     const selectedModel = vscode.workspace.getConfiguration('flexChatbot').get('model') as string;
     const apiKey = vscode.workspace.getConfiguration('flexChatbot').get('apiKey') as string;
     const apiConfigured = apiKey && apiKey.trim() !== '';
-    
+
     // Display the model name more user-friendly (remove the provider prefix)
     const modelDisplay = selectedModel.split('/').pop() || selectedModel;
-    
+
     // Check if we have models loaded to display the model selection button
     const showModelSelector = this._isModelListLoaded && this._availableModels.length > 0;
 
@@ -298,10 +349,10 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
         <div id="upbox">
           <div id="item-1">
             Welcome to Flex Chat Bot!
-            ${apiConfigured ? 
-              `<div class="model-info">Using: ${modelDisplay} ${showModelSelector ? '<button id="change-model" title="Change model">⚙️</button>' : ''}</div>` : 
-              `<div class="model-info api-warning">API key not set</div>`
-            }
+            ${apiConfigured ?
+        `<div class="model-info">Using: ${modelDisplay} ${showModelSelector ? '<button id="change-model" title="Change model">⚙️</button>' : ''}</div>` :
+        `<div class="model-info api-warning">API key not set</div>`
+      }
             <button id="clear-button" title="Clear conversation">Clear</button>
           </div>
           <div id="item-2">
@@ -311,7 +362,7 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
             <div id="ask">
               ........... < bor3i is here to help />
               <p class="me"><i>Powered by Flex</i></p>
-              <div class="system-prompt-info">Using built-in Flex documentation</div>
+              <div class="system-prompt-info">Using Flex Language Specification v2.1</div>
             </div>
           </div>
         </div>
