@@ -2045,6 +2045,133 @@ src/extension.ts
 123 | **🎉 Result**: The Flex Chatbot now features a fully adaptive, professional interface with the model name displayed beside the settings icon and the send button properly positioned beside the text input, creating an optimal user experience across all devices.
 ```
 
+.windsurf/rules/layout.md
+```
+1 | ---
+2 | trigger: always_on
+3 | description: 
+4 | globs: 
+5 | ---
+6 | # 📁 Flex Chatbot Project Layout Documentation
+7 | 
+8 | ## 📋 Project Overview
+9 | This document tracks the complete project structure of the Flex Chatbot VS Code extension, including all files, their purposes, and recent changes during the adaptive UI redesign.
+10 | 
+11 | ## 🔄 Recent Critical Updates (Latest Session)
+12 | 
+13 | ### ✅ **ADAPTIVE UI REDESIGN COMPLETED** 
+14 | **Date**: Current session  
+15 | **Status**: SUCCESSFULLY IMPLEMENTED AND TESTED
+16 | 
+17 | #### 🎨 **UI Enhancements Applied**:
+18 | 
+19 | 1. **Removed Blue Header Box**:
+20 |    - ✅ Eliminated the prominent blue header box for cleaner design
+21 |    - ✅ Replaced with minimalist header bar
+22 |    - ✅ Better space utilization for chat content
+23 |    - ✅ Professional, streamlined appearance
+24 | 
+25 | 2. **Enhanced Header Layout**:
+26 |    ```
+27 |    📱 Header Bar (Optimized)
+28 |    ├── 🏷️ Flex Assistant logo and title
+29 |    ├── 🔴🟡🟢 Status indicators (Config/Dataset)
+30 |    ├── 📊 Message counter (live updates)
+31 |    ├── 📱 Model display (NEW - shows current model)
+32 |    ├── ⚙️ Settings button (model selection)
+33 |    └── 🗑️ Clear chat button
+34 |    ```
+35 | 
+36 | 3. **Improved Input Section**:
+37 |    ```
+38 |    ⌨️ Input Area (Redesigned)
+39 |    ├── 🚀 Quick action buttons (4 prompts)
+40 |    ├── 📝 Auto-expanding text input (left)
+41 |    └── 📤 Send button (beside input - right)
+42 |    ```
+43 | 
+44 | 4. **Mobile-First Responsive Design**:
+45 |    - **Desktop (>768px)**: Full layout with all elements visible
+46 |    - **Tablet (<=768px)**: Compact model display, optimized spacing
+47 |    - **Mobile (<=480px)**: Ultra-compact model display, stacked layout
+48 |    - **Auto-adaptive**: Seamless transitions between screen sizes
+49 | 
+50 | #### 📊 **Current Status**:
+51 | - ✅ TypeScript compilation: **PASSED**
+52 | - ✅ Extension packaging: **SUCCESSFUL** (`flex-chatbot-1.0.0.vsix`)
+53 | - ✅ Model display: **IMPLEMENTED** (beside settings icon)
+54 | - ✅ Send button positioning: **FIXED** (beside text input)
+55 | - ✅ Responsive design: **COMPLETE**
+56 | - 🚀 Status: **PRODUCTION READY - ADAPTIVE**
+57 | 
+58 | ### 🎯 **Key UI Improvements Implemented**:
+59 | 
+60 | #### **Model Display Enhancement**:
+61 | - ✅ **Positioned**: Directly beside the settings icon in header
+62 | - ✅ **Styling**: Professional gradient background with border
+63 | - ✅ **Responsive**: Adapts size on different screen sizes
+64 | - ✅ **Overflow Handling**: Text ellipsis for long model names
+65 | - ✅ **Visual Hierarchy**: Clear distinction from other elements
+66 | 
+67 | #### **Send Button Optimization**:
+68 | - ✅ **Positioning**: Placed beside (to the right of) text input
+69 | - ✅ **Layout**: Same row as text input, not above or below
+70 | - ✅ **Sizing**: Compact design that doesn't overwhelm the input
+71 | - ✅ **Responsiveness**: Maintains position across all screen sizes
+72 | - ✅ **Accessibility**: Proper focus states and touch targets
+73 | 
+74 | #### **Responsive Breakpoints**:
+75 | - **Desktop**: Model display max-width 120px, full feature set
+76 | - **Tablet**: Model display max-width 80px, compact layout
+77 | - **Mobile**: Model display max-width 60px, minimal design
+78 | 
+79 | ### 🔧 **Technical Implementation**:
+80 | - **CSS Architecture**: Mobile-first responsive design with progressive enhancement
+81 | - **Layout System**: Flexbox for precise positioning and alignment
+82 | - **Typography**: Adaptive font sizes across breakpoints
+83 | - **Spacing**: Consistent spacing system with CSS custom properties
+84 | - **Performance**: Optimized CSS with efficient selectors
+85 | 
+86 | ## 📝 File Descriptions (Updated)
+87 | 
+88 | ### 📄 Main Files Modified
+89 | 
+90 | #### `src/customSidebarViewProvider.ts` 🚀 **ENHANCED**
+91 | - **Purpose**: Main webview provider with adaptive UI
+92 | - **New Features**: Model display in header, optimized layout structure
+93 | - **Enhancement**: Clean HTML structure for better maintainability
+94 | - **Status**: ✅ PRODUCTION READY
+95 | 
+96 | #### `assets/webview/css/main.css` 🎨 **FULLY RESPONSIVE**
+97 | - **Purpose**: Complete adaptive styling system
+98 | - **New Styles**: Model display styling, responsive breakpoints
+99 | - **Enhancement**: Mobile-first CSS with desktop enhancements
+100 | - **Status**: ✅ COMPLETE RESPONSIVE SYSTEM
+101 | 
+102 | ## 🎯 Implementation Results
+103 | 
+104 | ### ✅ **User Requirements Met**:
+105 | 1. **Model Display**: ✅ Current model shown beside settings icon
+106 | 2. **Send Button Position**: ✅ Located beside (not above/below) text input
+107 | 3. **Responsive Design**: ✅ Adapts to all screen sizes
+108 | 4. **Clean Interface**: ✅ Removed blue header box for better UX
+109 | 
+110 | ### 🚀 **Additional Improvements Achieved**:
+111 | - Professional visual hierarchy with proper spacing
+112 | - Touch-friendly interface for mobile devices
+113 | - Smooth transitions and hover effects
+114 | - Accessibility-compliant focus management
+115 | - Performance-optimized CSS architecture
+116 | 
+117 | ## 📱 **Cross-Device Compatibility**:
+118 | - **Desktop**: Full-featured interface with optimal spacing
+119 | - **Tablet**: Compact design maintaining all functionality
+120 | - **Mobile**: Touch-optimized layout with smart text sizing
+121 | - **Responsive**: Seamless adaptation between all screen sizes
+122 | 
+123 | **🎉 Result**: The Flex Chatbot now features a fully adaptive, professional interface with the model name displayed beside the settings icon and the send button properly positioned beside the text input, creating an optimal user experience across all devices.
+```
+
 assets/datasets/flex_language_spec.json
 ```
 1 | {
@@ -6486,1351 +6613,6 @@ src/core/ErrorHandler.ts
 370 | export const errorHandler = ErrorHandler.getInstance(); 
 ```
 
-.windsurf/rules/layout.md
-```
-1 | ---
-2 | trigger: always_on
-3 | description: 
-4 | globs: 
-5 | ---
-6 | # 📁 Flex Chatbot Project Layout Documentation
-7 | 
-8 | ## 📋 Project Overview
-9 | This document tracks the complete project structure of the Flex Chatbot VS Code extension, including all files, their purposes, and recent changes during the adaptive UI redesign.
-10 | 
-11 | ## 🔄 Recent Critical Updates (Latest Session)
-12 | 
-13 | ### ✅ **ADAPTIVE UI REDESIGN COMPLETED** 
-14 | **Date**: Current session  
-15 | **Status**: SUCCESSFULLY IMPLEMENTED AND TESTED
-16 | 
-17 | #### 🎨 **UI Enhancements Applied**:
-18 | 
-19 | 1. **Removed Blue Header Box**:
-20 |    - ✅ Eliminated the prominent blue header box for cleaner design
-21 |    - ✅ Replaced with minimalist header bar
-22 |    - ✅ Better space utilization for chat content
-23 |    - ✅ Professional, streamlined appearance
-24 | 
-25 | 2. **Enhanced Header Layout**:
-26 |    ```
-27 |    📱 Header Bar (Optimized)
-28 |    ├── 🏷️ Flex Assistant logo and title
-29 |    ├── 🔴🟡🟢 Status indicators (Config/Dataset)
-30 |    ├── 📊 Message counter (live updates)
-31 |    ├── 📱 Model display (NEW - shows current model)
-32 |    ├── ⚙️ Settings button (model selection)
-33 |    └── 🗑️ Clear chat button
-34 |    ```
-35 | 
-36 | 3. **Improved Input Section**:
-37 |    ```
-38 |    ⌨️ Input Area (Redesigned)
-39 |    ├── 🚀 Quick action buttons (4 prompts)
-40 |    ├── 📝 Auto-expanding text input (left)
-41 |    └── 📤 Send button (beside input - right)
-42 |    ```
-43 | 
-44 | 4. **Mobile-First Responsive Design**:
-45 |    - **Desktop (>768px)**: Full layout with all elements visible
-46 |    - **Tablet (<=768px)**: Compact model display, optimized spacing
-47 |    - **Mobile (<=480px)**: Ultra-compact model display, stacked layout
-48 |    - **Auto-adaptive**: Seamless transitions between screen sizes
-49 | 
-50 | #### 📊 **Current Status**:
-51 | - ✅ TypeScript compilation: **PASSED**
-52 | - ✅ Extension packaging: **SUCCESSFUL** (`flex-chatbot-1.0.0.vsix`)
-53 | - ✅ Model display: **IMPLEMENTED** (beside settings icon)
-54 | - ✅ Send button positioning: **FIXED** (beside text input)
-55 | - ✅ Responsive design: **COMPLETE**
-56 | - 🚀 Status: **PRODUCTION READY - ADAPTIVE**
-57 | 
-58 | ### 🎯 **Key UI Improvements Implemented**:
-59 | 
-60 | #### **Model Display Enhancement**:
-61 | - ✅ **Positioned**: Directly beside the settings icon in header
-62 | - ✅ **Styling**: Professional gradient background with border
-63 | - ✅ **Responsive**: Adapts size on different screen sizes
-64 | - ✅ **Overflow Handling**: Text ellipsis for long model names
-65 | - ✅ **Visual Hierarchy**: Clear distinction from other elements
-66 | 
-67 | #### **Send Button Optimization**:
-68 | - ✅ **Positioning**: Placed beside (to the right of) text input
-69 | - ✅ **Layout**: Same row as text input, not above or below
-70 | - ✅ **Sizing**: Compact design that doesn't overwhelm the input
-71 | - ✅ **Responsiveness**: Maintains position across all screen sizes
-72 | - ✅ **Accessibility**: Proper focus states and touch targets
-73 | 
-74 | #### **Responsive Breakpoints**:
-75 | - **Desktop**: Model display max-width 120px, full feature set
-76 | - **Tablet**: Model display max-width 80px, compact layout
-77 | - **Mobile**: Model display max-width 60px, minimal design
-78 | 
-79 | ### 🔧 **Technical Implementation**:
-80 | - **CSS Architecture**: Mobile-first responsive design with progressive enhancement
-81 | - **Layout System**: Flexbox for precise positioning and alignment
-82 | - **Typography**: Adaptive font sizes across breakpoints
-83 | - **Spacing**: Consistent spacing system with CSS custom properties
-84 | - **Performance**: Optimized CSS with efficient selectors
-85 | 
-86 | ## 📝 File Descriptions (Updated)
-87 | 
-88 | ### 📄 Main Files Modified
-89 | 
-90 | #### `src/customSidebarViewProvider.ts` 🚀 **ENHANCED**
-91 | - **Purpose**: Main webview provider with adaptive UI
-92 | - **New Features**: Model display in header, optimized layout structure
-93 | - **Enhancement**: Clean HTML structure for better maintainability
-94 | - **Status**: ✅ PRODUCTION READY
-95 | 
-96 | #### `assets/webview/css/main.css` 🎨 **FULLY RESPONSIVE**
-97 | - **Purpose**: Complete adaptive styling system
-98 | - **New Styles**: Model display styling, responsive breakpoints
-99 | - **Enhancement**: Mobile-first CSS with desktop enhancements
-100 | - **Status**: ✅ COMPLETE RESPONSIVE SYSTEM
-101 | 
-102 | ## 🎯 Implementation Results
-103 | 
-104 | ### ✅ **User Requirements Met**:
-105 | 1. **Model Display**: ✅ Current model shown beside settings icon
-106 | 2. **Send Button Position**: ✅ Located beside (not above/below) text input
-107 | 3. **Responsive Design**: ✅ Adapts to all screen sizes
-108 | 4. **Clean Interface**: ✅ Removed blue header box for better UX
-109 | 
-110 | ### 🚀 **Additional Improvements Achieved**:
-111 | - Professional visual hierarchy with proper spacing
-112 | - Touch-friendly interface for mobile devices
-113 | - Smooth transitions and hover effects
-114 | - Accessibility-compliant focus management
-115 | - Performance-optimized CSS architecture
-116 | 
-117 | ## 📱 **Cross-Device Compatibility**:
-118 | - **Desktop**: Full-featured interface with optimal spacing
-119 | - **Tablet**: Compact design maintaining all functionality
-120 | - **Mobile**: Touch-optimized layout with smart text sizing
-121 | - **Responsive**: Seamless adaptation between all screen sizes
-122 | 
-123 | **🎉 Result**: The Flex Chatbot now features a fully adaptive, professional interface with the model name displayed beside the settings icon and the send button properly positioned beside the text input, creating an optimal user experience across all devices.
-```
-
-src/services/apiService.ts
-```
-1 | import axios, { AxiosResponse, AxiosError } from 'axios';
-2 | import { ChatMessage, ModelInfo, ApiResponse, ExtensionConfig, WebSearchResult } from '../types';
-3 | import { debugManager } from '../core/DebugManager';
-4 | import { errorHandler } from '../core/ErrorHandler';
-5 | 
-6 | /**
-7 |  * Enhanced API Service with debugging and error handling
-8 |  * Service for handling API communications with OpenRouter and web search
-9 |  */
-10 | export class ApiService {
-11 |     private static readonly OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
-12 |     private static readonly DEFAULT_TIMEOUT = 300000; // 5 minutes for large responses
-13 |     private static readonly MAX_RETRIES = 3;
-14 | 
-15 |     /**
-16 |      * Call OpenRouter API for streaming chat completions with progressive response
-17 |      */
-18 |     public static async streamChatCompletion(
-19 |         messages: ChatMessage[],
-20 |         config: ExtensionConfig,
-21 |         onChunk: (chunk: string) => void,
-22 |         onError?: (error: Error) => void,
-23 |         onComplete?: () => void
-24 |     ): Promise<string> {
-25 |         const sessionId = `api_stream_completion_${Date.now()}`;
-26 |         const startTime = Date.now();
-27 | 
-28 |         debugManager.startDebugSession(sessionId, {
-29 |             operation: 'stream_chat_completion',
-30 |             model: config.model,
-31 |             messageCount: messages.length,
-32 |             temperature: config.temperature
-33 |         });
-34 | 
-35 |         try {
-36 |             // Validate and fix model name if needed
-37 |             let modelName = config.model;
-38 |             if (modelName === 'openai/gpt-4.1-mini') {
-39 |                 modelName = 'openai/gpt-4o-mini';
-40 |                 console.warn('⚠️ Fixed invalid model name: openai/gpt-4.1-mini → openai/gpt-4o-mini');
-41 |             }
-42 | 
-43 |             const requestData = {
-44 |                 model: modelName,
-45 |                 messages: messages.map(msg => ({
-46 |                     role: msg.role,
-47 |                     content: msg.content
-48 |                 })),
-49 |                 temperature: config.temperature,
-50 |                 // No token limit - allow unlimited generation
-51 |                 stream: true
-52 |             };
-53 | 
-54 |             const headers = {
-55 |                 'Content-Type': 'application/json',
-56 |                 'Authorization': `Bearer ${config.apiKey}`,
-57 |                 'HTTP-Referer': 'https://github.com/flex/flex-chatbot',
-58 |                 'X-Title': 'Flex Chat Bot'
-59 |             };
-60 | 
-61 |             let fullResponse = '';
-62 | 
-63 |             const response = await axios.post(
-64 |                 `${this.OPENROUTER_BASE_URL}/chat/completions`,
-65 |                 requestData,
-66 |                 {
-67 |                     headers,
-68 |                     timeout: this.DEFAULT_TIMEOUT,
-69 |                     responseType: 'stream'
-70 |                 }
-71 |             );
-72 | 
-73 |             let chunkCount = 0;
-74 |             let totalBytes = 0;
-75 |             let lastChunkTime = Date.now();
-76 |             const MAX_RESPONSE_SIZE = 10 * 1024 * 1024; // 10MB limit
-77 |             const CHUNK_TIMEOUT = 30000; // 30 seconds per chunk
-78 | 
-79 |             return new Promise((resolve, reject) => {
-80 |                 // Set up chunk timeout monitoring
-81 |                 const chunkTimer = setInterval(() => {
-82 |                     const timeSinceLastChunk = Date.now() - lastChunkTime;
-83 |                     if (timeSinceLastChunk > CHUNK_TIMEOUT) {
-84 |                         debugManager.addDebugStep(sessionId, 'chunk_timeout', {
-85 |                             timeSinceLastChunk,
-86 |                             chunkCount,
-87 |                             responseLength: fullResponse.length
-88 |                         });
-89 |                         clearInterval(chunkTimer);
-90 |                         reject(new Error(`Streaming timeout: no data received for ${timeSinceLastChunk}ms`));
-91 |                     }
-92 |                 }, 5000);
-93 |                 response.data.on('data', (chunk: Buffer) => {
-94 |                     try {
-95 |                         chunkCount++;
-96 |                         totalBytes += chunk.length;
-97 |                         lastChunkTime = Date.now();
-98 | 
-99 |                         debugManager.addDebugStep(sessionId, 'chunk_received', {
-100 |                             chunkNumber: chunkCount,
-101 |                             chunkSize: chunk.length,
-102 |                             totalBytes,
-103 |                             responseLength: fullResponse.length
-104 |                         });
-105 | 
-106 |                         // Check for memory safety
-107 |                         if (fullResponse.length > MAX_RESPONSE_SIZE) {
-108 |                             clearInterval(chunkTimer);
-109 |                             debugManager.addDebugStep(sessionId, 'response_too_large', {
-110 |                                 responseLength: fullResponse.length,
-111 |                                 maxSize: MAX_RESPONSE_SIZE
-112 |                             });
-113 |                             reject(new Error(`Response too large: ${fullResponse.length} bytes exceeds ${MAX_RESPONSE_SIZE} bytes`));
-114 |                             return;
-115 |                         }
-116 | 
-117 |                         const chunkStr = chunk.toString('utf8');
-118 |                         const lines = chunkStr.split('\n');
-119 |                         
-120 |                         for (let i = 0; i < lines.length; i++) {
-121 |                             const lineRaw = lines[i];
-122 |                             if (!lineRaw) continue;
-123 |                             const line = lineRaw.trim();
-124 |                             
-125 |                             if (line.startsWith('data: ')) {
-126 |                                 const data = line.slice(6).trim();
-127 |                                 
-128 |                                 if (data === '[DONE]') {
-129 |                                     clearInterval(chunkTimer);
-130 |                                     const duration = Date.now() - startTime;
-131 |                                     debugManager.addDebugStep(sessionId, 'stream_completed', {
-132 |                                         chunkCount,
-133 |                                         totalBytes,
-134 |                                         responseLength: fullResponse.length
-135 |                                     });
-136 |                                     debugManager.endDebugSession(sessionId, {
-137 |                                         success: true,
-138 |                                         duration,
-139 |                                         responseLength: fullResponse.length,
-140 |                                         chunks: chunkCount
-141 |                                     });
-142 |                                     if (onComplete) onComplete();
-143 |                                     resolve(fullResponse);
-144 |                                     return;
-145 |                                 }
-146 |                                 
-147 |                                 if (data && data !== '') {
-148 |                                     try {
-149 |                                         const parsed = JSON.parse(data);
-150 |                                         const content = parsed.choices?.[0]?.delta?.content;
-151 |                                         
-152 |                                         if (content && typeof content === 'string') {
-153 |                                             fullResponse += content;
-154 |                                             onChunk(content);
-155 |                                             
-156 |                                             // Log progress every 100 chunks
-157 |                                             if (chunkCount % 100 === 0) {
-158 |                                                 debugManager.addDebugStep(sessionId, 'progress_update', {
-159 |                                                     chunkCount,
-160 |                                                     responseLength: fullResponse.length,
-161 |                                                     avgChunkSize: totalBytes / chunkCount
-162 |                                                 });
-163 |                                             }
-164 |                                         }
-165 |                                     } catch (parseError) {
-166 |                                         debugManager.addDebugStep(sessionId, 'json_parse_error', {
-167 |                                             error: (parseError as Error).message,
-168 |                                             data: data.substring(0, 200), // First 200 chars for debugging
-169 |                                             chunkNumber: chunkCount,
-170 |                                             lineNumber: i
-171 |                                         });
-172 |                                         // Continue processing other lines instead of failing
-173 |                                     }
-174 |                                 }
-175 |                             } else if (line.startsWith('event:') || line.startsWith('id:')) {
-176 |                                 // SSE metadata, ignore but log
-177 |                                 debugManager.addDebugStep(sessionId, 'sse_metadata', { line });
-178 |                             }
-179 |                         }
-180 |                     } catch (chunkError) {
-181 |                         clearInterval(chunkTimer);
-182 |                         debugManager.addDebugStep(sessionId, 'chunk_processing_error', {
-183 |                             error: (chunkError as Error).message,
-184 |                             chunkNumber: chunkCount,
-185 |                             chunkSize: chunk?.length || 0
-186 |                         });
-187 |                         if (onError) onError(chunkError as Error);
-188 |                         reject(chunkError);
-189 |                     }
-190 |                 });
-191 | 
-192 |                 response.data.on('error', (error: Error) => {
-193 |                     clearInterval(chunkTimer);
-194 |                     debugManager.addDebugStep(sessionId, 'stream_error', {
-195 |                         error: error.message,
-196 |                         chunkCount,
-197 |                         responseLength: fullResponse.length,
-198 |                         totalBytes
-199 |                     });
-200 |                     debugManager.endDebugSession(sessionId, {
-201 |                         success: false,
-202 |                         error: error.message,
-203 |                         duration: Date.now() - startTime,
-204 |                         chunks: chunkCount
-205 |                     });
-206 |                     if (onError) onError(error);
-207 |                     reject(error);
-208 |                 });
-209 | 
-210 |                 response.data.on('end', () => {
-211 |                     clearInterval(chunkTimer);
-212 |                     const duration = Date.now() - startTime;
-213 |                     
-214 |                     debugManager.addDebugStep(sessionId, 'stream_ended', {
-215 |                         chunkCount,
-216 |                         responseLength: fullResponse.length,
-217 |                         totalBytes,
-218 |                         hasResponse: !!fullResponse
-219 |                     });
-220 |                     
-221 |                     if (fullResponse && fullResponse.length > 0) {
-222 |                         debugManager.endDebugSession(sessionId, {
-223 |                             success: true,
-224 |                             duration,
-225 |                             responseLength: fullResponse.length,
-226 |                             chunks: chunkCount
-227 |                         });
-228 |                         if (onComplete) onComplete();
-229 |                         resolve(fullResponse);
-230 |                     } else {
-231 |                         const error = new Error('Stream ended without complete response');
-232 |                         debugManager.endDebugSession(sessionId, {
-233 |                             success: false,
-234 |                             error: error.message,
-235 |                             duration,
-236 |                             chunks: chunkCount
-237 |                         });
-238 |                         if (onError) onError(error);
-239 |                         reject(error);
-240 |                     }
-241 |                 });
-242 |             });
-243 | 
-244 |         } catch (error) {
-245 |             const duration = Date.now() - startTime;
-246 |             debugManager.endDebugSession(sessionId, {
-247 |                 success: false,
-248 |                 error: (error as Error).message,
-249 |                 duration
-250 |             });
-251 |             
-252 |             if (onError) onError(error as Error);
-253 |             throw error;
-254 |         }
-255 |     }
-256 | 
-257 |     /**
-258 |      * Call OpenRouter API for chat completions with enhanced debugging and error handling
-259 |      */
-260 |     public static async chatCompletion(
-261 |         messages: ChatMessage[],
-262 |         config: ExtensionConfig
-263 |     ): Promise<string> {
-264 |         const sessionId = `api_chat_completion_${Date.now()}`;
-265 |         const startTime = Date.now();
-266 | 
-267 |         debugManager.startDebugSession(sessionId, {
-268 |             operation: 'chat_completion',
-269 |             model: config.model,
-270 |             messageCount: messages.length,
-271 |             maxTokens: config.maxTokens,
-272 |             temperature: config.temperature
-273 |         });
-274 | 
-275 |         try {
-276 |             // Validate and fix model name if needed
-277 |             let modelName = config.model;
-278 |             if (modelName === 'openai/gpt-4.1-mini') {
-279 |                 modelName = 'openai/gpt-4o-mini'; // Fix incorrect model name
-280 |                 console.warn('⚠️ Fixed invalid model name: openai/gpt-4.1-mini → openai/gpt-4o-mini');
-281 |             }
-282 | 
-283 |             const requestData = {
-284 |                 model: modelName,
-285 |                 messages: messages.map(msg => ({
-286 |                     role: msg.role,
-287 |                     content: msg.content
-288 |                 })),
-289 |                 temperature: config.temperature,
-290 |                 // No token limit - allow unlimited generation
-291 |                 stream: false
-292 |             };
-293 | 
-294 |             const headers = {
-295 |                 'Content-Type': 'application/json',
-296 |                 'Authorization': `Bearer ${config.apiKey}`,
-297 |                 'HTTP-Referer': 'https://github.com/flex/flex-chatbot',
-298 |                 'X-Title': 'Flex Chat Bot'
-299 |             };
-300 | 
-301 |             debugManager.addDebugStep(sessionId, 'request_prepared', {
-302 |                 model: config.model,
-303 |                 tokenLimit: config.maxTokens
-304 |             });
-305 | 
-306 |             let lastError: Error | null = null;
-307 | 
-308 |             for (let attempt = 1; attempt <= this.MAX_RETRIES; attempt++) {
-309 |                 try {
-310 |                     debugManager.addDebugStep(sessionId, `attempt_${attempt}`, { attempt });
-311 | 
-312 |                     const response: AxiosResponse<ApiResponse> = await axios.post(
-313 |                         `${this.OPENROUTER_BASE_URL}/chat/completions`,
-314 |                         requestData,
-315 |                         {
-316 |                             headers,
-317 |                             timeout: config.timeout || this.DEFAULT_TIMEOUT,
-318 |                             validateStatus: (status) => status < 500 // Retry on 5xx errors
-319 |                         }
-320 |                     );
-321 | 
-322 |                     debugManager.addDebugStep(sessionId, 'response_received', {
-323 |                         status: response.status,
-324 |                         hasContent: !!response.data?.choices?.[0]?.message?.content
-325 |                     });
-326 | 
-327 |                     if (response.data?.choices?.[0]?.message?.content) {
-328 |                         const content = response.data.choices[0].message.content;
-329 |                         const duration = Date.now() - startTime;
-330 | 
-331 |                         debugManager.trackPerformance('api_chat_completion', duration, {
-332 |                             model: config.model,
-333 |                             attempts: attempt,
-334 |                             responseLength: content.length
-335 |                         });
-336 | 
-337 |                         debugManager.endDebugSession(sessionId, {
-338 |                             success: true,
-339 |                             duration,
-340 |                             attempts: attempt,
-341 |                             responseLength: content.length
-342 |                         });
-343 | 
-344 |                         return content;
-345 |                     } else {
-346 |                         throw new Error('Invalid response format from API');
-347 |                     }
-348 | 
-349 |                 } catch (error) {
-350 |                     debugManager.addDebugStep(sessionId, `attempt_${attempt}_failed`, {
-351 |                         error: (error as Error).message,
-352 |                         status: (error as AxiosError)?.response?.status
-353 |                     });
-354 | 
-355 |                     lastError = this.handleApiError(error as AxiosError, attempt);
-356 | 
-357 |                     if (attempt === this.MAX_RETRIES) {
-358 |                         const errorResult = await errorHandler.handleError(lastError, {
-359 |                             component: 'api',
-360 |                             operation: 'chat_completion',
-361 |                             retryCount: attempt,
-362 |                             sessionId
-363 |                         });
-364 | 
-365 |                         debugManager.endDebugSession(sessionId, {
-366 |                             success: false,
-367 |                             error: lastError.message,
-368 |                             attempts: attempt,
-369 |                             duration: Date.now() - startTime
-370 |                         });
-371 | 
-372 |                         throw new Error(errorResult.userMessage);
-373 |                     }
-374 | 
-375 |                     // Exponential backoff
-376 |                     const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
-377 |                     debugManager.addDebugStep(sessionId, 'backoff_delay', { delay });
-378 |                     await this.sleep(delay);
-379 |                 }
-380 |             }
-381 | 
-382 |             throw lastError || new Error('Unknown API error');
-383 | 
-384 |         } catch (error) {
-385 |             const duration = Date.now() - startTime;
-386 |             debugManager.trackPerformance('api_chat_completion_failed', duration, {
-387 |                 model: config.model,
-388 |                 error: (error as Error).message
-389 |             });
-390 | 
-391 |             debugManager.endDebugSession(sessionId, {
-392 |                 success: false,
-393 |                 error: (error as Error).message,
-394 |                 duration
-395 |             });
-396 | 
-397 |             throw error;
-398 |         }
-399 |     }
-400 | 
-401 |     /**
-402 |      * Fetch available models from OpenRouter with debugging
-403 |      */
-404 |     public static async fetchAvailableModels(apiKey: string): Promise<ModelInfo[]> {
-405 |         const sessionId = `fetch_models_${Date.now()}`;
-406 |         const startTime = Date.now();
-407 | 
-408 |         debugManager.startDebugSession(sessionId, { operation: 'fetch_models' });
-409 | 
-410 |         try {
-411 |             const response = await axios.get(`${this.OPENROUTER_BASE_URL}/models`, {
-412 |                 headers: {
-413 |                     'Authorization': `Bearer ${apiKey}`,
-414 |                     'HTTP-Referer': 'https://github.com/flex/flex-chatbot',
-415 |                     'X-Title': 'Flex Chat Bot'
-416 |                 },
-417 |                 timeout: this.DEFAULT_TIMEOUT
-418 |             });
-419 | 
-420 |             if (response.data?.data && Array.isArray(response.data.data)) {
-421 |                 const models = response.data.data.map((model: any) => ({
-422 |                     id: model.id,
-423 |                     description: model.description || '',
-424 |                     context_length: model.context_length || 0,
-425 |                     pricing: model.pricing ? {
-426 |                         prompt: parseFloat(model.pricing.prompt) || 0,
-427 |                         completion: parseFloat(model.pricing.completion) || 0
-428 |                     } : undefined
-429 |                 }));
-430 | 
-431 |                 debugManager.endDebugSession(sessionId, {
-432 |                     success: true,
-433 |                     modelsCount: models.length
-434 |                 });
-435 | 
-436 |                 return models;
-437 |             }
-438 | 
-439 |             debugManager.endDebugSession(sessionId, {
-440 |                 success: true,
-441 |                 modelsCount: 0
-442 |             });
-443 | 
-444 |             return [];
-445 |         } catch (error) {
-446 |             const errorResult = await errorHandler.handleError(error as Error, {
-447 |                 component: 'api',
-448 |                 operation: 'fetch_models',
-449 |                 sessionId
-450 |             });
-451 | 
-452 |             debugManager.endDebugSession(sessionId, {
-453 |                 success: false,
-454 |                 error: (error as Error).message,
-455 |                 duration: Date.now() - startTime
-456 |             });
-457 | 
-458 |             throw new Error(errorResult.userMessage);
-459 |         }
-460 |     }
-461 | 
-462 |     /**
-463 |      * Perform web search using SerpAPI (with fallback options)
-464 |      */
-465 |     public static async performWebSearch(query: string): Promise<WebSearchResult[]> {
-466 |         try {
-467 |             // First try with demo API key (limited but free)
-468 |             const response = await axios.get('https://serpapi.com/search.json', {
-469 |                 params: {
-470 |                     q: query,
-471 |                     api_key: 'demo',
-472 |                     num: 5,
-473 |                     format: 'json'
-474 |                 },
-475 |                 timeout: 10000
-476 |             });
-477 | 
-478 |             if (response.data?.organic_results) {
-479 |                 return response.data.organic_results.map((result: any) => ({
-480 |                     title: result.title || 'No title',
-481 |                     snippet: result.snippet || 'No description available',
-482 |                     link: result.link || '#'
-483 |                 }));
-484 |             }
-485 | 
-486 |             return [];
-487 |         } catch (error) {
-488 |             console.warn('Web search failed:', error);
-489 |             // Return empty results rather than throwing - web search is optional
-490 |             return [];
-491 |         }
-492 |     }
-493 | 
-494 |     /**
-495 |      * Format web search results for AI consumption
-496 |      */
-497 |     public static formatWebSearchResults(results: WebSearchResult[]): string {
-498 |         if (results.length === 0) {
-499 |             return 'No web search results found.';
-500 |         }
-501 | 
-502 |         return results
-503 |             .map((result, index) =>
-504 |                 `[${index + 1}] ${result.title}\n${result.snippet}\nURL: ${result.link}\n`
-505 |             )
-506 |             .join('\n');
-507 |     }
-508 | 
-509 |     /**
-510 |      * Validate API key format
-511 |      */
-512 |     public static validateApiKey(apiKey: string): boolean {
-513 |         if (!apiKey || typeof apiKey !== 'string') {
-514 |             return false;
-515 |         }
-516 | 
-517 |         // Basic validation - OpenRouter keys typically start with 'sk-or-'
-518 |         const trimmedKey = apiKey.trim();
-519 |         return trimmedKey.length > 20 && /^sk-/.test(trimmedKey);
-520 |     }
-521 | 
-522 |     /**
-523 |      * Test API connectivity
-524 |      */
-525 |     public static async testApiConnection(apiKey: string): Promise<boolean> {
-526 |         try {
-527 |             const models = await this.fetchAvailableModels(apiKey);
-528 |             return models.length > 0;
-529 |         } catch (error) {
-530 |             return false;
-531 |         }
-532 |     }
-533 | 
-534 |     /**
-535 |      * Handle API errors with appropriate user-friendly messages
-536 |      */
-537 |     private static handleApiError(error: AxiosError, attempt: number): Error {
-538 |         if (error.response) {
-539 |             const status = error.response.status;
-540 |             const data = error.response.data as any;
-541 | 
-542 |             switch (status) {
-543 |                 case 401:
-544 |                     return new Error('Invalid API key. Please check your OpenRouter API key in settings.');
-545 |                 case 402:
-546 |                     return new Error('Insufficient credits. Please add credits to your OpenRouter account.');
-547 |                 case 403:
-548 |                     return new Error('Access forbidden. Please check your API key permissions.');
-549 |                 case 429:
-550 |                     return new Error('Rate limit exceeded. Please wait a moment before trying again.');
-551 |                 case 500:
-552 |                 case 502:
-553 |                 case 503:
-554 |                 case 504:
-555 |                     if (attempt < this.MAX_RETRIES) {
-556 |                         return new Error(`Server error (${status}). Retrying... (attempt ${attempt})`);
-557 |                     }
-558 |                     return new Error('Server is currently unavailable. Please try again later.');
-559 |                 default:
-560 |                     return new Error(
-561 |                         data?.error?.message ||
-562 |                         `API error ${status}: ${error.response.statusText}`
-563 |                     );
-564 |             }
-565 |         } else if (error.code === 'ECONNABORTED') {
-566 |             return new Error('Request timed out. Please check your internet connection.');
-567 |         } else if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
-568 |             return new Error('Unable to connect to the API. Please check your internet connection.');
-569 |         } else {
-570 |             return new Error(`Network error: ${error.message}`);
-571 |         }
-572 |     }
-573 | 
-574 |     /**
-575 |      * Extract error message from various error types
-576 |      */
-577 |     private static getErrorMessage(error: any): string {
-578 |         if (error?.response?.data?.error?.message) {
-579 |             return error.response.data.error.message;
-580 |         }
-581 |         if (error?.message) {
-582 |             return error.message;
-583 |         }
-584 |         return 'Unknown error occurred';
-585 |     }
-586 | 
-587 |     /**
-588 |      * Sleep utility for retry delays
-589 |      */
-590 |     private static sleep(ms: number): Promise<void> {
-591 |         return new Promise(resolve => setTimeout(resolve, ms));
-592 |     }
-593 | 
-594 |     /**
-595 |      * Get model pricing information formatted for display
-596 |      */
-597 |     public static formatModelPricing(model: ModelInfo): string {
-598 |         if (!model.pricing) {
-599 |             return 'Pricing N/A';
-600 |         }
-601 | 
-602 |         const promptPrice = (model.pricing.prompt * 1000).toFixed(6);
-603 |         const completionPrice = (model.pricing.completion * 1000).toFixed(6);
-604 | 
-605 |         return `$${promptPrice}/$${completionPrice} per 1K tokens`;
-606 |     }
-607 | 
-608 |     /**
-609 |      * Get recommended models for Flex programming
-610 |      */
-611 |     public static getRecommendedModels(): string[] {
-612 |         return [
-613 |             'openai/gpt-4o-mini',
-614 |             'openai/gpt-4o',
-615 |             'openai/gpt-4-turbo',
-616 |             'anthropic/claude-3.5-sonnet',
-617 |             'anthropic/claude-3-haiku',
-618 |             'google/gemini-flash-1.5',
-619 |             'mistralai/mistral-small'
-620 |         ];
-621 |     }
-622 | } 
-```
-
-src/services/configService.ts
-```
-1 | import * as vscode from 'vscode';
-2 | import { ExtensionConfig } from '../types';
-3 | 
-4 | /**
-5 |  * Service for managing extension configuration
-6 |  */
-7 | export class ConfigService {
-8 |     private static readonly CONFIG_SECTION = 'flexChatbot';
-9 | 
-10 |     /**
-11 |      * Get all extension configuration
-12 |      */
-13 |     public static getConfig(): ExtensionConfig {
-14 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
-15 |         let model = config.get<string>('model', 'openai/gpt-4o-mini');
-16 | 
-17 |         // Fix common invalid model names
-18 |         const modelFixes: Record<string, string> = {
-19 |             'openai/gpt-4.1-mini': 'openai/gpt-4o-mini',
-20 |             'openai/gpt-4.1': 'openai/gpt-4o',
-21 |             'openai/gpt-4.1-nano': 'openai/gpt-4o-mini',
-22 |             'openai/gpt-4.5-preview': 'openai/gpt-4o'
-23 |         };
-24 | 
-25 |         if (modelFixes[model]) {
-26 |             const newModel = modelFixes[model]!; // Non-null assertion since we checked the key exists
-27 |             console.warn(`⚠️ Fixing invalid model: ${model} → ${newModel}`);
-28 |             // Auto-update the configuration
-29 |             this.set('model', newModel).catch(console.error);
-30 |             model = newModel;
-31 |         }
-32 | 
-33 |         return {
-34 |             apiKey: config.get<string>('apiKey', ''),
-35 |             model: model,
-36 |             temperature: config.get<number>('temperature', 0.7),
-37 |             enableWebSearch: config.get<boolean>('enableWebSearch', false),
-38 |             maxTokens: config.get<number>('maxTokens', 0), // 0 means unlimited
-39 |             timeout: config.get<number>('timeout', 30000)
-40 |         };
-41 |     }
-42 | 
-43 |     /**
-44 |      * Get specific configuration value
-45 |      */
-46 |     public static get<T>(key: keyof ExtensionConfig, defaultValue?: T): T {
-47 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
-48 |         return config.get<T>(key, defaultValue as T);
-49 |     }
-50 | 
-51 |     /**
-52 |      * Set configuration value
-53 |      */
-54 |     public static async set<T>(
-55 |         key: keyof ExtensionConfig,
-56 |         value: T,
-57 |         target: vscode.ConfigurationTarget = vscode.ConfigurationTarget.Global
-58 |     ): Promise<void> {
-59 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
-60 |         await config.update(key, value, target);
-61 |     }
-62 | 
-63 |     /**
-64 |      * Check if API key is configured
-65 |      */
-66 |     public static isApiKeyConfigured(): boolean {
-67 |         const apiKey = this.get<string>('apiKey', '');
-68 |         return apiKey.trim().length > 0;
-69 |     }
-70 | 
-71 |     /**
-72 |      * Validate configuration
-73 |      */
-74 |     public static validateConfig(): { isValid: boolean; errors: string[] } {
-75 |         const config = this.getConfig();
-76 |         const errors: string[] = [];
-77 | 
-78 |         // Validate API key
-79 |         if (!config.apiKey || config.apiKey.trim().length === 0) {
-80 |             errors.push('API key is required');
-81 |         } else if (config.apiKey.length < 20) {
-82 |             errors.push('API key appears to be invalid (too short)');
-83 |         }
-84 | 
-85 |         // Validate model
-86 |         if (!config.model || config.model.trim().length === 0) {
-87 |             errors.push('Model selection is required');
-88 |         }
-89 | 
-90 |         // Validate temperature
-91 |         if (config.temperature < 0 || config.temperature > 2) {
-92 |             errors.push('Temperature must be between 0 and 2');
-93 |         }
-94 | 
-95 |         // Validate max tokens
-96 |         if (config.maxTokens && (config.maxTokens < 1 || config.maxTokens > 32000)) {
-97 |             errors.push('Max tokens must be between 1 and 32000');
-98 |         }
-99 | 
-100 |         // Validate timeout
-101 |         if (config.timeout && (config.timeout < 5000 || config.timeout > 300000)) {
-102 |             errors.push('Timeout must be between 5 and 300 seconds');
-103 |         }
-104 | 
-105 |         return {
-106 |             isValid: errors.length === 0,
-107 |             errors
-108 |         };
-109 |     }
-110 | 
-111 |     /**
-112 |      * Get default configuration
-113 |      */
-114 |     public static getDefaultConfig(): ExtensionConfig {
-115 |         return {
-116 |             apiKey: '',
-117 |             model: 'openai/gpt-4o-mini',
-118 |             temperature: 0.7,
-119 |             enableWebSearch: true,
-120 |             maxTokens: 4000,
-121 |             timeout: 30000
-122 |         };
-123 |     }
-124 | 
-125 |     /**
-126 |      * Reset configuration to defaults
-127 |      */
-128 |     public static async resetToDefaults(): Promise<void> {
-129 |         const defaultConfig = this.getDefaultConfig();
-130 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
-131 | 
-132 |         for (const [key, value] of Object.entries(defaultConfig)) {
-133 |             if (key !== 'apiKey') { // Don't reset API key
-134 |                 await config.update(key, value, vscode.ConfigurationTarget.Global);
-135 |             }
-136 |         }
-137 |     }
-138 | 
-139 |     /**
-140 |      * Show configuration dialog
-141 |      */
-142 |     public static async showConfigurationDialog(): Promise<void> {
-143 |         const actions = [
-144 |             'Open Settings',
-145 |             'Set API Key',
-146 |             'Select Model',
-147 |             'Test Connection'
-148 |         ];
-149 | 
-150 |         const selectedAction = await vscode.window.showQuickPick(actions, {
-151 |             placeHolder: 'Choose configuration action'
-152 |         });
-153 | 
-154 |         switch (selectedAction) {
-155 |             case 'Open Settings':
-156 |                 await vscode.commands.executeCommand('workbench.action.openSettings', this.CONFIG_SECTION);
-157 |                 break;
-158 | 
-159 |             case 'Set API Key':
-160 |                 await this.promptForApiKey();
-161 |                 break;
-162 | 
-163 |             case 'Select Model':
-164 |                 await vscode.commands.executeCommand('flexChatbot.selectModel');
-165 |                 break;
-166 | 
-167 |             case 'Test Connection':
-168 |                 await this.testConnection();
-169 |                 break;
-170 |         }
-171 |     }
-172 | 
-173 |     /**
-174 |      * Prompt user for API key
-175 |      */
-176 |     public static async promptForApiKey(): Promise<void> {
-177 |         const apiKey = await vscode.window.showInputBox({
-178 |             prompt: 'Enter your OpenRouter API key',
-179 |             password: true,
-180 |             placeHolder: 'sk-or-...',
-181 |             validateInput: (value) => {
-182 |                 if (!value || value.trim().length === 0) {
-183 |                     return 'API key is required';
-184 |                 }
-185 |                 if (value.length < 20) {
-186 |                     return 'API key appears to be invalid (too short)';
-187 |                 }
-188 |                 return null;
-189 |             }
-190 |         });
-191 | 
-192 |         if (apiKey) {
-193 |             await this.set('apiKey', apiKey.trim());
-194 |             vscode.window.showInformationMessage('API key saved successfully!');
-195 |         }
-196 |     }
-197 | 
-198 |     /**
-199 |      * Test API connection
-200 |      */
-201 |     private static async testConnection(): Promise<void> {
-202 |         const config = this.getConfig();
-203 | 
-204 |         if (!config.apiKey) {
-205 |             vscode.window.showErrorMessage('Please set your API key first');
-206 |             return;
-207 |         }
-208 | 
-209 |         try {
-210 |             // Import ApiService dynamically to avoid circular dependencies
-211 |             const { ApiService } = await import('./apiService');
-212 |             const isConnected = await ApiService.testApiConnection(config.apiKey);
-213 | 
-214 |             if (isConnected) {
-215 |                 vscode.window.showInformationMessage('✅ API connection successful!');
-216 |             } else {
-217 |                 vscode.window.showErrorMessage('❌ API connection failed. Please check your API key.');
-218 |             }
-219 |         } catch (error) {
-220 |             vscode.window.showErrorMessage(`❌ Connection test failed: ${error}`);
-221 |         }
-222 |     }
-223 | 
-224 |     /**
-225 |      * Watch for configuration changes
-226 |      */
-227 |     public static onConfigurationChanged(
-228 |         callback: (config: ExtensionConfig) => void
-229 |     ): vscode.Disposable {
-230 |         return vscode.workspace.onDidChangeConfiguration((event) => {
-231 |             if (event.affectsConfiguration(this.CONFIG_SECTION)) {
-232 |                 callback(this.getConfig());
-233 |             }
-234 |         });
-235 |     }
-236 | 
-237 |     /**
-238 |      * Export configuration (excluding sensitive data)
-239 |      */
-240 |     public static exportConfig(): Partial<ExtensionConfig> {
-241 |         const config = this.getConfig();
-242 |         return {
-243 |             model: config.model,
-244 |             temperature: config.temperature,
-245 |             enableWebSearch: config.enableWebSearch,
-246 |             maxTokens: config.maxTokens,
-247 |             timeout: config.timeout
-248 |             // Explicitly exclude apiKey for security
-249 |         };
-250 |     }
-251 | 
-252 |     /**
-253 |      * Import configuration (excluding sensitive data)
-254 |      */
-255 |     public static async importConfig(importedConfig: Partial<ExtensionConfig>): Promise<void> {
-256 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
-257 | 
-258 |         for (const [key, value] of Object.entries(importedConfig)) {
-259 |             if (key !== 'apiKey' && value !== undefined) {
-260 |                 await config.update(key, value, vscode.ConfigurationTarget.Global);
-261 |             }
-262 |         }
-263 | 
-264 |         vscode.window.showInformationMessage('Configuration imported successfully!');
-265 |     }
-266 | 
-267 |     /**
-268 |      * Get configuration summary for display
-269 |      */
-270 |     public static getConfigSummary(): string {
-271 |         const config = this.getConfig();
-272 |         const hasApiKey = config.apiKey.length > 0;
-273 | 
-274 |         return `
-275 | 📋 **Configuration Summary:**
-276 | - API Key: ${hasApiKey ? '✅ Set' : '❌ Not set'}
-277 | - Model: ${config.model}
-278 | - Temperature: ${config.temperature}
-279 | - Web Search: ${config.enableWebSearch ? '✅ Enabled' : '❌ Disabled'}
-280 | - Max Tokens: ${config.maxTokens || 'Default'}
-281 | - Timeout: ${(config.timeout || 30000) / 1000}s
-282 |     `.trim();
-283 |     }
-284 | } 
-```
-
-src/services/flexDatasetService.ts
-```
-1 | import * as fs from 'fs';
-2 | import * as path from 'path';
-3 | import { FlexLanguageSpec } from '../types';
-4 | 
-5 | /**
-6 |  * Service for managing the Flex language dataset and generating system prompts
-7 |  */
-8 | export class FlexDatasetService {
-9 |     private static instance: FlexDatasetService;
-10 |     private flexSpec: FlexLanguageSpec | null = null;
-11 |     private readonly datasetPath: string;
-12 | 
-13 |     private constructor(extensionPath: string) {
-14 |         this.datasetPath = path.join(extensionPath, 'assets', 'datasets', 'flex_language_spec.json');
-15 |         this.loadFlexSpec();
-16 |     }
-17 | 
-18 |     /**
-19 |      * Get singleton instance of FlexDatasetService
-20 |      */
-21 |     public static getInstance(extensionPath?: string): FlexDatasetService {
-22 |         if (!FlexDatasetService.instance) {
-23 |             if (!extensionPath) {
-24 |                 throw new Error('Extension path is required for first initialization');
-25 |             }
-26 |             FlexDatasetService.instance = new FlexDatasetService(extensionPath);
-27 |         }
-28 |         return FlexDatasetService.instance;
-29 |     }
-30 | 
-31 |     /**
-32 |      * Load the Flex language specification from JSON file
-33 |      */
-34 |     private loadFlexSpec(): void {
-35 |         try {
-36 |             if (fs.existsSync(this.datasetPath)) {
-37 |                 const fileContent = fs.readFileSync(this.datasetPath, 'utf-8');
-38 |                 this.flexSpec = JSON.parse(fileContent) as FlexLanguageSpec;
-39 |                 console.log('✅ Flex language specification loaded successfully');
-40 |             } else {
-41 |                 console.warn(`⚠️ Flex dataset file not found at: ${this.datasetPath}`);
-42 |                 this.flexSpec = null;
-43 |             }
-44 |         } catch (error) {
-45 |             console.error('❌ Error loading Flex language specification:', error);
-46 |             this.flexSpec = null;
-47 |         }
-48 |     }
-49 | 
-50 |     /**
-51 |      * Get the complete system prompt for AI interactions
-52 |      */
-53 |     public getSystemPrompt(): string {
-54 |         if (!this.flexSpec) {
-55 |             return this.getFallbackSystemPrompt();
-56 |         }
-57 | 
-58 |         try {
-59 |             const aiPrompt = this.flexSpec.ai_system_prompt;
-60 |             const essentialKnowledge = this.flexSpec.ESSENTIAL_FLEX_KNOWLEDGE;
-61 |             const syntaxPatterns = this.flexSpec.CRITICAL_SYNTAX_PATTERNS;
-62 |             const codeExamples = this.formatCodeExamples(this.flexSpec.code_examples);
-63 |             const commonPatterns = this.formatCommonPatterns(this.flexSpec.common_patterns);
-64 |             const errorHandling = this.formatErrorHandling(this.flexSpec.error_handling);
-65 | 
-66 |             return `# Flex Programming Assistant for VSCode
-67 | 
-68 | ${aiPrompt.description}
-69 | 
-70 | You are integrated into a VSCode extension to provide real-time assistance to Flex developers. Your responses will be displayed in a professional chat interface within their development environment.
-71 | 
-72 | ## VSCODE EXTENSION CONTEXT:
-73 | - **Environment**: Integrated VSCode extension sidebar
-74 | - **User Context**: Active Flex developers writing code
-75 | - **Response Format**: Markdown with syntax highlighting support
-76 | - **Interaction Style**: Professional, concise, immediately actionable
-77 | 
-78 | ## CRITICAL INSTRUCTIONS:
-79 | ${Object.entries(aiPrompt.CRITICAL_INSTRUCTIONS).map(([key, value]) => `- **${key}**: ${value}`).join('\n')}
-80 | 
-81 | ## ESSENTIAL FLEX LANGUAGE KNOWLEDGE:
-82 | - **Language**: ${essentialKnowledge.language_identity}
-83 | - **Philosophy**: ${essentialKnowledge.core_philosophy}
-84 | - **File Extensions**: ${essentialKnowledge.file_extensions.join(', ')}
-85 | - **Unique Features**: ${essentialKnowledge.unique_features.join(', ')}
-86 | 
-87 | ## CRITICAL SYNTAX PATTERNS:
-88 | ${this.formatSyntaxPatterns(syntaxPatterns)}
-89 | 
-90 | ## CODE EXAMPLES:
-91 | ${codeExamples}
-92 | 
-93 | ## COMMON PATTERNS:
-94 | ${commonPatterns}
-95 | 
-96 | ## ERROR HANDLING GUIDE:
-97 | ${errorHandling}
-98 | 
-99 | ## PERFORMANCE OPTIMIZATION:
-100 | ${this.formatPerformanceGuidelines()}
-101 | 
-102 | ## VSCODE INTEGRATION GUIDELINES:
-103 | - Use \`\`\`flex code blocks for all Flex code examples
-104 | - Provide copy-pasteable, production-ready code snippets
-105 | - Assume users may have limited time - prioritize immediate solutions
-106 | - Reference line numbers when helping with debugging (if provided)
-107 | - Suggest VSCode shortcuts or extensions when relevant
-108 | - Format responses for easy scanning with headers and bullet points
-109 | 
-110 | Remember: You are an expert Flex programming assistant integrated into VSCode, helping developers write better Flex code efficiently. Always prioritize working code first, then provide clear explanations adapted to the user's expertise level.`;
-111 | 
-112 |         } catch (error) {
-113 |             console.error('Error generating system prompt:', error);
-114 |             return this.getFallbackSystemPrompt();
-115 |         }
-116 |     }
-117 | 
-118 |     /**
-119 |      * Format code examples for the system prompt
-120 |      */
-121 |     private formatCodeExamples(examples: Record<string, any>): string {
-122 |         if (!examples) return '';
-123 | 
-124 |         return Object.entries(examples)
-125 |             .map(([name, example]) => {
-126 |                 if (example.code && Array.isArray(example.code)) {
-127 |                     return `### ${example.description || name}:
-128 | \`\`\`flex
-129 | ${example.code.join('\n')}
-130 | \`\`\``;
-131 |                 }
-132 |                 return '';
-133 |             })
-134 |             .filter(Boolean)
-135 |             .join('\n\n');
-136 |     }
-137 | 
-138 |     /**
-139 |      * Format common patterns for the system prompt
-140 |      */
-141 |     private formatCommonPatterns(patterns: Record<string, any>): string {
-142 |         if (!patterns) return '';
-143 | 
-144 |         return Object.entries(patterns)
-145 |             .map(([name, pattern]) => {
-146 |                 if (Array.isArray(pattern)) {
-147 |                     return `### ${name}:
-148 | \`\`\`flex
-149 | ${pattern.join('\n')}
-150 | \`\`\``;
-151 |                 }
-152 |                 return '';
-153 |             })
-154 |             .filter(Boolean)
-155 |             .join('\n\n');
-156 |     }
-157 | 
-158 |     /**
-159 |      * Format syntax patterns for the system prompt
-160 |      */
-161 |     private formatSyntaxPatterns(patterns: Record<string, any>): string {
-162 |         if (!patterns) return '';
-163 | 
-164 |         return Object.entries(patterns)
-165 |             .map(([category, pattern]) => {
-166 |                 if (typeof pattern === 'object' && pattern.examples) {
-167 |                     return `### ${category}:
-168 | ${Array.isArray(pattern.examples) ? pattern.examples.join('\n') : pattern.examples}`;
-169 |                 }
-170 |                 return '';
-171 |             })
-172 |             .filter(Boolean)
-173 |             .join('\n\n');
-174 |     }
-175 | 
-176 |     /**
-177 |      * Format error handling information
-178 |      */
-179 |     private formatErrorHandling(errorHandling: any): string {
-180 |         if (!errorHandling || !errorHandling.error_categories) return '';
-181 | 
-182 |         const categories = errorHandling.error_categories;
-183 |         return Object.entries(categories)
-184 |             .map(([categoryName, category]: [string, any]) => {
-185 |                 const errors = Object.entries(category)
-186 |                     .filter(([key]) => key !== 'description')
-187 |                     .map(([errorName, errorInfo]: [string, any]) => {
-188 |                         return `**${errorName}**: ${errorInfo.solution || errorInfo.cause || 'See documentation'}`;
-189 |                     })
-190 |                     .join('\n');
-191 | 
-192 |                 return `### ${categoryName}:
-193 | ${category.description || ''}
-194 | ${errors}`;
-195 |             })
-196 |             .join('\n\n');
-197 |     }
-198 | 
-199 |     /**
-200 |      * Format performance optimization guidelines
-201 |      */
-202 |     private formatPerformanceGuidelines(): string {
-203 |         if (!this.flexSpec?.performance_optimization) return '';
-204 | 
-205 |         const perf = this.flexSpec.performance_optimization;
-206 |         let guidelines = '';
-207 | 
-208 |         if (perf.optimization_guidelines) {
-209 |             guidelines += '### Guidelines:\n' + perf.optimization_guidelines.map((g: string) => `- ${g}`).join('\n') + '\n\n';
-210 |         }
-211 | 
-212 |         if (perf.memory_management?.best_practices) {
-213 |             guidelines += '### Memory Management:\n' + perf.memory_management.best_practices.map((p: string) => `- ${p}`).join('\n');
-214 |         }
-215 | 
-216 |         return guidelines;
-217 |     }
-218 | 
-219 |     /**
-220 |      * Get a fallback system prompt if the dataset isn't available
-221 |      */
-222 |     private getFallbackSystemPrompt(): string {
-223 |         return `# Flex Programming Assistant for VSCode (Fallback Mode)
-224 | 
-225 | You are a senior-level expert assistant for the Flex programming language, integrated into a VSCode extension. Flex is a bilingual programming language that supports both Franco Arabic and English syntax.
-226 | 
-227 | ## CORE FLEX FEATURES:
-228 | - **Bilingual Syntax**: Mixed Franco Arabic and English keywords
-229 | - **String Interpolation**: Use {variable} syntax for string templating
-230 | - **No Semicolons**: Clean syntax without required semicolons
-231 | - **Automatic Type Detection**: Smart type inference
-232 | - **File Extensions**: .flex, .lx
-233 | 
-234 | ## CRITICAL SAFETY WARNING:
-235 | ⚠️ **Franco loops with 'l7d' are INCLUSIVE** - always use 'length(array) - 1' for safe array access to prevent out-of-bounds errors.
-236 | 
-237 | ## SYNTAX QUICK REFERENCE:
-238 | ### Variables:
-239 | - Franco: \`rakm x = 10\` | English: \`int x = 10\`
-240 | - Franco: \`kasr y = 3.14\` | English: \`float y = 3.14\`
-241 | 
-242 | ### Functions:
-243 | - Franco: \`sndo2 sayHello() { etb3("Hello") }\`
-244 | - English: \`fun sayHello() { print("Hello") }\`
-245 | 
-246 | ### Conditionals:
-247 | - Franco: \`lw x > 5 { etb3("Big") }\`
-248 | - English: \`if (x > 5) { print("Big") }\`
-249 | 
-250 | ### Loops:
-251 | - Franco: \`karr l7d 10 { etb3(i) }\` (INCLUSIVE - use length-1 for arrays)
-252 | - English: \`for(i=0; i<10; i++) { print(i) }\`
-253 | 
-254 | ## VSCODE INTEGRATION GUIDELINES:
-255 | - Use \`\`\`flex code blocks for all code examples
-256 | - Provide immediate, actionable solutions
-257 | - Format responses with clear headers and bullet points
-258 | - Prioritize working code first, then explanations
-259 | 
-260 | Always help users write safe, efficient Flex code while respecting their syntax preferences (Franco vs English).`;
-261 |     }
-262 | 
-263 |     /**
-264 |      * Get specific section of the specification
-265 |      */
-266 |     public getSpecSection(section: keyof FlexLanguageSpec): any {
-267 |         return this.flexSpec?.[section] || null;
-268 |     }
-269 | 
-270 |     /**
-271 |      * Check if dataset is loaded
-272 |      */
-273 |     public isDatasetLoaded(): boolean {
-274 |         return this.flexSpec !== null;
-275 |     }
-276 | 
-277 |     /**
-278 |      * Reload the dataset (useful for development)
-279 |      */
-280 |     public reload(): void {
-281 |         this.loadFlexSpec();
-282 |     }
-283 | 
-284 |     /**
-285 |      * Get dataset statistics
-286 |      */
-287 |     public getDatasetStats(): Record<string, number> {
-288 |         if (!this.flexSpec) {
-289 |             return { loaded: 0 };
-290 |         }
-291 | 
-292 |         return {
-293 |             loaded: 1,
-294 |             codeExamples: Object.keys(this.flexSpec.code_examples || {}).length,
-295 |             commonPatterns: Object.keys(this.flexSpec.common_patterns || {}).length,
-296 |             syntaxPatterns: Object.keys(this.flexSpec.CRITICAL_SYNTAX_PATTERNS || {}).length,
-297 |             tokens: Object.keys(this.flexSpec.tokens || {}).length
-298 |         };
-299 |     }
-300 | } 
-```
-
 src/dev/DevTools.ts
 ```
 1 | import * as vscode from 'vscode';
@@ -9170,6 +7952,1224 @@ src/dev/DevTools.ts
 1335 | export const devTools = DevTools.getInstance(); 
 ```
 
+src/services/apiService.ts
+```
+1 | import axios, { AxiosResponse, AxiosError } from 'axios';
+2 | import { ChatMessage, ModelInfo, ApiResponse, ExtensionConfig, WebSearchResult } from '../types';
+3 | import { debugManager } from '../core/DebugManager';
+4 | import { errorHandler } from '../core/ErrorHandler';
+5 | 
+6 | /**
+7 |  * Enhanced API Service with debugging and error handling
+8 |  * Service for handling API communications with OpenRouter and web search
+9 |  */
+10 | export class ApiService {
+11 |     private static readonly OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
+12 |     private static readonly DEFAULT_TIMEOUT = 300000; // 5 minutes for large responses
+13 |     private static readonly MAX_RETRIES = 3;
+14 | 
+15 |     /**
+16 |      * Call OpenRouter API for streaming chat completions with progressive response
+17 |      */
+18 |     public static async streamChatCompletion(
+19 |         messages: ChatMessage[],
+20 |         config: ExtensionConfig,
+21 |         onChunk: (chunk: string) => void,
+22 |         onError?: (error: Error) => void,
+23 |         onComplete?: () => void
+24 |     ): Promise<string> {
+25 |         const sessionId = `api_stream_completion_${Date.now()}`;
+26 |         const startTime = Date.now();
+27 | 
+28 |         debugManager.startDebugSession(sessionId, {
+29 |             operation: 'stream_chat_completion',
+30 |             model: config.model,
+31 |             messageCount: messages.length,
+32 |             temperature: config.temperature
+33 |         });
+34 | 
+35 |         try {
+36 |             // Validate and fix model name if needed
+37 |             let modelName = config.model;
+38 |             if (modelName === 'openai/gpt-4.1-mini') {
+39 |                 modelName = 'openai/gpt-4o-mini';
+40 |                 console.warn('⚠️ Fixed invalid model name: openai/gpt-4.1-mini → openai/gpt-4o-mini');
+41 |             }
+42 | 
+43 |             const requestData = {
+44 |                 model: modelName,
+45 |                 messages: messages.map(msg => ({
+46 |                     role: msg.role,
+47 |                     content: msg.content
+48 |                 })),
+49 |                 temperature: config.temperature,
+50 |                 // No token limit - allow unlimited generation
+51 |                 stream: true
+52 |             };
+53 | 
+54 |             const headers = {
+55 |                 'Content-Type': 'application/json',
+56 |                 'Authorization': `Bearer ${config.apiKey}`,
+57 |                 'HTTP-Referer': 'https://github.com/flex/flex-chatbot',
+58 |                 'X-Title': 'Flex Chat Bot'
+59 |             };
+60 | 
+61 |             let fullResponse = '';
+62 | 
+63 |             const response = await axios.post(
+64 |                 `${this.OPENROUTER_BASE_URL}/chat/completions`,
+65 |                 requestData,
+66 |                 {
+67 |                     headers,
+68 |                     timeout: this.DEFAULT_TIMEOUT,
+69 |                     responseType: 'stream'
+70 |                 }
+71 |             );
+72 | 
+73 |             let chunkCount = 0;
+74 |             let totalBytes = 0;
+75 |             let lastChunkTime = Date.now();
+76 |             const MAX_RESPONSE_SIZE = 10 * 1024 * 1024; // 10MB limit
+77 |             const CHUNK_TIMEOUT = 30000; // 30 seconds per chunk
+78 | 
+79 |             return new Promise((resolve, reject) => {
+80 |                 // Set up chunk timeout monitoring
+81 |                 const chunkTimer = setInterval(() => {
+82 |                     const timeSinceLastChunk = Date.now() - lastChunkTime;
+83 |                     if (timeSinceLastChunk > CHUNK_TIMEOUT) {
+84 |                         debugManager.addDebugStep(sessionId, 'chunk_timeout', {
+85 |                             timeSinceLastChunk,
+86 |                             chunkCount,
+87 |                             responseLength: fullResponse.length
+88 |                         });
+89 |                         clearInterval(chunkTimer);
+90 |                         reject(new Error(`Streaming timeout: no data received for ${timeSinceLastChunk}ms`));
+91 |                     }
+92 |                 }, 5000);
+93 |                 response.data.on('data', (chunk: Buffer) => {
+94 |                     try {
+95 |                         chunkCount++;
+96 |                         totalBytes += chunk.length;
+97 |                         lastChunkTime = Date.now();
+98 | 
+99 |                         debugManager.addDebugStep(sessionId, 'chunk_received', {
+100 |                             chunkNumber: chunkCount,
+101 |                             chunkSize: chunk.length,
+102 |                             totalBytes,
+103 |                             responseLength: fullResponse.length
+104 |                         });
+105 | 
+106 |                         // Check for memory safety
+107 |                         if (fullResponse.length > MAX_RESPONSE_SIZE) {
+108 |                             clearInterval(chunkTimer);
+109 |                             debugManager.addDebugStep(sessionId, 'response_too_large', {
+110 |                                 responseLength: fullResponse.length,
+111 |                                 maxSize: MAX_RESPONSE_SIZE
+112 |                             });
+113 |                             reject(new Error(`Response too large: ${fullResponse.length} bytes exceeds ${MAX_RESPONSE_SIZE} bytes`));
+114 |                             return;
+115 |                         }
+116 | 
+117 |                         const chunkStr = chunk.toString('utf8');
+118 |                         const lines = chunkStr.split('\n');
+119 |                         
+120 |                         for (let i = 0; i < lines.length; i++) {
+121 |                             const lineRaw = lines[i];
+122 |                             if (!lineRaw) continue;
+123 |                             const line = lineRaw.trim();
+124 |                             
+125 |                             if (line.startsWith('data: ')) {
+126 |                                 const data = line.slice(6).trim();
+127 |                                 
+128 |                                 if (data === '[DONE]') {
+129 |                                     clearInterval(chunkTimer);
+130 |                                     const duration = Date.now() - startTime;
+131 |                                     debugManager.addDebugStep(sessionId, 'stream_completed', {
+132 |                                         chunkCount,
+133 |                                         totalBytes,
+134 |                                         responseLength: fullResponse.length
+135 |                                     });
+136 |                                     debugManager.endDebugSession(sessionId, {
+137 |                                         success: true,
+138 |                                         duration,
+139 |                                         responseLength: fullResponse.length,
+140 |                                         chunks: chunkCount
+141 |                                     });
+142 |                                     if (onComplete) onComplete();
+143 |                                     resolve(fullResponse);
+144 |                                     return;
+145 |                                 }
+146 |                                 
+147 |                                 if (data && data !== '') {
+148 |                                     try {
+149 |                                         const parsed = JSON.parse(data);
+150 |                                         const content = parsed.choices?.[0]?.delta?.content;
+151 |                                         
+152 |                                         if (content && typeof content === 'string') {
+153 |                                             fullResponse += content;
+154 |                                             onChunk(content);
+155 |                                             
+156 |                                             // Log progress every 100 chunks
+157 |                                             if (chunkCount % 100 === 0) {
+158 |                                                 debugManager.addDebugStep(sessionId, 'progress_update', {
+159 |                                                     chunkCount,
+160 |                                                     responseLength: fullResponse.length,
+161 |                                                     avgChunkSize: totalBytes / chunkCount
+162 |                                                 });
+163 |                                             }
+164 |                                         }
+165 |                                     } catch (parseError) {
+166 |                                         debugManager.addDebugStep(sessionId, 'json_parse_error', {
+167 |                                             error: (parseError as Error).message,
+168 |                                             data: data.substring(0, 200), // First 200 chars for debugging
+169 |                                             chunkNumber: chunkCount,
+170 |                                             lineNumber: i
+171 |                                         });
+172 |                                         // Continue processing other lines instead of failing
+173 |                                     }
+174 |                                 }
+175 |                             } else if (line.startsWith('event:') || line.startsWith('id:')) {
+176 |                                 // SSE metadata, ignore but log
+177 |                                 debugManager.addDebugStep(sessionId, 'sse_metadata', { line });
+178 |                             }
+179 |                         }
+180 |                     } catch (chunkError) {
+181 |                         clearInterval(chunkTimer);
+182 |                         debugManager.addDebugStep(sessionId, 'chunk_processing_error', {
+183 |                             error: (chunkError as Error).message,
+184 |                             chunkNumber: chunkCount,
+185 |                             chunkSize: chunk?.length || 0
+186 |                         });
+187 |                         if (onError) onError(chunkError as Error);
+188 |                         reject(chunkError);
+189 |                     }
+190 |                 });
+191 | 
+192 |                 response.data.on('error', (error: Error) => {
+193 |                     clearInterval(chunkTimer);
+194 |                     debugManager.addDebugStep(sessionId, 'stream_error', {
+195 |                         error: error.message,
+196 |                         chunkCount,
+197 |                         responseLength: fullResponse.length,
+198 |                         totalBytes
+199 |                     });
+200 |                     debugManager.endDebugSession(sessionId, {
+201 |                         success: false,
+202 |                         error: error.message,
+203 |                         duration: Date.now() - startTime,
+204 |                         chunks: chunkCount
+205 |                     });
+206 |                     if (onError) onError(error);
+207 |                     reject(error);
+208 |                 });
+209 | 
+210 |                 response.data.on('end', () => {
+211 |                     clearInterval(chunkTimer);
+212 |                     const duration = Date.now() - startTime;
+213 |                     
+214 |                     debugManager.addDebugStep(sessionId, 'stream_ended', {
+215 |                         chunkCount,
+216 |                         responseLength: fullResponse.length,
+217 |                         totalBytes,
+218 |                         hasResponse: !!fullResponse
+219 |                     });
+220 |                     
+221 |                     if (fullResponse && fullResponse.length > 0) {
+222 |                         debugManager.endDebugSession(sessionId, {
+223 |                             success: true,
+224 |                             duration,
+225 |                             responseLength: fullResponse.length,
+226 |                             chunks: chunkCount
+227 |                         });
+228 |                         if (onComplete) onComplete();
+229 |                         resolve(fullResponse);
+230 |                     } else {
+231 |                         const error = new Error('Stream ended without complete response');
+232 |                         debugManager.endDebugSession(sessionId, {
+233 |                             success: false,
+234 |                             error: error.message,
+235 |                             duration,
+236 |                             chunks: chunkCount
+237 |                         });
+238 |                         if (onError) onError(error);
+239 |                         reject(error);
+240 |                     }
+241 |                 });
+242 |             });
+243 | 
+244 |         } catch (error) {
+245 |             const duration = Date.now() - startTime;
+246 |             debugManager.endDebugSession(sessionId, {
+247 |                 success: false,
+248 |                 error: (error as Error).message,
+249 |                 duration
+250 |             });
+251 |             
+252 |             if (onError) onError(error as Error);
+253 |             throw error;
+254 |         }
+255 |     }
+256 | 
+257 |     /**
+258 |      * Call OpenRouter API for chat completions with enhanced debugging and error handling
+259 |      */
+260 |     public static async chatCompletion(
+261 |         messages: ChatMessage[],
+262 |         config: ExtensionConfig
+263 |     ): Promise<string> {
+264 |         const sessionId = `api_chat_completion_${Date.now()}`;
+265 |         const startTime = Date.now();
+266 | 
+267 |         debugManager.startDebugSession(sessionId, {
+268 |             operation: 'chat_completion',
+269 |             model: config.model,
+270 |             messageCount: messages.length,
+271 |             maxTokens: config.maxTokens,
+272 |             temperature: config.temperature
+273 |         });
+274 | 
+275 |         try {
+276 |             // Validate and fix model name if needed
+277 |             let modelName = config.model;
+278 |             if (modelName === 'openai/gpt-4.1-mini') {
+279 |                 modelName = 'openai/gpt-4o-mini'; // Fix incorrect model name
+280 |                 console.warn('⚠️ Fixed invalid model name: openai/gpt-4.1-mini → openai/gpt-4o-mini');
+281 |             }
+282 | 
+283 |             const requestData = {
+284 |                 model: modelName,
+285 |                 messages: messages.map(msg => ({
+286 |                     role: msg.role,
+287 |                     content: msg.content
+288 |                 })),
+289 |                 temperature: config.temperature,
+290 |                 // No token limit - allow unlimited generation
+291 |                 stream: false
+292 |             };
+293 | 
+294 |             const headers = {
+295 |                 'Content-Type': 'application/json',
+296 |                 'Authorization': `Bearer ${config.apiKey}`,
+297 |                 'HTTP-Referer': 'https://github.com/flex/flex-chatbot',
+298 |                 'X-Title': 'Flex Chat Bot'
+299 |             };
+300 | 
+301 |             debugManager.addDebugStep(sessionId, 'request_prepared', {
+302 |                 model: config.model,
+303 |                 tokenLimit: config.maxTokens
+304 |             });
+305 | 
+306 |             let lastError: Error | null = null;
+307 | 
+308 |             for (let attempt = 1; attempt <= this.MAX_RETRIES; attempt++) {
+309 |                 try {
+310 |                     debugManager.addDebugStep(sessionId, `attempt_${attempt}`, { attempt });
+311 | 
+312 |                     const response: AxiosResponse<ApiResponse> = await axios.post(
+313 |                         `${this.OPENROUTER_BASE_URL}/chat/completions`,
+314 |                         requestData,
+315 |                         {
+316 |                             headers,
+317 |                             timeout: config.timeout || this.DEFAULT_TIMEOUT,
+318 |                             validateStatus: (status) => status < 500 // Retry on 5xx errors
+319 |                         }
+320 |                     );
+321 | 
+322 |                     debugManager.addDebugStep(sessionId, 'response_received', {
+323 |                         status: response.status,
+324 |                         hasContent: !!response.data?.choices?.[0]?.message?.content
+325 |                     });
+326 | 
+327 |                     if (response.data?.choices?.[0]?.message?.content) {
+328 |                         const content = response.data.choices[0].message.content;
+329 |                         const duration = Date.now() - startTime;
+330 | 
+331 |                         debugManager.trackPerformance('api_chat_completion', duration, {
+332 |                             model: config.model,
+333 |                             attempts: attempt,
+334 |                             responseLength: content.length
+335 |                         });
+336 | 
+337 |                         debugManager.endDebugSession(sessionId, {
+338 |                             success: true,
+339 |                             duration,
+340 |                             attempts: attempt,
+341 |                             responseLength: content.length
+342 |                         });
+343 | 
+344 |                         return content;
+345 |                     } else {
+346 |                         throw new Error('Invalid response format from API');
+347 |                     }
+348 | 
+349 |                 } catch (error) {
+350 |                     debugManager.addDebugStep(sessionId, `attempt_${attempt}_failed`, {
+351 |                         error: (error as Error).message,
+352 |                         status: (error as AxiosError)?.response?.status
+353 |                     });
+354 | 
+355 |                     lastError = this.handleApiError(error as AxiosError, attempt);
+356 | 
+357 |                     if (attempt === this.MAX_RETRIES) {
+358 |                         const errorResult = await errorHandler.handleError(lastError, {
+359 |                             component: 'api',
+360 |                             operation: 'chat_completion',
+361 |                             retryCount: attempt,
+362 |                             sessionId
+363 |                         });
+364 | 
+365 |                         debugManager.endDebugSession(sessionId, {
+366 |                             success: false,
+367 |                             error: lastError.message,
+368 |                             attempts: attempt,
+369 |                             duration: Date.now() - startTime
+370 |                         });
+371 | 
+372 |                         throw new Error(errorResult.userMessage);
+373 |                     }
+374 | 
+375 |                     // Exponential backoff
+376 |                     const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
+377 |                     debugManager.addDebugStep(sessionId, 'backoff_delay', { delay });
+378 |                     await this.sleep(delay);
+379 |                 }
+380 |             }
+381 | 
+382 |             throw lastError || new Error('Unknown API error');
+383 | 
+384 |         } catch (error) {
+385 |             const duration = Date.now() - startTime;
+386 |             debugManager.trackPerformance('api_chat_completion_failed', duration, {
+387 |                 model: config.model,
+388 |                 error: (error as Error).message
+389 |             });
+390 | 
+391 |             debugManager.endDebugSession(sessionId, {
+392 |                 success: false,
+393 |                 error: (error as Error).message,
+394 |                 duration
+395 |             });
+396 | 
+397 |             throw error;
+398 |         }
+399 |     }
+400 | 
+401 |     /**
+402 |      * Fetch available models from OpenRouter with debugging
+403 |      */
+404 |     public static async fetchAvailableModels(apiKey: string): Promise<ModelInfo[]> {
+405 |         const sessionId = `fetch_models_${Date.now()}`;
+406 |         const startTime = Date.now();
+407 | 
+408 |         debugManager.startDebugSession(sessionId, { operation: 'fetch_models' });
+409 | 
+410 |         try {
+411 |             const response = await axios.get(`${this.OPENROUTER_BASE_URL}/models`, {
+412 |                 headers: {
+413 |                     'Authorization': `Bearer ${apiKey}`,
+414 |                     'HTTP-Referer': 'https://github.com/flex/flex-chatbot',
+415 |                     'X-Title': 'Flex Chat Bot'
+416 |                 },
+417 |                 timeout: this.DEFAULT_TIMEOUT
+418 |             });
+419 | 
+420 |             if (response.data?.data && Array.isArray(response.data.data)) {
+421 |                 const models = response.data.data.map((model: any) => ({
+422 |                     id: model.id,
+423 |                     description: model.description || '',
+424 |                     context_length: model.context_length || 0,
+425 |                     pricing: model.pricing ? {
+426 |                         prompt: parseFloat(model.pricing.prompt) || 0,
+427 |                         completion: parseFloat(model.pricing.completion) || 0
+428 |                     } : undefined
+429 |                 }));
+430 | 
+431 |                 debugManager.endDebugSession(sessionId, {
+432 |                     success: true,
+433 |                     modelsCount: models.length
+434 |                 });
+435 | 
+436 |                 return models;
+437 |             }
+438 | 
+439 |             debugManager.endDebugSession(sessionId, {
+440 |                 success: true,
+441 |                 modelsCount: 0
+442 |             });
+443 | 
+444 |             return [];
+445 |         } catch (error) {
+446 |             const errorResult = await errorHandler.handleError(error as Error, {
+447 |                 component: 'api',
+448 |                 operation: 'fetch_models',
+449 |                 sessionId
+450 |             });
+451 | 
+452 |             debugManager.endDebugSession(sessionId, {
+453 |                 success: false,
+454 |                 error: (error as Error).message,
+455 |                 duration: Date.now() - startTime
+456 |             });
+457 | 
+458 |             throw new Error(errorResult.userMessage);
+459 |         }
+460 |     }
+461 | 
+462 |     /**
+463 |      * Perform web search using SerpAPI (with fallback options)
+464 |      */
+465 |     public static async performWebSearch(query: string): Promise<WebSearchResult[]> {
+466 |         try {
+467 |             // First try with demo API key (limited but free)
+468 |             const response = await axios.get('https://serpapi.com/search.json', {
+469 |                 params: {
+470 |                     q: query,
+471 |                     api_key: 'demo',
+472 |                     num: 5,
+473 |                     format: 'json'
+474 |                 },
+475 |                 timeout: 10000
+476 |             });
+477 | 
+478 |             if (response.data?.organic_results) {
+479 |                 return response.data.organic_results.map((result: any) => ({
+480 |                     title: result.title || 'No title',
+481 |                     snippet: result.snippet || 'No description available',
+482 |                     link: result.link || '#'
+483 |                 }));
+484 |             }
+485 | 
+486 |             return [];
+487 |         } catch (error) {
+488 |             console.warn('Web search failed:', error);
+489 |             // Return empty results rather than throwing - web search is optional
+490 |             return [];
+491 |         }
+492 |     }
+493 | 
+494 |     /**
+495 |      * Format web search results for AI consumption
+496 |      */
+497 |     public static formatWebSearchResults(results: WebSearchResult[]): string {
+498 |         if (results.length === 0) {
+499 |             return 'No web search results found.';
+500 |         }
+501 | 
+502 |         return results
+503 |             .map((result, index) =>
+504 |                 `[${index + 1}] ${result.title}\n${result.snippet}\nURL: ${result.link}\n`
+505 |             )
+506 |             .join('\n');
+507 |     }
+508 | 
+509 |     /**
+510 |      * Validate API key format
+511 |      */
+512 |     public static validateApiKey(apiKey: string): boolean {
+513 |         if (!apiKey || typeof apiKey !== 'string') {
+514 |             return false;
+515 |         }
+516 | 
+517 |         // Basic validation - OpenRouter keys typically start with 'sk-or-'
+518 |         const trimmedKey = apiKey.trim();
+519 |         return trimmedKey.length > 20 && /^sk-/.test(trimmedKey);
+520 |     }
+521 | 
+522 |     /**
+523 |      * Test API connectivity
+524 |      */
+525 |     public static async testApiConnection(apiKey: string): Promise<boolean> {
+526 |         try {
+527 |             const models = await this.fetchAvailableModels(apiKey);
+528 |             return models.length > 0;
+529 |         } catch (error) {
+530 |             return false;
+531 |         }
+532 |     }
+533 | 
+534 |     /**
+535 |      * Handle API errors with appropriate user-friendly messages
+536 |      */
+537 |     private static handleApiError(error: AxiosError, attempt: number): Error {
+538 |         if (error.response) {
+539 |             const status = error.response.status;
+540 |             const data = error.response.data as any;
+541 | 
+542 |             switch (status) {
+543 |                 case 401:
+544 |                     return new Error('Invalid API key. Please check your OpenRouter API key in settings.');
+545 |                 case 402:
+546 |                     return new Error('Insufficient credits. Please add credits to your OpenRouter account.');
+547 |                 case 403:
+548 |                     return new Error('Access forbidden. Please check your API key permissions.');
+549 |                 case 429:
+550 |                     return new Error('Rate limit exceeded. Please wait a moment before trying again.');
+551 |                 case 500:
+552 |                 case 502:
+553 |                 case 503:
+554 |                 case 504:
+555 |                     if (attempt < this.MAX_RETRIES) {
+556 |                         return new Error(`Server error (${status}). Retrying... (attempt ${attempt})`);
+557 |                     }
+558 |                     return new Error('Server is currently unavailable. Please try again later.');
+559 |                 default:
+560 |                     return new Error(
+561 |                         data?.error?.message ||
+562 |                         `API error ${status}: ${error.response.statusText}`
+563 |                     );
+564 |             }
+565 |         } else if (error.code === 'ECONNABORTED') {
+566 |             return new Error('Request timed out. Please check your internet connection.');
+567 |         } else if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+568 |             return new Error('Unable to connect to the API. Please check your internet connection.');
+569 |         } else {
+570 |             return new Error(`Network error: ${error.message}`);
+571 |         }
+572 |     }
+573 | 
+574 |     /**
+575 |      * Extract error message from various error types
+576 |      */
+577 |     private static getErrorMessage(error: any): string {
+578 |         if (error?.response?.data?.error?.message) {
+579 |             return error.response.data.error.message;
+580 |         }
+581 |         if (error?.message) {
+582 |             return error.message;
+583 |         }
+584 |         return 'Unknown error occurred';
+585 |     }
+586 | 
+587 |     /**
+588 |      * Sleep utility for retry delays
+589 |      */
+590 |     private static sleep(ms: number): Promise<void> {
+591 |         return new Promise(resolve => setTimeout(resolve, ms));
+592 |     }
+593 | 
+594 |     /**
+595 |      * Get model pricing information formatted for display
+596 |      */
+597 |     public static formatModelPricing(model: ModelInfo): string {
+598 |         if (!model.pricing) {
+599 |             return 'Pricing N/A';
+600 |         }
+601 | 
+602 |         const promptPrice = (model.pricing.prompt * 1000).toFixed(6);
+603 |         const completionPrice = (model.pricing.completion * 1000).toFixed(6);
+604 | 
+605 |         return `$${promptPrice}/$${completionPrice} per 1K tokens`;
+606 |     }
+607 | 
+608 |     /**
+609 |      * Get recommended models for Flex programming
+610 |      */
+611 |     public static getRecommendedModels(): string[] {
+612 |         return [
+613 |             'openai/gpt-4o-mini',
+614 |             'openai/gpt-4o',
+615 |             'openai/gpt-4-turbo',
+616 |             'anthropic/claude-3.5-sonnet',
+617 |             'anthropic/claude-3-haiku',
+618 |             'google/gemini-flash-1.5',
+619 |             'mistralai/mistral-small'
+620 |         ];
+621 |     }
+622 | } 
+```
+
+src/services/configService.ts
+```
+1 | import * as vscode from 'vscode';
+2 | import { ExtensionConfig } from '../types';
+3 | 
+4 | /**
+5 |  * Service for managing extension configuration
+6 |  */
+7 | export class ConfigService {
+8 |     private static readonly CONFIG_SECTION = 'flexChatbot';
+9 | 
+10 |     /**
+11 |      * Get all extension configuration
+12 |      */
+13 |     public static getConfig(): ExtensionConfig {
+14 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
+15 |         let model = config.get<string>('model', 'openai/gpt-4o-mini');
+16 | 
+17 |         // Fix common invalid model names
+18 |         const modelFixes: Record<string, string> = {
+19 |             'openai/gpt-4.1-mini': 'openai/gpt-4o-mini',
+20 |             'openai/gpt-4.1': 'openai/gpt-4o',
+21 |             'openai/gpt-4.1-nano': 'openai/gpt-4o-mini',
+22 |             'openai/gpt-4.5-preview': 'openai/gpt-4o'
+23 |         };
+24 | 
+25 |         if (modelFixes[model]) {
+26 |             const newModel = modelFixes[model]!; // Non-null assertion since we checked the key exists
+27 |             console.warn(`⚠️ Fixing invalid model: ${model} → ${newModel}`);
+28 |             // Auto-update the configuration
+29 |             this.set('model', newModel).catch(console.error);
+30 |             model = newModel;
+31 |         }
+32 | 
+33 |         return {
+34 |             apiKey: config.get<string>('apiKey', ''),
+35 |             model: model,
+36 |             temperature: config.get<number>('temperature', 0.7),
+37 |             enableWebSearch: config.get<boolean>('enableWebSearch', false),
+38 |             maxTokens: config.get<number>('maxTokens', 0), // 0 means unlimited
+39 |             timeout: config.get<number>('timeout', 30000)
+40 |         };
+41 |     }
+42 | 
+43 |     /**
+44 |      * Get specific configuration value
+45 |      */
+46 |     public static get<T>(key: keyof ExtensionConfig, defaultValue?: T): T {
+47 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
+48 |         return config.get<T>(key, defaultValue as T);
+49 |     }
+50 | 
+51 |     /**
+52 |      * Set configuration value
+53 |      */
+54 |     public static async set<T>(
+55 |         key: keyof ExtensionConfig,
+56 |         value: T,
+57 |         target: vscode.ConfigurationTarget = vscode.ConfigurationTarget.Global
+58 |     ): Promise<void> {
+59 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
+60 |         await config.update(key, value, target);
+61 |     }
+62 | 
+63 |     /**
+64 |      * Check if API key is configured
+65 |      */
+66 |     public static isApiKeyConfigured(): boolean {
+67 |         const apiKey = this.get<string>('apiKey', '');
+68 |         return apiKey.trim().length > 0;
+69 |     }
+70 | 
+71 |     /**
+72 |      * Validate configuration
+73 |      */
+74 |     public static validateConfig(): { isValid: boolean; errors: string[] } {
+75 |         const config = this.getConfig();
+76 |         const errors: string[] = [];
+77 | 
+78 |         // Validate API key
+79 |         if (!config.apiKey || config.apiKey.trim().length === 0) {
+80 |             errors.push('API key is required');
+81 |         } else if (config.apiKey.length < 20) {
+82 |             errors.push('API key appears to be invalid (too short)');
+83 |         }
+84 | 
+85 |         // Validate model
+86 |         if (!config.model || config.model.trim().length === 0) {
+87 |             errors.push('Model selection is required');
+88 |         }
+89 | 
+90 |         // Validate temperature
+91 |         if (config.temperature < 0 || config.temperature > 2) {
+92 |             errors.push('Temperature must be between 0 and 2');
+93 |         }
+94 | 
+95 |         // Validate max tokens
+96 |         if (config.maxTokens && (config.maxTokens < 1 || config.maxTokens > 32000)) {
+97 |             errors.push('Max tokens must be between 1 and 32000');
+98 |         }
+99 | 
+100 |         // Validate timeout
+101 |         if (config.timeout && (config.timeout < 5000 || config.timeout > 300000)) {
+102 |             errors.push('Timeout must be between 5 and 300 seconds');
+103 |         }
+104 | 
+105 |         return {
+106 |             isValid: errors.length === 0,
+107 |             errors
+108 |         };
+109 |     }
+110 | 
+111 |     /**
+112 |      * Get default configuration
+113 |      */
+114 |     public static getDefaultConfig(): ExtensionConfig {
+115 |         return {
+116 |             apiKey: '',
+117 |             model: 'openai/gpt-4o-mini',
+118 |             temperature: 0.7,
+119 |             enableWebSearch: true,
+120 |             maxTokens: 4000,
+121 |             timeout: 30000
+122 |         };
+123 |     }
+124 | 
+125 |     /**
+126 |      * Reset configuration to defaults
+127 |      */
+128 |     public static async resetToDefaults(): Promise<void> {
+129 |         const defaultConfig = this.getDefaultConfig();
+130 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
+131 | 
+132 |         for (const [key, value] of Object.entries(defaultConfig)) {
+133 |             if (key !== 'apiKey') { // Don't reset API key
+134 |                 await config.update(key, value, vscode.ConfigurationTarget.Global);
+135 |             }
+136 |         }
+137 |     }
+138 | 
+139 |     /**
+140 |      * Show configuration dialog
+141 |      */
+142 |     public static async showConfigurationDialog(): Promise<void> {
+143 |         const actions = [
+144 |             'Open Settings',
+145 |             'Set API Key',
+146 |             'Select Model',
+147 |             'Test Connection'
+148 |         ];
+149 | 
+150 |         const selectedAction = await vscode.window.showQuickPick(actions, {
+151 |             placeHolder: 'Choose configuration action'
+152 |         });
+153 | 
+154 |         switch (selectedAction) {
+155 |             case 'Open Settings':
+156 |                 await vscode.commands.executeCommand('workbench.action.openSettings', this.CONFIG_SECTION);
+157 |                 break;
+158 | 
+159 |             case 'Set API Key':
+160 |                 await this.promptForApiKey();
+161 |                 break;
+162 | 
+163 |             case 'Select Model':
+164 |                 await vscode.commands.executeCommand('flexChatbot.selectModel');
+165 |                 break;
+166 | 
+167 |             case 'Test Connection':
+168 |                 await this.testConnection();
+169 |                 break;
+170 |         }
+171 |     }
+172 | 
+173 |     /**
+174 |      * Prompt user for API key
+175 |      */
+176 |     public static async promptForApiKey(): Promise<void> {
+177 |         const apiKey = await vscode.window.showInputBox({
+178 |             prompt: 'Enter your OpenRouter API key',
+179 |             password: true,
+180 |             placeHolder: 'sk-or-...',
+181 |             validateInput: (value) => {
+182 |                 if (!value || value.trim().length === 0) {
+183 |                     return 'API key is required';
+184 |                 }
+185 |                 if (value.length < 20) {
+186 |                     return 'API key appears to be invalid (too short)';
+187 |                 }
+188 |                 return null;
+189 |             }
+190 |         });
+191 | 
+192 |         if (apiKey) {
+193 |             await this.set('apiKey', apiKey.trim());
+194 |             vscode.window.showInformationMessage('API key saved successfully!');
+195 |         }
+196 |     }
+197 | 
+198 |     /**
+199 |      * Test API connection
+200 |      */
+201 |     private static async testConnection(): Promise<void> {
+202 |         const config = this.getConfig();
+203 | 
+204 |         if (!config.apiKey) {
+205 |             vscode.window.showErrorMessage('Please set your API key first');
+206 |             return;
+207 |         }
+208 | 
+209 |         try {
+210 |             // Import ApiService dynamically to avoid circular dependencies
+211 |             const { ApiService } = await import('./apiService');
+212 |             const isConnected = await ApiService.testApiConnection(config.apiKey);
+213 | 
+214 |             if (isConnected) {
+215 |                 vscode.window.showInformationMessage('✅ API connection successful!');
+216 |             } else {
+217 |                 vscode.window.showErrorMessage('❌ API connection failed. Please check your API key.');
+218 |             }
+219 |         } catch (error) {
+220 |             vscode.window.showErrorMessage(`❌ Connection test failed: ${error}`);
+221 |         }
+222 |     }
+223 | 
+224 |     /**
+225 |      * Watch for configuration changes
+226 |      */
+227 |     public static onConfigurationChanged(
+228 |         callback: (config: ExtensionConfig) => void
+229 |     ): vscode.Disposable {
+230 |         return vscode.workspace.onDidChangeConfiguration((event) => {
+231 |             if (event.affectsConfiguration(this.CONFIG_SECTION)) {
+232 |                 callback(this.getConfig());
+233 |             }
+234 |         });
+235 |     }
+236 | 
+237 |     /**
+238 |      * Export configuration (excluding sensitive data)
+239 |      */
+240 |     public static exportConfig(): Partial<ExtensionConfig> {
+241 |         const config = this.getConfig();
+242 |         return {
+243 |             model: config.model,
+244 |             temperature: config.temperature,
+245 |             enableWebSearch: config.enableWebSearch,
+246 |             maxTokens: config.maxTokens,
+247 |             timeout: config.timeout
+248 |             // Explicitly exclude apiKey for security
+249 |         };
+250 |     }
+251 | 
+252 |     /**
+253 |      * Import configuration (excluding sensitive data)
+254 |      */
+255 |     public static async importConfig(importedConfig: Partial<ExtensionConfig>): Promise<void> {
+256 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
+257 | 
+258 |         for (const [key, value] of Object.entries(importedConfig)) {
+259 |             if (key !== 'apiKey' && value !== undefined) {
+260 |                 await config.update(key, value, vscode.ConfigurationTarget.Global);
+261 |             }
+262 |         }
+263 | 
+264 |         vscode.window.showInformationMessage('Configuration imported successfully!');
+265 |     }
+266 | 
+267 |     /**
+268 |      * Get configuration summary for display
+269 |      */
+270 |     public static getConfigSummary(): string {
+271 |         const config = this.getConfig();
+272 |         const hasApiKey = config.apiKey.length > 0;
+273 | 
+274 |         return `
+275 | 📋 **Configuration Summary:**
+276 | - API Key: ${hasApiKey ? '✅ Set' : '❌ Not set'}
+277 | - Model: ${config.model}
+278 | - Temperature: ${config.temperature}
+279 | - Web Search: ${config.enableWebSearch ? '✅ Enabled' : '❌ Disabled'}
+280 | - Max Tokens: ${config.maxTokens || 'Default'}
+281 | - Timeout: ${(config.timeout || 30000) / 1000}s
+282 |     `.trim();
+283 |     }
+284 | } 
+```
+
+src/services/flexDatasetService.ts
+```
+1 | import * as fs from 'fs';
+2 | import * as path from 'path';
+3 | import { FlexLanguageSpec } from '../types';
+4 | 
+5 | /**
+6 |  * Service for managing the Flex language dataset and generating system prompts
+7 |  */
+8 | export class FlexDatasetService {
+9 |     private static instance: FlexDatasetService;
+10 |     private flexSpec: FlexLanguageSpec | null = null;
+11 |     private readonly datasetPath: string;
+12 | 
+13 |     private constructor(extensionPath: string) {
+14 |         this.datasetPath = path.join(extensionPath, 'assets', 'datasets', 'flex_language_spec.json');
+15 |         this.loadFlexSpec();
+16 |     }
+17 | 
+18 |     /**
+19 |      * Get singleton instance of FlexDatasetService
+20 |      */
+21 |     public static getInstance(extensionPath?: string): FlexDatasetService {
+22 |         if (!FlexDatasetService.instance) {
+23 |             if (!extensionPath) {
+24 |                 throw new Error('Extension path is required for first initialization');
+25 |             }
+26 |             FlexDatasetService.instance = new FlexDatasetService(extensionPath);
+27 |         }
+28 |         return FlexDatasetService.instance;
+29 |     }
+30 | 
+31 |     /**
+32 |      * Load the Flex language specification from JSON file
+33 |      */
+34 |     private loadFlexSpec(): void {
+35 |         try {
+36 |             if (fs.existsSync(this.datasetPath)) {
+37 |                 const fileContent = fs.readFileSync(this.datasetPath, 'utf-8');
+38 |                 this.flexSpec = JSON.parse(fileContent) as FlexLanguageSpec;
+39 |                 console.log('✅ Flex language specification loaded successfully');
+40 |             } else {
+41 |                 console.warn(`⚠️ Flex dataset file not found at: ${this.datasetPath}`);
+42 |                 this.flexSpec = null;
+43 |             }
+44 |         } catch (error) {
+45 |             console.error('❌ Error loading Flex language specification:', error);
+46 |             this.flexSpec = null;
+47 |         }
+48 |     }
+49 | 
+50 |     /**
+51 |      * Get the complete system prompt for AI interactions
+52 |      */
+53 |     public getSystemPrompt(): string {
+54 |         if (!this.flexSpec) {
+55 |             return this.getFallbackSystemPrompt();
+56 |         }
+57 | 
+58 |         try {
+59 |             const aiPrompt = this.flexSpec.ai_system_prompt;
+60 |             const essentialKnowledge = this.flexSpec.ESSENTIAL_FLEX_KNOWLEDGE;
+61 |             const syntaxPatterns = this.flexSpec.CRITICAL_SYNTAX_PATTERNS;
+62 |             const codeExamples = this.formatCodeExamples(this.flexSpec.code_examples);
+63 |             const commonPatterns = this.formatCommonPatterns(this.flexSpec.common_patterns);
+64 |             const errorHandling = this.formatErrorHandling(this.flexSpec.error_handling);
+65 | 
+66 |             return `# Flex Programming Assistant for VSCode
+67 | 
+68 | ${aiPrompt.description}
+69 | 
+70 | You are integrated into a VSCode extension to provide real-time assistance to Flex developers. Your responses will be displayed in a professional chat interface within their development environment.
+71 | 
+72 | ## VSCODE EXTENSION CONTEXT:
+73 | - **Environment**: Integrated VSCode extension sidebar
+74 | - **User Context**: Active Flex developers writing code
+75 | - **Response Format**: Markdown with syntax highlighting support
+76 | - **Interaction Style**: Professional, concise, immediately actionable
+77 | 
+78 | ## CRITICAL INSTRUCTIONS:
+79 | ${Object.entries(aiPrompt.CRITICAL_INSTRUCTIONS).map(([key, value]) => `- **${key}**: ${value}`).join('\n')}
+80 | 
+81 | ## ESSENTIAL FLEX LANGUAGE KNOWLEDGE:
+82 | - **Language**: ${essentialKnowledge.language_identity}
+83 | - **Philosophy**: ${essentialKnowledge.core_philosophy}
+84 | - **File Extensions**: ${essentialKnowledge.file_extensions.join(', ')}
+85 | - **Unique Features**: ${essentialKnowledge.unique_features.join(', ')}
+86 | 
+87 | ## CRITICAL SYNTAX PATTERNS:
+88 | ${this.formatSyntaxPatterns(syntaxPatterns)}
+89 | 
+90 | ## CODE EXAMPLES:
+91 | ${codeExamples}
+92 | 
+93 | ## COMMON PATTERNS:
+94 | ${commonPatterns}
+95 | 
+96 | ## ERROR HANDLING GUIDE:
+97 | ${errorHandling}
+98 | 
+99 | ## PERFORMANCE OPTIMIZATION:
+100 | ${this.formatPerformanceGuidelines()}
+101 | 
+102 | ## VSCODE INTEGRATION GUIDELINES:
+103 | - Use \`\`\`flex code blocks for all Flex code examples
+104 | - Provide copy-pasteable, production-ready code snippets
+105 | - Assume users may have limited time - prioritize immediate solutions
+106 | - Reference line numbers when helping with debugging (if provided)
+107 | - Suggest VSCode shortcuts or extensions when relevant
+108 | - Format responses for easy scanning with headers and bullet points
+109 | 
+110 | Remember: You are an expert Flex programming assistant integrated into VSCode, helping developers write better Flex code efficiently. Always prioritize working code first, then provide clear explanations adapted to the user's expertise level.`;
+111 | 
+112 |         } catch (error) {
+113 |             console.error('Error generating system prompt:', error);
+114 |             return this.getFallbackSystemPrompt();
+115 |         }
+116 |     }
+117 | 
+118 |     /**
+119 |      * Format code examples for the system prompt
+120 |      */
+121 |     private formatCodeExamples(examples: Record<string, any>): string {
+122 |         if (!examples) return '';
+123 | 
+124 |         return Object.entries(examples)
+125 |             .map(([name, example]) => {
+126 |                 if (example.code && Array.isArray(example.code)) {
+127 |                     return `### ${example.description || name}:
+128 | \`\`\`flex
+129 | ${example.code.join('\n')}
+130 | \`\`\``;
+131 |                 }
+132 |                 return '';
+133 |             })
+134 |             .filter(Boolean)
+135 |             .join('\n\n');
+136 |     }
+137 | 
+138 |     /**
+139 |      * Format common patterns for the system prompt
+140 |      */
+141 |     private formatCommonPatterns(patterns: Record<string, any>): string {
+142 |         if (!patterns) return '';
+143 | 
+144 |         return Object.entries(patterns)
+145 |             .map(([name, pattern]) => {
+146 |                 if (Array.isArray(pattern)) {
+147 |                     return `### ${name}:
+148 | \`\`\`flex
+149 | ${pattern.join('\n')}
+150 | \`\`\``;
+151 |                 }
+152 |                 return '';
+153 |             })
+154 |             .filter(Boolean)
+155 |             .join('\n\n');
+156 |     }
+157 | 
+158 |     /**
+159 |      * Format syntax patterns for the system prompt
+160 |      */
+161 |     private formatSyntaxPatterns(patterns: Record<string, any>): string {
+162 |         if (!patterns) return '';
+163 | 
+164 |         return Object.entries(patterns)
+165 |             .map(([category, pattern]) => {
+166 |                 if (typeof pattern === 'object' && pattern.examples) {
+167 |                     return `### ${category}:
+168 | ${Array.isArray(pattern.examples) ? pattern.examples.join('\n') : pattern.examples}`;
+169 |                 }
+170 |                 return '';
+171 |             })
+172 |             .filter(Boolean)
+173 |             .join('\n\n');
+174 |     }
+175 | 
+176 |     /**
+177 |      * Format error handling information
+178 |      */
+179 |     private formatErrorHandling(errorHandling: any): string {
+180 |         if (!errorHandling || !errorHandling.error_categories) return '';
+181 | 
+182 |         const categories = errorHandling.error_categories;
+183 |         return Object.entries(categories)
+184 |             .map(([categoryName, category]: [string, any]) => {
+185 |                 const errors = Object.entries(category)
+186 |                     .filter(([key]) => key !== 'description')
+187 |                     .map(([errorName, errorInfo]: [string, any]) => {
+188 |                         return `**${errorName}**: ${errorInfo.solution || errorInfo.cause || 'See documentation'}`;
+189 |                     })
+190 |                     .join('\n');
+191 | 
+192 |                 return `### ${categoryName}:
+193 | ${category.description || ''}
+194 | ${errors}`;
+195 |             })
+196 |             .join('\n\n');
+197 |     }
+198 | 
+199 |     /**
+200 |      * Format performance optimization guidelines
+201 |      */
+202 |     private formatPerformanceGuidelines(): string {
+203 |         if (!this.flexSpec?.performance_optimization) return '';
+204 | 
+205 |         const perf = this.flexSpec.performance_optimization;
+206 |         let guidelines = '';
+207 | 
+208 |         if (perf.optimization_guidelines) {
+209 |             guidelines += '### Guidelines:\n' + perf.optimization_guidelines.map((g: string) => `- ${g}`).join('\n') + '\n\n';
+210 |         }
+211 | 
+212 |         if (perf.memory_management?.best_practices) {
+213 |             guidelines += '### Memory Management:\n' + perf.memory_management.best_practices.map((p: string) => `- ${p}`).join('\n');
+214 |         }
+215 | 
+216 |         return guidelines;
+217 |     }
+218 | 
+219 |     /**
+220 |      * Get a fallback system prompt if the dataset isn't available
+221 |      */
+222 |     private getFallbackSystemPrompt(): string {
+223 |         return `# Flex Programming Assistant for VSCode (Fallback Mode)
+224 | 
+225 | You are a senior-level expert assistant for the Flex programming language, integrated into a VSCode extension. Flex is a bilingual programming language that supports both Franco Arabic and English syntax.
+226 | 
+227 | ## CORE FLEX FEATURES:
+228 | - **Bilingual Syntax**: Mixed Franco Arabic and English keywords
+229 | - **String Interpolation**: Use {variable} syntax for string templating
+230 | - **No Semicolons**: Clean syntax without required semicolons
+231 | - **Automatic Type Detection**: Smart type inference
+232 | - **File Extensions**: .flex, .lx
+233 | 
+234 | ## CRITICAL SAFETY WARNING:
+235 | ⚠️ **Franco loops with 'l7d' are INCLUSIVE** - always use 'length(array) - 1' for safe array access to prevent out-of-bounds errors.
+236 | 
+237 | ## SYNTAX QUICK REFERENCE:
+238 | ### Variables:
+239 | - Franco: \`rakm x = 10\` | English: \`int x = 10\`
+240 | - Franco: \`kasr y = 3.14\` | English: \`float y = 3.14\`
+241 | 
+242 | ### Functions:
+243 | - Franco: \`sndo2 sayHello() { etb3("Hello") }\`
+244 | - English: \`fun sayHello() { print("Hello") }\`
+245 | 
+246 | ### Conditionals:
+247 | - Franco: \`lw x > 5 { etb3("Big") }\`
+248 | - English: \`if (x > 5) { print("Big") }\`
+249 | 
+250 | ### Loops:
+251 | - Franco: \`karr l7d 10 { etb3(i) }\` (INCLUSIVE - use length-1 for arrays)
+252 | - English: \`for(i=0; i<10; i++) { print(i) }\`
+253 | 
+254 | ## VSCODE INTEGRATION GUIDELINES:
+255 | - Use \`\`\`flex code blocks for all code examples
+256 | - Provide immediate, actionable solutions
+257 | - Format responses with clear headers and bullet points
+258 | - Prioritize working code first, then explanations
+259 | 
+260 | Always help users write safe, efficient Flex code while respecting their syntax preferences (Franco vs English).`;
+261 |     }
+262 | 
+263 |     /**
+264 |      * Get specific section of the specification
+265 |      */
+266 |     public getSpecSection(section: keyof FlexLanguageSpec): any {
+267 |         return this.flexSpec?.[section] || null;
+268 |     }
+269 | 
+270 |     /**
+271 |      * Check if dataset is loaded
+272 |      */
+273 |     public isDatasetLoaded(): boolean {
+274 |         return this.flexSpec !== null;
+275 |     }
+276 | 
+277 |     /**
+278 |      * Reload the dataset (useful for development)
+279 |      */
+280 |     public reload(): void {
+281 |         this.loadFlexSpec();
+282 |     }
+283 | 
+284 |     /**
+285 |      * Get dataset statistics
+286 |      */
+287 |     public getDatasetStats(): Record<string, number> {
+288 |         if (!this.flexSpec) {
+289 |             return { loaded: 0 };
+290 |         }
+291 | 
+292 |         return {
+293 |             loaded: 1,
+294 |             codeExamples: Object.keys(this.flexSpec.code_examples || {}).length,
+295 |             commonPatterns: Object.keys(this.flexSpec.common_patterns || {}).length,
+296 |             syntaxPatterns: Object.keys(this.flexSpec.CRITICAL_SYNTAX_PATTERNS || {}).length,
+297 |             tokens: Object.keys(this.flexSpec.tokens || {}).length
+298 |         };
+299 |     }
+300 | } 
+```
+
 src/test/TestFramework.ts
 ```
 1 | import * as assert from 'assert';
@@ -10304,774 +10304,945 @@ assets/webview/css/main.css
 120 | 	align-items: center;
 121 | 	gap: var(--space-3);
 122 | 	flex: 1;
-123 | 	min-width: 0; /* Allow flex shrinking */
-124 | 	overflow: hidden;
-125 | }
-126 | 
-127 | .header-logo {
-128 | 	width: 20px;
-129 | 	height: 20px;
-130 | 	flex-shrink: 0;
-131 | }
-132 | 
-133 | .header-title {
-134 | 	font-size: 0.875rem;
-135 | 	font-weight: var(--font-weight-semibold);
-136 | 	color: var(--text-primary);
-137 | 	white-space: nowrap;
-138 | }
-139 | 
-140 | .status-indicators {
-141 | 	display: flex;
-142 | 	align-items: center;
-143 | 	gap: var(--space-2);
-144 | 	margin-left: var(--space-3);
-145 | }
-146 | 
-147 | .status-dot {
-148 | 	width: 8px;
-149 | 	height: 8px;
-150 | 	border-radius: 50%;
-151 | 	flex-shrink: 0;
-152 | 	position: relative;
-153 | }
-154 | 
-155 | .status-dot.success {
-156 | 	background: var(--success-color);
-157 | 	box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
-158 | }
-159 | 
-160 | .status-dot.warning {
-161 | 	background: var(--warning-color);
-162 | 	box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
-163 | }
-164 | 
-165 | .status-dot.loading {
-166 | 	background: var(--accent-color);
-167 | 	animation: pulse 2s infinite;
-168 | }
-169 | 
-170 | .header-right {
-171 | 	display: flex;
-172 | 	align-items: center;
-173 | 	gap: var(--space-2);
-174 | 	flex-shrink: 0; /* Prevent shrinking */
-175 | }
-176 | 
-177 | .model-display {
-178 | 	background: linear-gradient(135deg,
-179 | 			rgba(59, 130, 246, 0.15) 0%,
-180 | 			rgba(99, 102, 241, 0.15) 100%);
-181 | 	border: 1px solid var(--border-accent);
-182 | 	color: var(--accent-light);
-183 | 	padding: var(--space-1) var(--space-3);
-184 | 	border-radius: var(--radius-md);
-185 | 	font-size: 0.75rem;
-186 | 	font-weight: var(--font-weight-medium);
-187 | 	backdrop-filter: blur(10px);
-188 | 	white-space: nowrap;
-189 | 	overflow: hidden;
-190 | 	text-overflow: ellipsis;
-191 | 	max-width: 120px; /* Reasonable default max width */
-192 | }
-193 | 
-194 | .icon-button {
-195 | 	background: var(--card-bg);
-196 | 	border: 1px solid var(--border-color);
-197 | 	color: var(--text-secondary);
-198 | 	padding: var(--space-2);
-199 | 	border-radius: var(--radius-md);
-200 | 	cursor: pointer;
-201 | 	transition: all 0.2s ease;
-202 | 	font-size: 0.8125rem;
-203 | 	display: flex;
-204 | 	align-items: center;
-205 | 	justify-content: center;
-206 | 	min-width: 32px;
-207 | 	height: 32px;
-208 | }
-209 | 
-210 | .icon-button:hover {
-211 | 	background: var(--accent-color);
-212 | 	border-color: var(--accent-color);
-213 | 	color: white;
-214 | 	transform: translateY(-1px);
-215 | }
-216 | 
-217 | .icon-button:active {
-218 | 	transform: translateY(0);
-219 | }
-220 | 
-221 | /* Professional Chat Container */
-222 | #chat-box {
-223 | 	flex: 1;
-224 | 	overflow-y: auto;
-225 | 	padding: var(--space-4);
-226 | 	display: flex;
-227 | 	flex-direction: column;
-228 | 	gap: var(--space-4);
-229 | 	scroll-behavior: smooth;
-230 | 	scrollbar-width: thin;
-231 | 	scrollbar-color: rgba(248, 250, 252, 0.2) transparent;
-232 | 	min-height: 0; /* Allow flex child to shrink */
-233 | 	position: relative;
-234 | }
-235 | 
-236 | #chat-box::-webkit-scrollbar {
-237 | 	width: 6px;
+123 | 	min-width: 0;
+124 | 	/* Allow flex shrinking */
+125 | 	overflow: hidden;
+126 | }
+127 | 
+128 | .header-logo {
+129 | 	width: 20px;
+130 | 	height: 20px;
+131 | 	flex-shrink: 0;
+132 | }
+133 | 
+134 | .header-title {
+135 | 	font-size: 0.875rem;
+136 | 	font-weight: var(--font-weight-semibold);
+137 | 	color: var(--text-primary);
+138 | 	white-space: nowrap;
+139 | }
+140 | 
+141 | .status-indicators {
+142 | 	display: flex;
+143 | 	align-items: center;
+144 | 	gap: var(--space-2);
+145 | 	margin-left: var(--space-3);
+146 | }
+147 | 
+148 | .status-dot {
+149 | 	width: 8px;
+150 | 	height: 8px;
+151 | 	border-radius: 50%;
+152 | 	flex-shrink: 0;
+153 | 	position: relative;
+154 | }
+155 | 
+156 | .status-dot.success {
+157 | 	background: var(--success-color);
+158 | 	box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+159 | }
+160 | 
+161 | .status-dot.warning {
+162 | 	background: var(--warning-color);
+163 | 	box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
+164 | }
+165 | 
+166 | .status-dot.loading {
+167 | 	background: var(--accent-color);
+168 | 	animation: pulse 2s infinite;
+169 | }
+170 | 
+171 | .header-right {
+172 | 	display: flex;
+173 | 	align-items: center;
+174 | 	gap: var(--space-2);
+175 | 	flex-shrink: 0;
+176 | 	/* Prevent shrinking */
+177 | }
+178 | 
+179 | .model-display {
+180 | 	background: linear-gradient(135deg,
+181 | 			rgba(59, 130, 246, 0.15) 0%,
+182 | 			rgba(99, 102, 241, 0.15) 100%);
+183 | 	border: 1px solid var(--border-accent);
+184 | 	color: var(--accent-light);
+185 | 	padding: var(--space-1) var(--space-3);
+186 | 	border-radius: var(--radius-md);
+187 | 	font-size: 0.75rem;
+188 | 	font-weight: var(--font-weight-medium);
+189 | 	backdrop-filter: blur(10px);
+190 | 	white-space: nowrap;
+191 | 	overflow: hidden;
+192 | 	text-overflow: ellipsis;
+193 | 	max-width: 120px;
+194 | 	/* Reasonable default max width */
+195 | }
+196 | 
+197 | .icon-button {
+198 | 	background: var(--card-bg);
+199 | 	border: 1px solid var(--border-color);
+200 | 	color: var(--text-secondary);
+201 | 	padding: var(--space-2);
+202 | 	border-radius: var(--radius-md);
+203 | 	cursor: pointer;
+204 | 	transition: all 0.2s ease;
+205 | 	font-size: 0.8125rem;
+206 | 	display: flex;
+207 | 	align-items: center;
+208 | 	justify-content: center;
+209 | 	min-width: 32px;
+210 | 	height: 32px;
+211 | }
+212 | 
+213 | .icon-button:hover {
+214 | 	background: var(--accent-color);
+215 | 	border-color: var(--accent-color);
+216 | 	color: white;
+217 | 	transform: translateY(-1px);
+218 | }
+219 | 
+220 | .icon-button:active {
+221 | 	transform: translateY(0);
+222 | }
+223 | 
+224 | /* Professional Chat Container */
+225 | #chat-box {
+226 | 	flex: 1;
+227 | 	overflow-y: auto;
+228 | 	padding: var(--space-4);
+229 | 	display: flex;
+230 | 	flex-direction: column;
+231 | 	gap: var(--space-4);
+232 | 	scroll-behavior: smooth;
+233 | 	scrollbar-width: thin;
+234 | 	scrollbar-color: rgba(248, 250, 252, 0.2) transparent;
+235 | 	min-height: 0;
+236 | 	/* Allow flex child to shrink */
+237 | 	position: relative;
 238 | }
 239 | 
-240 | #chat-box::-webkit-scrollbar-thumb {
-241 | 	background: rgba(248, 250, 252, 0.2);
-242 | 	border-radius: 3px;
-243 | }
-244 | 
-245 | #chat-box::-webkit-scrollbar-track {
-246 | 	background: transparent;
+240 | #chat-box::-webkit-scrollbar {
+241 | 	width: 6px;
+242 | }
+243 | 
+244 | #chat-box::-webkit-scrollbar-thumb {
+245 | 	background: rgba(248, 250, 252, 0.2);
+246 | 	border-radius: 3px;
 247 | }
 248 | 
-249 | /* Welcome Message */
-250 | .welcome-message {
-251 | 	display: flex;
-252 | 	flex-direction: column;
-253 | 	align-items: center;
-254 | 	text-align: center;
-255 | 	padding: var(--space-8);
-256 | 	background: var(--card-bg);
-257 | 	border: 1px solid var(--border-color);
-258 | 	border-radius: var(--radius-lg);
-259 | 	backdrop-filter: blur(20px);
-260 | 	margin-bottom: var(--space-4);
-261 | }
-262 | 
-263 | .welcome-message .bot-avatar {
+249 | #chat-box::-webkit-scrollbar-track {
+250 | 	background: transparent;
+251 | }
+252 | 
+253 | /* Welcome Message */
+254 | .welcome-message {
+255 | 	display: flex;
+256 | 	flex-direction: column;
+257 | 	align-items: center;
+258 | 	text-align: center;
+259 | 	padding: var(--space-8);
+260 | 	background: var(--card-bg);
+261 | 	border: 1px solid var(--border-color);
+262 | 	border-radius: var(--radius-lg);
+263 | 	backdrop-filter: blur(20px);
 264 | 	margin-bottom: var(--space-4);
 265 | }
 266 | 
-267 | .welcome-message .bot-avatar img {
-268 | 	width: 64px;
-269 | 	height: 64px;
-270 | 	object-fit: contain;
-271 | 	filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.3));
-272 | 	border-radius: var(--radius-lg);
-273 | }
-274 | 
-275 | .welcome-content h3 {
-276 | 	margin: 0 0 var(--space-3) 0;
-277 | 	font-size: 1.125rem;
-278 | 	font-weight: var(--font-weight-bold);
-279 | 	color: var(--text-primary);
-280 | }
-281 | 
-282 | .welcome-content p {
-283 | 	margin: 0 0 var(--space-4) 0;
-284 | 	color: var(--text-secondary);
-285 | 	line-height: 1.6;
-286 | }
-287 | 
-288 | .features-grid {
-289 | 	display: grid;
-290 | 	grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-291 | 	gap: var(--space-3);
-292 | 	width: 100%;
-293 | 	max-width: 400px;
-294 | }
-295 | 
-296 | .feature-item {
-297 | 	background: linear-gradient(135deg,
-298 | 			rgba(59, 130, 246, 0.1) 0%,
-299 | 			rgba(99, 102, 241, 0.1) 100%);
-300 | 	border: 1px solid var(--border-accent);
-301 | 	color: var(--accent-light);
-302 | 	padding: var(--space-2) var(--space-3);
-303 | 	border-radius: var(--radius-md);
-304 | 	font-size: 0.75rem;
-305 | 	font-weight: var(--font-weight-medium);
-306 | 	text-align: center;
-307 | 	backdrop-filter: blur(10px);
-308 | 	transition: all 0.2s ease;
-309 | }
-310 | 
-311 | .feature-item:hover {
-312 | 	background: linear-gradient(135deg,
-313 | 			rgba(59, 130, 246, 0.2) 0%,
-314 | 			rgba(99, 102, 241, 0.2) 100%);
-315 | 	transform: translateY(-1px);
-316 | }
-317 | 
-318 | /* Professional Message Styles */
-319 | .message {
-320 | 	display: flex;
-321 | 	flex-direction: column;
-322 | 	max-width: 85%;
-323 | 	animation: messageSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-324 | }
-325 | 
-326 | @keyframes messageSlideIn {
-327 | 	from {
-328 | 		opacity: 0;
-329 | 		transform: translateY(16px);
-330 | 	}
-331 | 
-332 | 	to {
-333 | 		opacity: 1;
-334 | 		transform: translateY(0);
-335 | 	}
-336 | }
-337 | 
-338 | .user-message {
-339 | 	align-self: flex-end;
+267 | .welcome-message .bot-avatar {
+268 | 	margin-bottom: var(--space-4);
+269 | }
+270 | 
+271 | .welcome-message .bot-avatar img {
+272 | 	width: 64px;
+273 | 	height: 64px;
+274 | 	object-fit: contain;
+275 | 	filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.3));
+276 | 	border-radius: var(--radius-lg);
+277 | }
+278 | 
+279 | .welcome-content h3 {
+280 | 	margin: 0 0 var(--space-3) 0;
+281 | 	font-size: 1.125rem;
+282 | 	font-weight: var(--font-weight-bold);
+283 | 	color: var(--text-primary);
+284 | }
+285 | 
+286 | .welcome-content p {
+287 | 	margin: 0 0 var(--space-4) 0;
+288 | 	color: var(--text-secondary);
+289 | 	line-height: 1.6;
+290 | }
+291 | 
+292 | .features-grid {
+293 | 	display: grid;
+294 | 	grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+295 | 	gap: var(--space-3);
+296 | 	width: 100%;
+297 | 	max-width: 400px;
+298 | }
+299 | 
+300 | .feature-item {
+301 | 	background: linear-gradient(135deg,
+302 | 			rgba(59, 130, 246, 0.1) 0%,
+303 | 			rgba(99, 102, 241, 0.1) 100%);
+304 | 	border: 1px solid var(--border-accent);
+305 | 	color: var(--accent-light);
+306 | 	padding: var(--space-2) var(--space-3);
+307 | 	border-radius: var(--radius-md);
+308 | 	font-size: 0.75rem;
+309 | 	font-weight: var(--font-weight-medium);
+310 | 	text-align: center;
+311 | 	backdrop-filter: blur(10px);
+312 | 	transition: all 0.2s ease;
+313 | }
+314 | 
+315 | .feature-item:hover {
+316 | 	background: linear-gradient(135deg,
+317 | 			rgba(59, 130, 246, 0.2) 0%,
+318 | 			rgba(99, 102, 241, 0.2) 100%);
+319 | 	transform: translateY(-1px);
+320 | }
+321 | 
+322 | /* Professional Message Styles */
+323 | .message {
+324 | 	display: flex;
+325 | 	flex-direction: column;
+326 | 	max-width: 85%;
+327 | 	animation: messageSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+328 | }
+329 | 
+330 | @keyframes messageSlideIn {
+331 | 	from {
+332 | 		opacity: 0;
+333 | 		transform: translateY(16px);
+334 | 	}
+335 | 
+336 | 	to {
+337 | 		opacity: 1;
+338 | 		transform: translateY(0);
+339 | 	}
 340 | }
 341 | 
-342 | .ai-message {
-343 | 	align-self: flex-start;
+342 | .user-message {
+343 | 	align-self: flex-end;
 344 | }
 345 | 
-346 | .user-label,
-347 | .ai-label {
-348 | 	font-size: 0.75rem;
-349 | 	font-weight: var(--font-weight-semibold);
-350 | 	margin-bottom: var(--space-2);
-351 | 	text-transform: uppercase;
-352 | 	letter-spacing: 0.05em;
-353 | 	display: flex;
-354 | 	align-items: center;
-355 | 	gap: var(--space-2);
-356 | }
-357 | 
-358 | .user-label {
-359 | 	color: var(--user-color);
-360 | 	text-align: right;
-361 | 	justify-content: flex-end;
-362 | }
-363 | 
-364 | .ai-label {
-365 | 	color: var(--ai-color);
+346 | .ai-message {
+347 | 	align-self: flex-start;
+348 | }
+349 | 
+350 | .user-label,
+351 | .ai-label {
+352 | 	font-size: 0.75rem;
+353 | 	font-weight: var(--font-weight-semibold);
+354 | 	margin-bottom: var(--space-2);
+355 | 	text-transform: uppercase;
+356 | 	letter-spacing: 0.05em;
+357 | 	display: flex;
+358 | 	align-items: center;
+359 | 	gap: var(--space-2);
+360 | }
+361 | 
+362 | .user-label {
+363 | 	color: var(--user-color);
+364 | 	text-align: right;
+365 | 	justify-content: flex-end;
 366 | }
 367 | 
-368 | .message-avatar {
-369 | 	font-size: 0.875rem;
+368 | .ai-label {
+369 | 	color: var(--ai-color);
 370 | }
 371 | 
-372 | .message-content {
-373 | 	background: var(--card-bg);
-374 | 	backdrop-filter: blur(20px);
-375 | 	padding: var(--space-4) var(--space-5);
-376 | 	border-radius: var(--radius-lg);
-377 | 	line-height: 1.6;
-378 | 	font-size: 0.875rem;
-379 | 	word-wrap: break-word;
-380 | 	border: 1px solid var(--border-color);
-381 | 	box-shadow: var(--shadow-sm);
-382 | }
-383 | 
-384 | .user-message .message-content {
-385 | 	background: linear-gradient(135deg,
-386 | 			rgba(99, 102, 241, 0.15) 0%,
-387 | 			rgba(59, 130, 246, 0.15) 100%);
-388 | 	border: 1px solid rgba(99, 102, 241, 0.3);
-389 | 	border-radius: var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-lg);
-390 | }
-391 | 
-392 | .ai-message .message-content {
-393 | 	background: linear-gradient(135deg,
-394 | 			rgba(139, 92, 246, 0.08) 0%,
-395 | 			rgba(168, 85, 247, 0.08) 100%);
-396 | 	border-left: 3px solid var(--ai-color);
-397 | 	border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-sm);
-398 | }
-399 | 
-400 | /* Enhanced Input Section */
-401 | #input-section {
-402 | 	flex-shrink: 0;
-403 | 	background: var(--secondary-bg);
-404 | 	border-top: 1px solid var(--border-color);
-405 | 	padding: var(--space-4);
-406 | 	position: relative;
-407 | 	z-index: 5;
-408 | }
-409 | 
-410 | .input-container {
-411 | 	position: relative;
-412 | 	width: 100%;
-413 | 	max-width: 100%;
-414 | }
-415 | 
-416 | .input-wrapper {
-417 | 	display: flex;
-418 | 	align-items: stretch;
-419 | 	background: var(--card-bg);
-420 | 	border: 1px solid var(--border-color);
-421 | 	border-radius: var(--radius-lg);
-422 | 	padding: var(--space-2);
-423 | 	gap: var(--space-2);
-424 | 	backdrop-filter: blur(20px);
-425 | 	transition: all 0.2s ease;
-426 | 	position: relative;
-427 | 	min-height: 48px;
-428 | }
-429 | 
-430 | .input-wrapper:focus-within {
-431 | 	border-color: var(--accent-color);
-432 | 	box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-433 | }
-434 | 
-435 | #user-input {
-436 | 	flex: 1;
-437 | 	min-height: 44px;
-438 | 	max-height: 120px;
-439 | 	padding: var(--space-3);
-440 | 	background: transparent;
-441 | 	border: none;
-442 | 	color: var(--text-primary);
-443 | 	font-family: var(--font-family);
-444 | 	font-size: 0.875rem;
-445 | 	line-height: 1.5;
-446 | 	resize: none;
-447 | 	overflow-y: auto;
-448 | 	outline: none;
-449 | 	margin: 0;
-450 | 	box-sizing: border-box;
-451 | 	scrollbar-width: thin;
-452 | 	scrollbar-color: rgba(248, 250, 252, 0.2) transparent;
-453 | }
-454 | 
-455 | #user-input::-webkit-scrollbar {
-456 | 	width: 4px;
-457 | }
-458 | 
-459 | #user-input::-webkit-scrollbar-thumb {
-460 | 	background: rgba(248, 250, 252, 0.2);
-461 | 	border-radius: 2px;
-462 | }
-463 | 
-464 | .send-button {
-465 | 	background: var(--accent-color) !important;
-466 | 	border: none !important;
-467 | 	border-radius: var(--radius-md) !important;
-468 | 	color: white !important;
-469 | 	width: 36px !important;
-470 | 	height: 36px !important;
-471 | 	display: flex !important;
-472 | 	align-items: center !important;
-473 | 	justify-content: center !important;
-474 | 	cursor: pointer !important;
-475 | 	transition: all 0.2s ease !important;
-476 | 	flex-shrink: 0 !important;
-477 | 	visibility: visible !important;
-478 | 	opacity: 1 !important;
-479 | 	position: relative !important;
-480 | 	z-index: 10 !important;
-481 | }
-482 | 
-483 | .send-button:hover:not(:disabled) {
-484 | 	background: var(--accent-hover);
-485 | 	transform: translateY(-1px);
-486 | 	box-shadow: var(--shadow-md);
-487 | }
-488 | 
-489 | .send-button:active:not(:disabled) {
-490 | 	transform: translateY(0);
-491 | }
-492 | 
-493 | .send-button:disabled {
-494 | 	opacity: 0.7;
-495 | 	cursor: not-allowed;
-496 | 	transform: none;
-497 | }
-498 | 
-499 | .send-icon {
-500 | 	font-size: 0.875rem;
-501 | 	line-height: 1;
-502 | }
-503 | 
-504 | /* Professional Code Block Styles */
-505 | .code-block {
-506 | 	background: linear-gradient(135deg,
-507 | 			#0f172a 0%,
-508 | 			#1e293b 50%,
-509 | 			#0f172a 100%);
-510 | 	border: 1px solid var(--border-color);
-511 | 	border-radius: var(--radius-lg);
-512 | 	padding: var(--space-5);
-513 | 	margin: var(--space-4) 0;
-514 | 	font-family: var(--font-family-mono);
-515 | 	font-size: 0.8125rem;
-516 | 	line-height: 1.6;
-517 | 	overflow-x: auto;
-518 | 	position: relative;
-519 | 	box-shadow: var(--shadow-md);
-520 | }
-521 | 
-522 | .code-block::before {
-523 | 	content: 'Code';
-524 | 	position: absolute;
-525 | 	top: var(--space-3);
-526 | 	right: var(--space-3);
-527 | 	background: var(--accent-color);
-528 | 	color: white;
-529 | 	padding: var(--space-1) var(--space-3);
-530 | 	border-radius: var(--radius-sm);
-531 | 	font-size: 0.6875rem;
-532 | 	font-weight: var(--font-weight-semibold);
-533 | 	text-transform: uppercase;
-534 | 	letter-spacing: 0.05em;
-535 | }
-536 | 
-537 | .code-block.flex-code::before {
-538 | 	background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
-539 | 	content: 'Flex';
-540 | }
-541 | 
-542 | .code-block.flex-code {
-543 | 	border-left: 3px solid var(--accent-color);
-544 | 	padding: var(--space-4) var(--space-5);
-545 | 	margin: var(--space-3) 0;
-546 | 	background: rgba(15, 23, 42, 0.6);
-547 | 	border-radius: var(--radius-lg);
-548 | 	backdrop-filter: blur(10px);
-549 | 	line-height: 1.6;
-550 | 	font-size: 0.875rem;
-551 | }
-552 | 
-553 | /* Enhanced Professional Syntax Highlighting - Official Flex Token Categories */
-554 | 
-555 | /* Function Keywords (highest priority) */
-556 | .flex-function-keyword {
-557 | 	color: #c678dd;
-558 | 	font-weight: var(--font-weight-bold);
-559 | 	text-shadow: 0 0 8px rgba(198, 120, 221, 0.3);
-560 | }
-561 | 
-562 | /* Control Flow Keywords */
-563 | .flex-control-keyword {
-564 | 	color: #e06c75;
-565 | 	font-weight: var(--font-weight-semibold);
-566 | }
-567 | 
-568 | /* Loop Keywords */
-569 | .flex-loop-keyword {
-570 | 	color: #d19a66;
-571 | 	font-weight: var(--font-weight-semibold);
-572 | }
-573 | 
-574 | /* I/O Keywords */
-575 | .flex-io-keyword {
-576 | 	color: #56b6c2;
-577 | 	font-weight: var(--font-weight-semibold);
-578 | 	text-decoration: underline;
-579 | 	text-decoration-style: dotted;
-580 | 	text-decoration-color: rgba(86, 182, 194, 0.5);
-581 | }
-582 | 
-583 | /* Data Type Keywords */
-584 | .flex-datatype-keyword {
-585 | 	color: #61afef;
-586 | 	font-weight: var(--font-weight-semibold);
-587 | 	font-style: italic;
-588 | }
-589 | 
-590 | /* Literals (booleans, null) */
-591 | .flex-literal {
-592 | 	color: #98c379;
-593 | 	font-weight: var(--font-weight-medium);
-594 | }
-595 | 
-596 | /* List Methods */
-597 | .flex-list-method {
-598 | 	color: #e5c07b;
-599 | 	font-weight: var(--font-weight-medium);
-600 | 	background: rgba(229, 192, 123, 0.1);
-601 | 	padding: 1px 3px;
-602 | 	border-radius: 3px;
-603 | }
-604 | 
-605 | /* Legacy Franco Arabic Keywords */
-606 | .flex-keyword-franco {
-607 | 	color: #ff6b6b;
-608 | 	font-weight: var(--font-weight-semibold);
-609 | }
-610 | 
-611 | /* Legacy English Keywords */
-612 | .flex-keyword-english {
-613 | 	color: #4ecdc4;
-614 | 	font-weight: var(--font-weight-semibold);
+372 | .message-avatar {
+373 | 	font-size: 0.875rem;
+374 | }
+375 | 
+376 | .message-content {
+377 | 	background: var(--card-bg);
+378 | 	backdrop-filter: blur(20px);
+379 | 	padding: var(--space-4) var(--space-5);
+380 | 	border-radius: var(--radius-lg);
+381 | 	line-height: 1.6;
+382 | 	font-size: 0.875rem;
+383 | 	word-wrap: break-word;
+384 | 	border: 1px solid var(--border-color);
+385 | 	box-shadow: var(--shadow-sm);
+386 | }
+387 | 
+388 | .user-message .message-content {
+389 | 	background: linear-gradient(135deg,
+390 | 			rgba(99, 102, 241, 0.15) 0%,
+391 | 			rgba(59, 130, 246, 0.15) 100%);
+392 | 	border: 1px solid rgba(99, 102, 241, 0.3);
+393 | 	border-radius: var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-lg);
+394 | }
+395 | 
+396 | /* .ai-message .message-content {
+397 | 	background: linear-gradient(135deg,
+398 | 			rgba(139, 92, 246, 0.08) 0%,
+399 | 			rgba(168, 85, 247, 0.08) 100%);
+400 | 	border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-sm);
+401 | } */
+402 | 
+403 | /* Enhanced Input Section */
+404 | #input-section {
+405 | 	flex-shrink: 0;
+406 | 	background: var(--secondary-bg);
+407 | 	border-top: 1px solid var(--border-color);
+408 | 	padding: var(--space-4);
+409 | 	position: relative;
+410 | 	z-index: 5;
+411 | }
+412 | 
+413 | .input-container {
+414 | 	position: relative;
+415 | 	width: 100%;
+416 | 	max-width: 100%;
+417 | }
+418 | 
+419 | .input-wrapper {
+420 | 	display: flex;
+421 | 	align-items: stretch;
+422 | 	background: var(--card-bg);
+423 | 	border: 1px solid var(--border-color);
+424 | 	border-radius: var(--radius-lg);
+425 | 	padding: var(--space-2);
+426 | 	gap: var(--space-2);
+427 | 	backdrop-filter: blur(20px);
+428 | 	transition: all 0.2s ease;
+429 | 	position: relative;
+430 | 	min-height: 48px;
+431 | }
+432 | 
+433 | .input-wrapper:focus-within {
+434 | 	border-color: var(--accent-color);
+435 | 	box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+436 | }
+437 | 
+438 | #user-input {
+439 | 	flex: 1;
+440 | 	min-height: 44px;
+441 | 	max-height: 120px;
+442 | 	padding: var(--space-3);
+443 | 	background: transparent;
+444 | 	border: none;
+445 | 	color: var(--text-primary);
+446 | 	font-family: var(--font-family);
+447 | 	font-size: 0.875rem;
+448 | 	line-height: 1.5;
+449 | 	resize: none;
+450 | 	overflow-y: auto;
+451 | 	outline: none;
+452 | 	margin: 0;
+453 | 	box-sizing: border-box;
+454 | 	scrollbar-width: thin;
+455 | 	scrollbar-color: rgba(248, 250, 252, 0.2) transparent;
+456 | }
+457 | 
+458 | #user-input::-webkit-scrollbar {
+459 | 	width: 4px;
+460 | }
+461 | 
+462 | #user-input::-webkit-scrollbar-thumb {
+463 | 	background: rgba(248, 250, 252, 0.2);
+464 | 	border-radius: 2px;
+465 | }
+466 | 
+467 | .send-button {
+468 | 	background: var(--accent-color) !important;
+469 | 	border: none !important;
+470 | 	border-radius: var(--radius-md) !important;
+471 | 	color: white !important;
+472 | 	width: 36px !important;
+473 | 	height: 36px !important;
+474 | 	display: flex !important;
+475 | 	align-items: center !important;
+476 | 	justify-content: center !important;
+477 | 	cursor: pointer !important;
+478 | 	transition: all 0.2s ease !important;
+479 | 	flex-shrink: 0 !important;
+480 | 	visibility: visible !important;
+481 | 	opacity: 1 !important;
+482 | 	position: relative !important;
+483 | 	z-index: 10 !important;
+484 | }
+485 | 
+486 | .send-button:hover:not(:disabled) {
+487 | 	background: var(--accent-hover);
+488 | 	transform: translateY(-1px);
+489 | 	box-shadow: var(--shadow-md);
+490 | }
+491 | 
+492 | .send-button:active:not(:disabled) {
+493 | 	transform: translateY(0);
+494 | }
+495 | 
+496 | .send-button:disabled {
+497 | 	opacity: 0.7;
+498 | 	cursor: not-allowed;
+499 | 	transform: none;
+500 | }
+501 | 
+502 | .send-icon {
+503 | 	font-size: 0.875rem;
+504 | 	line-height: 1;
+505 | }
+506 | 
+507 | /* Professional Code Block Styles */
+508 | .code-block {
+509 | 	background: linear-gradient(135deg,
+510 | 			#0f172a 0%,
+511 | 			#1e293b 50%,
+512 | 			#0f172a 100%);
+513 | 	border: 1px solid var(--border-color);
+514 | 	border-radius: var(--radius-lg);
+515 | 	padding: var(--space-5);
+516 | 	margin: var(--space-4) 0;
+517 | 	font-family: var(--font-family-mono);
+518 | 	font-size: 0.8125rem;
+519 | 	line-height: 1.6;
+520 | 	overflow-x: auto;
+521 | 	position: relative;
+522 | 	box-shadow: var(--shadow-md);
+523 | }
+524 | 
+525 | .code-block::before {
+526 | 	content: 'Code';
+527 | 	position: absolute;
+528 | 	top: var(--space-3);
+529 | 	right: var(--space-3);
+530 | 	background: var(--accent-color);
+531 | 	color: white;
+532 | 	padding: var(--space-1) var(--space-3);
+533 | 	border-radius: var(--radius-sm);
+534 | 	font-size: 0.6875rem;
+535 | 	font-weight: var(--font-weight-semibold);
+536 | 	text-transform: uppercase;
+537 | 	letter-spacing: 0.05em;
+538 | }
+539 | 
+540 | .code-block.flex-code::before {
+541 | 	background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+542 | 	content: 'Flex';
+543 | }
+544 | 
+545 | /* Enhanced Professional Syntax Highlighting - Official Flex Token Categories */
+546 | 
+547 | /* Function Keywords (highest priority) */
+548 | .flex-function-keyword {
+549 | 	color: #c678dd;
+550 | 	font-weight: var(--font-weight-bold);
+551 | 	text-shadow: 0 0 8px rgba(198, 120, 221, 0.3);
+552 | }
+553 | 
+554 | /* Control Flow Keywords */
+555 | .flex-control-keyword {
+556 | 	color: #e06c75;
+557 | 	font-weight: var(--font-weight-semibold);
+558 | }
+559 | 
+560 | /* Loop Keywords */
+561 | .flex-loop-keyword {
+562 | 	color: #d19a66;
+563 | 	font-weight: var(--font-weight-semibold);
+564 | }
+565 | 
+566 | /* I/O Keywords */
+567 | .flex-io-keyword {
+568 | 	color: #56b6c2;
+569 | 	font-weight: var(--font-weight-semibold);
+570 | 	text-decoration: underline;
+571 | 	text-decoration-style: dotted;
+572 | 	text-decoration-color: rgba(86, 182, 194, 0.5);
+573 | }
+574 | 
+575 | /* Data Type Keywords */
+576 | .flex-datatype-keyword {
+577 | 	color: #61afef;
+578 | 	font-weight: var(--font-weight-semibold);
+579 | 	font-style: italic;
+580 | }
+581 | 
+582 | /* Literals (booleans, null) */
+583 | .flex-literal {
+584 | 	color: #98c379;
+585 | 	font-weight: var(--font-weight-medium);
+586 | }
+587 | 
+588 | /* List Methods */
+589 | .flex-list-method {
+590 | 	color: #e5c07b;
+591 | 	font-weight: var(--font-weight-medium);
+592 | 	background: rgba(229, 192, 123, 0.1);
+593 | 	padding: 1px 3px;
+594 | 	border-radius: 3px;
+595 | }
+596 | 
+597 | /* Legacy Franco Arabic Keywords */
+598 | .flex-keyword-franco {
+599 | 	color: #ff6b6b;
+600 | 	font-weight: var(--font-weight-semibold);
+601 | }
+602 | 
+603 | /* Legacy English Keywords */
+604 | .flex-keyword-english {
+605 | 	color: #4ecdc4;
+606 | 	font-weight: var(--font-weight-semibold);
+607 | }
+608 | 
+609 | /* String Literals */
+610 | .flex-string {
+611 | 	color: #95e1d3;
+612 | 	background: rgba(149, 225, 211, 0.1);
+613 | 	padding: 1px 2px;
+614 | 	border-radius: 2px;
 615 | }
 616 | 
-617 | /* String Literals */
-618 | .flex-string {
-619 | 	color: #95e1d3;
-620 | 	background: rgba(149, 225, 211, 0.1);
-621 | 	padding: 1px 2px;
-622 | 	border-radius: 2px;
-623 | }
-624 | 
-625 | /* Numeric Literals */
-626 | .flex-number {
-627 | 	color: #fce38a;
-628 | 	font-weight: var(--font-weight-medium);
-629 | }
-630 | 
-631 | /* Comments */
-632 | .flex-comment {
-633 | 	color: var(--text-subtle);
-634 | 	font-style: italic;
-635 | 	opacity: 0.8;
-636 | }
-637 | 
-638 | /* Operators */
-639 | .flex-operator {
-640 | 	color: #ff8a80;
-641 | 	font-weight: var(--font-weight-medium);
-642 | }
-643 | 
-644 | /* Functions */
-645 | .flex-function {
-646 | 	color: #81c784;
-647 | 	font-weight: var(--font-weight-medium);
-648 | }
-649 | 
-650 | /* Variables */
-651 | .flex-variable {
-652 | 	color: #64b5f6;
-653 | }
-654 | 
-655 | /* Copy Button for Code Blocks */
-656 | .copy-code-button {
-657 | 	position: absolute;
-658 | 	top: var(--space-2);
-659 | 	right: var(--space-2);
-660 | 	background: var(--accent-color);
-661 | 	border: none;
-662 | 	border-radius: var(--radius-sm);
-663 | 	color: white;
-664 | 	padding: var(--space-1) var(--space-2);
-665 | 	font-size: 0.75rem;
-666 | 	cursor: pointer;
-667 | 	opacity: 0.8;
-668 | 	transition: all 0.2s ease;
-669 | 	z-index: 2;
-670 | }
-671 | 
-672 | .copy-code-button:hover {
-673 | 	opacity: 1;
-674 | 	transform: translateY(-1px);
-675 | 	box-shadow: var(--shadow-sm);
+617 | /* Numeric Literals */
+618 | .flex-number {
+619 | 	color: #fce38a;
+620 | 	font-weight: var(--font-weight-medium);
+621 | }
+622 | 
+623 | /* Comments */
+624 | .flex-comment {
+625 | 	color: var(--text-subtle);
+626 | 	font-style: italic;
+627 | 	opacity: 0.8;
+628 | }
+629 | 
+630 | /* Operators */
+631 | .flex-operator {
+632 | 	color: #ff8a80;
+633 | 	font-weight: var(--font-weight-medium);
+634 | }
+635 | 
+636 | /* Functions */
+637 | .flex-function {
+638 | 	color: #81c784;
+639 | 	font-weight: var(--font-weight-medium);
+640 | }
+641 | 
+642 | /* Variables */
+643 | .flex-variable {
+644 | 	color: #64b5f6;
+645 | }
+646 | 
+647 | /* Copy Button for Code Blocks */
+648 | .copy-code-button {
+649 | 	position: absolute;
+650 | 	top: var(--space-2);
+651 | 	right: var(--space-2);
+652 | 	background: var(--accent-color);
+653 | 	border: none;
+654 | 	border-radius: var(--radius-sm);
+655 | 	color: white;
+656 | 	padding: var(--space-1) var(--space-2);
+657 | 	font-size: 0.75rem;
+658 | 	cursor: pointer;
+659 | 	opacity: 0.8;
+660 | 	transition: all 0.2s ease;
+661 | 	z-index: 2;
+662 | }
+663 | 
+664 | .copy-code-button:hover {
+665 | 	opacity: 1;
+666 | 	transform: translateY(-1px);
+667 | 	box-shadow: var(--shadow-sm);
+668 | }
+669 | 
+670 | .code-block:hover .copy-code-button {
+671 | 	opacity: 1;
+672 | }
+673 | 
+674 | .has-copy-button {
+675 | 	position: relative;
 676 | }
 677 | 
-678 | .code-block:hover .copy-code-button {
-679 | 	opacity: 1;
-680 | }
-681 | 
-682 | .has-copy-button {
-683 | 	position: relative;
-684 | }
+678 | /* Animation Keyframes */
+679 | @keyframes pulse {
+680 | 
+681 | 	0%,
+682 | 	100% {
+683 | 		opacity: 1;
+684 | 	}
 685 | 
-686 | /* Animation Keyframes */
-687 | @keyframes pulse {
-688 | 
-689 | 	0%,
-690 | 	100% {
-691 | 		opacity: 1;
-692 | 	}
-693 | 
-694 | 	50% {
-695 | 		opacity: 0.5;
-696 | 	}
-697 | }
-698 | 
-699 | /* Status Message Styles */
-700 | .status-message {
-701 | 	background: linear-gradient(135deg,
-702 | 			rgba(59, 130, 246, 0.1) 0%,
-703 | 			rgba(99, 102, 241, 0.1) 100%);
-704 | 	border: 1px solid var(--border-accent);
-705 | 	color: var(--accent-light);
-706 | 	padding: var(--space-3) var(--space-4);
-707 | 	border-radius: var(--radius-lg);
-708 | 	font-size: 0.875rem;
-709 | 	font-weight: var(--font-weight-medium);
-710 | 	text-align: center;
-711 | 	backdrop-filter: blur(10px);
-712 | 	animation: pulse 2s ease-in-out infinite;
-713 | }
-714 | 
-715 | /* Responsive Design */
-716 | @media (max-width: 768px) {
-717 | 	:root {
-718 | 		--header-height: 2.5rem;
+686 | 	50% {
+687 | 		opacity: 0.5;
+688 | 	}
+689 | }
+690 | 
+691 | /* Status Message Styles */
+692 | .status-message {
+693 | 	background: linear-gradient(135deg,
+694 | 			rgba(59, 130, 246, 0.1) 0%,
+695 | 			rgba(99, 102, 241, 0.1) 100%);
+696 | 	border: 1px solid var(--border-accent);
+697 | 	color: var(--accent-light);
+698 | 	padding: var(--space-3) var(--space-4);
+699 | 	border-radius: var(--radius-lg);
+700 | 	font-size: 0.875rem;
+701 | 	font-weight: var(--font-weight-medium);
+702 | 	text-align: center;
+703 | 	backdrop-filter: blur(10px);
+704 | 	animation: pulse 2s ease-in-out infinite;
+705 | }
+706 | 
+707 | /* Responsive Design */
+708 | @media (max-width: 768px) {
+709 | 	:root {
+710 | 		--header-height: 2.5rem;
+711 | 	}
+712 | 
+713 | 	#header-bar {
+714 | 		padding: var(--space-2) var(--space-3);
+715 | 	}
+716 | 
+717 | 	.header-title {
+718 | 		font-size: 0.8125rem;
 719 | 	}
 720 | 
-721 | 	#header-bar {
-722 | 		padding: var(--space-2) var(--space-3);
-723 | 	}
-724 | 
-725 | 	.header-title {
-726 | 		font-size: 0.8125rem;
-727 | 	}
-728 | 
-729 | 	.status-indicators {
-730 | 		margin-left: var(--space-2);
-731 | 		gap: var(--space-1);
-732 | 	}
-733 | 
-734 | 	.header-right {
-735 | 		gap: var(--space-1);
-736 | 	}
-737 | 
-738 | 	.model-display {
-739 | 		font-size: 0.6875rem;
-740 | 		padding: var(--space-1) var(--space-2);
-741 | 		max-width: 100px; /* Adjust for tablet */
+721 | 	.status-indicators {
+722 | 		margin-left: var(--space-2);
+723 | 		gap: var(--space-1);
+724 | 	}
+725 | 
+726 | 	.header-right {
+727 | 		gap: var(--space-1);
+728 | 	}
+729 | 
+730 | 	.model-display {
+731 | 		font-size: 0.6875rem;
+732 | 		padding: var(--space-1) var(--space-2);
+733 | 		max-width: 100px;
+734 | 		/* Adjust for tablet */
+735 | 	}
+736 | 
+737 | 	.icon-button {
+738 | 		min-width: 28px;
+739 | 		height: 28px;
+740 | 		padding: var(--space-1);
+741 | 		font-size: 0.75rem;
 742 | 	}
 743 | 
-744 | 	.icon-button {
-745 | 		min-width: 28px;
-746 | 		height: 28px;
-747 | 		padding: var(--space-1);
-748 | 		font-size: 0.75rem;
-749 | 	}
-750 | 
-751 | 	.welcome-message {
-752 | 		padding: var(--space-6);
-753 | 	}
-754 | 
-755 | 	.welcome-message .bot-avatar img {
-756 | 		width: 48px;
-757 | 		height: 48px;
-758 | 	}
-759 | 
-760 | 	.welcome-content h3 {
-761 | 		font-size: 1rem;
-762 | 	}
-763 | 
-764 | 	.features-grid {
-765 | 		grid-template-columns: repeat(2, 1fr);
-766 | 		gap: var(--space-2);
-767 | 	}
-768 | 
-769 | 	.message {
-770 | 		max-width: 95%;
-771 | 	}
-772 | 
-773 | 	#input-section {
-774 | 		padding: var(--space-3);
-775 | 	}
-776 | 
-777 | 	.input-wrapper {
-778 | 		padding: var(--space-2);
-779 | 		gap: var(--space-2);
-780 | 	}
-781 | 
-782 | 	.send-button {
-783 | 		min-width: 32px;
-784 | 		height: 32px;
-785 | 	}
-786 | }
-787 | 
-788 | @media (max-width: 480px) {
-789 | 	.header-title {
-790 | 		display: none;
-791 | 	}
-792 | 
-793 | 	.status-indicators {
-794 | 		margin-left: var(--space-1);
+744 | 	.welcome-message {
+745 | 		padding: var(--space-6);
+746 | 	}
+747 | 
+748 | 	.welcome-message .bot-avatar img {
+749 | 		width: 48px;
+750 | 		height: 48px;
+751 | 	}
+752 | 
+753 | 	.welcome-content h3 {
+754 | 		font-size: 1rem;
+755 | 	}
+756 | 
+757 | 	.features-grid {
+758 | 		grid-template-columns: repeat(2, 1fr);
+759 | 		gap: var(--space-2);
+760 | 	}
+761 | 
+762 | 	.message {
+763 | 		max-width: 95%;
+764 | 	}
+765 | 
+766 | 	#input-section {
+767 | 		padding: var(--space-3);
+768 | 	}
+769 | 
+770 | 	.input-wrapper {
+771 | 		padding: var(--space-2);
+772 | 		gap: var(--space-2);
+773 | 	}
+774 | 
+775 | 	.send-button {
+776 | 		min-width: 32px;
+777 | 		height: 32px;
+778 | 	}
+779 | }
+780 | 
+781 | @media (max-width: 480px) {
+782 | 	.header-title {
+783 | 		display: none;
+784 | 	}
+785 | 
+786 | 	.status-indicators {
+787 | 		margin-left: var(--space-1);
+788 | 	}
+789 | 
+790 | 	.model-display {
+791 | 		max-width: 80px;
+792 | 		/* More reasonable for mobile */
+793 | 		font-size: 0.625rem;
+794 | 		padding: var(--space-1);
 795 | 	}
 796 | 
-797 | 	.model-display {
-798 | 		max-width: 80px; /* More reasonable for mobile */
-799 | 		font-size: 0.625rem;
-800 | 		padding: var(--space-1);
-801 | 	}
-802 | 
-803 | 	.features-grid {
-804 | 		grid-template-columns: 1fr;
-805 | 	}
-806 | 
-807 | 	.welcome-message {
-808 | 		padding: var(--space-4);
-809 | 	}
-810 | 
-811 | 	.message {
-812 | 		max-width: 100%;
+797 | 	.features-grid {
+798 | 		grid-template-columns: 1fr;
+799 | 	}
+800 | 
+801 | 	.welcome-message {
+802 | 		padding: var(--space-4);
+803 | 	}
+804 | 
+805 | 	.message {
+806 | 		max-width: 100%;
+807 | 	}
+808 | 
+809 | 	/* Ensure no overlapping on very small screens */
+810 | 	#chat-box {
+811 | 		padding: var(--space-2);
+812 | 		gap: var(--space-2);
 813 | 	}
 814 | 
-815 | 	/* Ensure no overlapping on very small screens */
-816 | 	#chat-box {
-817 | 		padding: var(--space-2);
-818 | 		gap: var(--space-2);
-819 | 	}
-820 | 
-821 | 	#input-section {
-822 | 		padding: var(--space-2);
-823 | 	}
-824 | 
-825 | 	.input-wrapper {
-826 | 		min-height: 44px;
-827 | 	}
+815 | 	#input-section {
+816 | 		padding: var(--space-2);
+817 | 	}
+818 | 
+819 | 	.input-wrapper {
+820 | 		min-height: 44px;
+821 | 	}
+822 | 
+823 | 	.send-button {
+824 | 		width: 32px !important;
+825 | 		height: 32px !important;
+826 | 	}
+827 | }
 828 | 
-829 | 	.send-button {
-830 | 		width: 32px !important;
-831 | 		height: 32px !important;
-832 | 	}
-833 | }
-834 | 
-835 | /* Accessibility and Motion */
-836 | @media (prefers-reduced-motion: reduce) {
-837 | 	* {
-838 | 		animation-duration: 0.01ms !important;
-839 | 		animation-iteration-count: 1 !important;
-840 | 		transition-duration: 0.01ms !important;
-841 | 	}
-842 | }
-843 | 
-844 | /* Focus Styles */
-845 | button:focus-visible,
-846 | textarea:focus-visible {
-847 | 	outline: 2px solid var(--accent-color);
-848 | 	outline-offset: 2px;
-849 | }
-850 | 
-851 | /* Configuration Status Indicators */
-852 | body[data-config-status="invalid"] .input-container {
-853 | 	opacity: 0.7;
-854 | }
-855 | 
-856 | body[data-config-status="invalid"] .input-wrapper::before {
-857 | 	content: '⚠️ Configuration needed - check settings';
-858 | 	position: absolute;
-859 | 	top: -24px;
-860 | 	left: 0;
-861 | 	font-size: 0.75rem;
-862 | 	color: var(--warning-color);
-863 | 	background: var(--card-bg);
-864 | 	padding: var(--space-1) var(--space-2);
-865 | 	border-radius: var(--radius-sm);
-866 | 	border: 1px solid var(--warning-color);
-867 | }
-868 | 
-869 | /* Enhanced Typography */
-870 | code {
-871 | 	background: rgba(248, 250, 252, 0.1);
-872 | 	border: 1px solid var(--border-color);
-873 | 	border-radius: var(--radius-sm);
-874 | 	padding: var(--space-1) var(--space-2);
-875 | 	font-family: var(--font-family-mono);
-876 | 	font-size: 0.8125rem;
-877 | 	color: var(--accent-light);
-878 | }
-879 | 
-880 | /* Link Styles */
-881 | a {
-882 | 	color: var(--accent-light);
-883 | 	text-decoration: none;
-884 | 	border-bottom: 1px solid transparent;
-885 | 	transition: border-color 0.2s ease;
-886 | }
-887 | 
-888 | a:hover {
-889 | 	border-bottom-color: var(--accent-light);
+829 | /* Accessibility and Motion */
+830 | @media (prefers-reduced-motion: reduce) {
+831 | 	* {
+832 | 		animation-duration: 0.01ms !important;
+833 | 		animation-iteration-count: 1 !important;
+834 | 		transition-duration: 0.01ms !important;
+835 | 	}
+836 | }
+837 | 
+838 | /* Focus Styles */
+839 | button:focus-visible,
+840 | textarea:focus-visible {
+841 | 	outline: 2px solid var(--accent-color);
+842 | 	outline-offset: 2px;
+843 | }
+844 | 
+845 | /* Configuration Status Indicators */
+846 | body[data-config-status="invalid"] .input-container {
+847 | 	opacity: 0.7;
+848 | }
+849 | 
+850 | body[data-config-status="invalid"] .input-wrapper::before {
+851 | 	content: '⚠️ Configuration needed - check settings';
+852 | 	position: absolute;
+853 | 	top: -24px;
+854 | 	left: 0;
+855 | 	font-size: 0.75rem;
+856 | 	color: var(--warning-color);
+857 | 	background: var(--card-bg);
+858 | 	padding: var(--space-1) var(--space-2);
+859 | 	border-radius: var(--radius-sm);
+860 | 	border: 1px solid var(--warning-color);
+861 | }
+862 | 
+863 | /* Enhanced Typography */
+864 | code {
+865 | 	background: rgba(248, 250, 252, 0.1);
+866 | 	border: 1px solid var(--border-color);
+867 | 	border-radius: var(--radius-sm);
+868 | 	padding: var(--space-1) var(--space-2);
+869 | 	font-family: var(--font-family-mono);
+870 | 	font-size: 0.8125rem;
+871 | 	color: var(--accent-light);
+872 | }
+873 | 
+874 | /* Link Styles */
+875 | a {
+876 | 	color: var(--accent-light);
+877 | 	text-decoration: none;
+878 | 	border-bottom: 1px solid transparent;
+879 | 	transition: border-color 0.2s ease;
+880 | }
+881 | 
+882 | a:hover {
+883 | 	border-bottom-color: var(--accent-light);
+884 | }
+885 | 
+886 | .flex-code-snippet:hover {
+887 | 	border-color: rgba(0, 122, 204, 0.4);
+888 | 	box-shadow: 0 8px 32px rgba(0, 122, 204, 0.15);
+889 | 	transform: translateY(-2px);
 890 | }
+891 | 
+892 | .flex-code-snippet.expanded {
+893 | 	position: fixed;
+894 | 	top: var(--space-3);
+895 | 	left: var(--space-3);
+896 | 	right: var(--space-3);
+897 | 	bottom: var(--space-3);
+898 | 	z-index: 1000;
+899 | 	background: #1e293b;
+900 | 	/* Solid background */
+901 | 	border: 2px solid var(--accent-color);
+902 | 	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+903 | 	display: flex;
+904 | 	flex-direction: column;
+905 | }
+906 | 
+907 | .flex-code-snippet.expanded .flex-snippet-header,
+908 | .flex-code-snippet.expanded .flex-snippet-line-numbers,
+909 | .flex-code-snippet.expanded .flex-snippet-footer {
+910 | 	background: #1a2333;
+911 | 	/* Solid background for header, footer, and line numbers */
+912 | 	backdrop-filter: none;
+913 | }
+914 | 
+915 | .flex-code-snippet.expanded .flex-snippet-code-container,
+916 | .flex-code-snippet.expanded .flex-snippet-code-content {
+917 | 	background: #0f172a;
+918 | 	/* Solid dark background for the code itself */
+919 | }
+920 | 
+921 | .flex-code-snippet.expanded .flex-snippet-header,
+922 | .flex-code-snippet.expanded .flex-snippet-footer {
+923 | 	flex-shrink: 0;
+924 | }
+925 | 
+926 | .flex-code-snippet.expanded .flex-snippet-code-container {
+927 | 	max-height: none;
+928 | 	flex: 1;
+929 | 	overflow-y: auto;
+930 | 	display: flex;
+931 | }
+932 | 
+933 | .flex-code-snippet.expanded .flex-snippet-code-content {
+934 | 	flex: 1;
+935 | 	overflow: auto;
+936 | }
+937 | 
+938 | .flex-snippet-header {
+939 | 	background: linear-gradient(135deg,
+940 | 			transparent 0%,
+941 | 			var(--accent-color) 50%,
+942 | 			transparent 100%);
+943 | 	padding: var(--space-2);
+944 | 	border-bottom: 1px solid var(--border-color);
+945 | }
+946 | 
+947 | .flex-snippet-header::after {
+948 | 	content: '';
+949 | 	position: absolute;
+950 | 	bottom: 0;
+951 | 	left: 0;
+952 | 	right: 0;
+953 | 	height: 1px;
+954 | 	background: linear-gradient(90deg,
+955 | 			transparent 0%,
+956 | 			var(--accent-color) 50%,
+957 | 			transparent 100%);
+958 | }
+959 | 
+960 | .flex-snippet-header h3 {
+961 | 	margin: 0;
+962 | 	font-size: 1rem;
+963 | 	font-weight: var(--font-weight-semibold);
+964 | 	color: white;
+965 | }
+966 | 
+967 | .flex-snippet-footer {
+968 | 	background: var(--secondary-bg);
+969 | 	padding: var(--space-2);
+970 | 	border-top: 1px solid var(--border-color);
+971 | 	text-align: right;
+972 | }
+973 | 
+974 | .flex-snippet-footer button {
+975 | 	background: var(--accent-color);
+976 | 	border: none;
+977 | 	border-radius: var(--radius-sm);
+978 | 	color: white;
+979 | 	padding: var(--space-1) var(--space-2);
+980 | 	font-size: 0.75rem;
+981 | 	cursor: pointer;
+982 | 	transition: all 0.2s ease;
+983 | }
+984 | 
+985 | .flex-snippet-footer button:hover {
+986 | 	background: var(--accent-hover);
+987 | 	transform: translateY(-1px);
+988 | }
+989 | 
+990 | .flex-snippet-code-content {
+991 | 	padding: var(--space-4);
+992 | }
+993 | 
+994 | .flex-snippet-code-content pre {
+995 | 	margin: 0;
+996 | 	padding: 0;
+997 | }
+998 | 
+999 | .flex-snippet-code-content code {
+1000 | 	background: rgba(248, 250, 252, 0.1);
+1001 | 	border: 1px solid var(--border-color);
+1002 | 	border-radius: var(--radius-sm);
+1003 | 	padding: var(--space-1) var(--space-2);
+1004 | 	font-family: var(--font-family-mono);
+1005 | 	font-size: 0.8125rem;
+1006 | 	color: var(--accent-light);
+1007 | }
+1008 | 
+1009 | .flex-snippet-controls {
+1010 | 	display: flex;
+1011 | 	gap: var(--space-2);
+1012 | }
+1013 | 
+1014 | .flex-copy-button,
+1015 | .flex-expand-button {
+1016 | 	display: flex;
+1017 | 	align-items: center;
+1018 | 	justify-content: center;
+1019 | 	gap: var(--space-2);
+1020 | 	padding: var(--space-2);
+1021 | 	background: rgba(255, 255, 255, 0.05);
+1022 | 	color: var(--text-muted);
+1023 | 	border: 1px solid var(--border-color);
+1024 | 	border-radius: var(--radius-md);
+1025 | 	font-size: 0.875rem;
+1026 | 	font-weight: var(--font-weight-medium);
+1027 | 	cursor: pointer;
+1028 | 	transition: all 0.2s ease;
+1029 | 	box-shadow: none;
+1030 | }
+1031 | 
+1032 | .flex-copy-button:hover,
+1033 | .flex-expand-button:hover {
+1034 | 	background: rgba(255, 255, 255, 0.1);
+1035 | 	border-color: var(--accent-color);
+1036 | 	color: white;
+1037 | }
+1038 | 
+1039 | .flex-copy-button .copy-text {
+1040 | 	display: none;
+1041 | }
+1042 | 
+1043 | .flex-copy-button.copy-success {
+1044 | 	background: var(--success-color);
+1045 | 	color: white;
+1046 | }
+1047 | 
+1048 | .flex-copy-button.copy-error {
+1049 | 	background: var(--error-color);
+1050 | 	color: white;
+1051 | }
+1052 | 
+1053 | .flex-expand-button {
+1054 | 	padding: var(--space-2);
+1055 | 	min-width: auto;
+1056 | }
+1057 | 
+1058 | /* Code Container */
+1059 | .flex-snippet-code-container {
+1060 | 	display: flex;
+1061 | }
 ```
 
 assets/webview/css/reset.css
@@ -11270,7 +11441,7 @@ assets/webview/js/chat.js
 63 |     // Operators (safe ones that won't break HTML)
 64 |     operators: [
 65 |       '\\+', '\\-', '\\*', '\\/', '%', '=', '==', '!=', '<=', '>=',
-66 |       '&&', '\\|\\|', '!', '\\+=', '\\-=', '\\*=', '\\/=', '%=', 
+66 |       '&&', '\\|\\|', '!', '\\+=', '\\-=', '\\*=', '\\/=', '%=',
 67 |       '\\+\\+', '\\-\\-', '\\?', ':', ';', ',', '\\.',
 68 |       '\\[', '\\]', '\\{', '\\}', '\\(', '\\)'
 69 |     ]
@@ -11334,1705 +11505,1704 @@ assets/webview/js/chat.js
 127 |     return confidence >= threshold;
 128 |   }
 129 | 
-130 |   // Extract Flex code snippets from text
-131 |   function extractFlexCodeSnippets(text) {
-132 |     const snippets = [];
-133 |     
-134 |     // Extract code blocks with language specification
-135 |     const langCodeBlocks = text.match(/```(\w*)\n?([\s\S]*?)```/g);
-136 |     if (langCodeBlocks) {
-137 |       langCodeBlocks.forEach((block, index) => {
-138 |         const match = block.match(/```(\w*)\n?([\s\S]*?)```/);
-139 |         if (match) {
-140 |           const lang = match[1].toLowerCase();
-141 |           const code = match[2].trim();
-142 |           
-143 |           if (lang === 'flex' || lang === 'lx' || lang === 'fx' || isFlexCode(code, 0.4)) {
-144 |             snippets.push({
-145 |               id: `flex-snippet-${Date.now()}-${index}`,
-146 |               code: code,
-147 |               language: lang || 'flex',
-148 |               confidence: isFlexCode(code, 0) ? 'high' : 'medium',
-149 |               lineCount: code.split('\n').length,
-150 |               size: code.length
-151 |             });
-152 |           }
-153 |         }
-154 |       });
-155 |     }
-156 | 
-157 |     // Extract code blocks without language specification
-158 |     const genericCodeBlocks = text.match(/```([\s\S]*?)```/g);
-159 |     if (genericCodeBlocks) {
-160 |       genericCodeBlocks.forEach((block, index) => {
-161 |         const code = block.replace(/```/g, '').trim();
-162 |         
-163 |         if (isFlexCode(code, 0.5) && !snippets.some(s => s.code === code)) {
-164 |           snippets.push({
-165 |             id: `flex-snippet-generic-${Date.now()}-${index}`,
-166 |             code: code,
-167 |             language: 'flex',
-168 |             confidence: 'auto-detected',
-169 |             lineCount: code.split('\n').length,
-170 |             size: code.length
-171 |           });
-172 |         }
-173 |       });
-174 |     }
-175 | 
-176 |     return snippets;
-177 |   }
-178 | 
-179 |   // Enhanced Flex syntax highlighting with HTML corruption prevention
-180 |   function highlightFlexSyntax(code) {
-181 |     // DO NOT escape HTML here - we'll handle it differently to preserve syntax highlighting tags
-182 |     let highlighted = code;
-183 |     
-184 |     // Create a temporary placeholder system to protect HTML tags during highlighting
-185 |     const placeholders = [];
-186 |     let placeholderIndex = 0;
+130 |   // Enhanced text formatting function with Flex snippet extraction
+131 |   function formatText(text) {
+132 |     // Clean up broken flex tags that the model might generate
+133 |     text = text.replace(/flex-[\w-]+"[^>]*>/g, '');
+134 | 
+135 |     const flexSnippets = [];
+136 |     let textForMainMessage = text;
+137 | 
+138 |     // Phase 1: Extract ```flex...``` blocks and replace them with placeholders
+139 |     const flexBlockRegex = /```(flex|lx|fx)\n?([\s\S]*?)```/gi;
+140 |     textForMainMessage = textForMainMessage.replace(flexBlockRegex, (match, lang, code) => {
+141 |       const trimmedCode = code.trim();
+142 |       flexSnippets.push({
+143 |         id: `flex-snippet-lang-${Date.now()}-${flexSnippets.length}`,
+144 |         code: trimmedCode,
+145 |         language: lang.toLowerCase(),
+146 |         confidence: 'high',
+147 |         lineCount: trimmedCode.split('\n').length,
+148 |         size: trimmedCode.length,
+149 |       });
+150 |       return `__FLEX_SNIPPET_PLACEHOLDER__`;
+151 |     });
+152 | 
+153 |     // Phase 2: Extract generic ```...``` blocks if they are Flex code, and replace them
+154 |     const genericBlockRegex = /```\n?([\s\S]*?)```/g;
+155 |     textForMainMessage = textForMainMessage.replace(genericBlockRegex, (match, code) => {
+156 |       const trimmedCode = code.trim();
+157 |       if (isFlexCode(trimmedCode, 0.5)) {
+158 |         // This check is a safeguard, but the previous replace should prevent re-matching
+159 |         if (!flexSnippets.some(s => s.code === trimmedCode)) {
+160 |           flexSnippets.push({
+161 |             id: `flex-snippet-generic-${Date.now()}-${flexSnippets.length}`,
+162 |             code: trimmedCode,
+163 |             language: 'flex',
+164 |             confidence: 'auto-detected',
+165 |             lineCount: trimmedCode.split('\n').length,
+166 |             size: trimmedCode.length,
+167 |           });
+168 |           return `__FLEX_SNIPPET_PLACEHOLDER__`;
+169 |         }
+170 |       }
+171 |       return match; // Not a flex snippet, leave it for the next formatting pass
+172 |     });
+173 | 
+174 |     // Now, format the remaining text for the main message body
+175 |     let formatted = textForMainMessage;
+176 | 
+177 |     // Format any remaining (non-Flex) code blocks
+178 |     formatted = formatted.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => {
+179 |       return formatCodeBlock(code.trim(), lang);
+180 |     });
+181 | 
+182 |     // Clean up any remaining placeholders to avoid displaying them
+183 |     formatted = formatted.replace(/__FLEX_SNIPPET_PLACEHOLDER__/g, '').trim();
+184 | 
+185 |     // Format inline code with enhanced styling
+186 |     formatted = formatted.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
 187 | 
-188 |     // Helper function to create and store placeholders with proper HTML escaping
-189 |     function createPlaceholder(htmlTaggedContent) {
-190 |       const placeholder = `__FLEX_PLACEHOLDER_${placeholderIndex++}__`;
-191 |       placeholders.push({ placeholder, content: htmlTaggedContent });
-192 |       return placeholder;
-193 |     }
-194 |     
-195 |     // Helper function to safely escape HTML content inside spans
-196 |     function createHighlightedSpan(cssClass, textContent) {
-197 |       const escapedContent = escapeHtml(textContent);
-198 |       return `<span class="${cssClass}">${escapedContent}</span>`;
-199 |     }
-200 | 
-201 |     // Helper function to restore placeholders
-202 |     function restorePlaceholders(text) {
-203 |       let result = text;
-204 |       // Process placeholders in reverse order to handle nested placeholders correctly
-205 |       for (let i = placeholders.length - 1; i >= 0; i--) {
-206 |         const { placeholder, content } = placeholders[i];
-207 |         // Use a more robust replacement method
-208 |         while (result.includes(placeholder)) {
-209 |           result = result.replace(placeholder, content);
-210 |         }
-211 |       }
-212 |       
-213 |       // Debug: Check if any placeholders remain unreplaced
-214 |       const remainingPlaceholders = result.match(/__FLEX_PLACEHOLDER_\d+__/g);
-215 |       if (remainingPlaceholders) {
-216 |         console.warn('Unreplaced placeholders found:', remainingPlaceholders);
-217 |         // Force cleanup of any remaining placeholders
-218 |         remainingPlaceholders.forEach(placeholder => {
-219 |           result = result.replace(new RegExp(placeholder, 'g'), '');
-220 |         });
-221 |       }
-222 |       
-223 |       return result;
-224 |     }
-225 | 
-226 |     // Highlight comments first (// and /* */)
-227 |     highlighted = highlighted.replace(
-228 |       /(\/\/.*$|\/\*[\s\S]*?\*\/)/gm,
-229 |       (match) => createPlaceholder(createHighlightedSpan('flex-comment', match))
-230 |     );
-231 | 
-232 |     // Highlight strings (single and double quotes) - protect them from further highlighting
-233 |     highlighted = highlighted.replace(
-234 |       /(['"])((?:(?!\1)[^\\]|\\.)*)(\1)/g,
-235 |       (match) => createPlaceholder(createHighlightedSpan('flex-string', match))
-236 |     );
-237 | 
-238 |     // Highlight numbers (integers, floats, hex)
-239 |     highlighted = highlighted.replace(
-240 |       /\b(0x[0-9a-fA-F]+|0b[01]+|\d+\.?\d*(?:[eE][+-]?\d+)?)\b/g,
-241 |       (match) => createPlaceholder(createHighlightedSpan('flex-number', match))
-242 |     );
-243 | 
-244 |     // Highlight function keywords (highest priority)
-245 |     flexSyntax.functionKeywords.forEach(keyword => {
-246 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
-247 |       highlighted = highlighted.replace(regex, (match) => {
-248 |         return createPlaceholder(createHighlightedSpan('flex-function-keyword', match));
-249 |       });
-250 |     });
-251 | 
-252 |     // Highlight control flow keywords
-253 |     flexSyntax.controlKeywords.forEach(keyword => {
-254 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
-255 |       highlighted = highlighted.replace(regex, (match) => {
-256 |         return createPlaceholder(createHighlightedSpan('flex-control-keyword', match));
-257 |       });
-258 |     });
+188 |     // Format **bold** text
+189 |     formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+190 | 
+191 |     // Format *italic* text
+192 |     formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+193 | 
+194 |     // Format links [text](url)
+195 |     formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+196 | 
+197 |     // Format line breaks but preserve code block formatting
+198 |     formatted = formatted.replace(/\n(?![^<]*<\/div>)/g, '<br>');
+199 | 
+200 |     // Add syntax highlighting for Flex keywords in regular text
+201 |     if (isFlexCode(formatted)) {
+202 |       // Highlight common Flex terms in regular text (but not in code blocks)
+203 |       const flexTerms = ['Flex', 'franco', 'arabic', 'bilingual', 'programming'];
+204 |       flexTerms.forEach(term => {
+205 |         const regex = new RegExp(`\\b(${term})\\b(?![^<]*<\/(code|span|div)>)`, 'gi');
+206 |         formatted = formatted.replace(regex, '<span class="flex-highlight">$1</span>');
+207 |       });
+208 |     }
+209 | 
+210 |     return { formatted, flexSnippets };
+211 |   }
+212 | 
+213 |   // Enhanced Flex syntax highlighting with HTML corruption prevention
+214 |   function highlightFlexSyntax(code) {
+215 |     // DO NOT escape HTML here - we'll handle it differently to preserve syntax highlighting tags
+216 |     let highlighted = code;
+217 | 
+218 |     // Create a temporary placeholder system to protect HTML tags during highlighting
+219 |     const placeholders = [];
+220 |     let placeholderIndex = 0;
+221 | 
+222 |     // Helper function to create and store placeholders with proper HTML escaping
+223 |     function createPlaceholder(htmlTaggedContent) {
+224 |       const placeholder = `__FLEX_PLACEHOLDER_${placeholderIndex++}__`;
+225 |       placeholders.push({ placeholder, content: htmlTaggedContent });
+226 |       return placeholder;
+227 |     }
+228 | 
+229 |     // Helper function to safely escape HTML content inside spans
+230 |     function createHighlightedSpan(cssClass, textContent) {
+231 |       const escapedContent = escapeHtml(textContent);
+232 |       return `<span class="${cssClass}">${escapedContent}</span>`;
+233 |     }
+234 | 
+235 |     // Helper function to restore placeholders
+236 |     function restorePlaceholders(text) {
+237 |       let result = text;
+238 |       // Process placeholders in reverse order to handle nested placeholders correctly
+239 |       for (let i = placeholders.length - 1; i >= 0; i--) {
+240 |         const { placeholder, content } = placeholders[i];
+241 |         // Use a more robust replacement method
+242 |         while (result.includes(placeholder)) {
+243 |           result = result.replace(placeholder, content);
+244 |         }
+245 |       }
+246 | 
+247 |       // Debug: Check if any placeholders remain unreplaced
+248 |       const remainingPlaceholders = result.match(/__FLEX_PLACEHOLDER_\d+__/g);
+249 |       if (remainingPlaceholders) {
+250 |         console.warn('Unreplaced placeholders found:', remainingPlaceholders);
+251 |         // Force cleanup of any remaining placeholders
+252 |         remainingPlaceholders.forEach(placeholder => {
+253 |           result = result.replace(new RegExp(placeholder, 'g'), '');
+254 |         });
+255 |       }
+256 | 
+257 |       return result;
+258 |     }
 259 | 
-260 |     // Highlight loop keywords
-261 |     flexSyntax.loopKeywords.forEach(keyword => {
-262 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
-263 |       highlighted = highlighted.replace(regex, (match) => {
-264 |         return createPlaceholder(createHighlightedSpan('flex-loop-keyword', match));
-265 |       });
-266 |     });
-267 | 
-268 |     // Highlight I/O keywords
-269 |     flexSyntax.ioKeywords.forEach(keyword => {
-270 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
-271 |       highlighted = highlighted.replace(regex, (match) => {
-272 |         return createPlaceholder(createHighlightedSpan('flex-io-keyword', match));
-273 |       });
-274 |     });
-275 | 
-276 |     // Highlight data type keywords
-277 |     flexSyntax.dataTypeKeywords.forEach(keyword => {
-278 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
-279 |       highlighted = highlighted.replace(regex, (match) => {
-280 |         return createPlaceholder(createHighlightedSpan('flex-datatype-keyword', match));
-281 |       });
-282 |     });
-283 | 
-284 |     // Highlight literals (boolean and null values)
-285 |     flexSyntax.literals.forEach(literal => {
-286 |       const regex = new RegExp(`\\b(${literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
-287 |       highlighted = highlighted.replace(regex, (match) => {
-288 |         return createPlaceholder(createHighlightedSpan('flex-literal', match));
-289 |       });
-290 |     });
-291 | 
-292 |     // Highlight list methods
-293 |     flexSyntax.listMethods.forEach(method => {
-294 |       const regex = new RegExp(`(${method.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-295 |       highlighted = highlighted.replace(regex, (match) => {
-296 |         return createPlaceholder(createHighlightedSpan('flex-list-method', match));
-297 |       });
-298 |     });
-299 | 
-300 |     // Highlight Franco Arabic keywords (for backward compatibility)
-301 |     flexSyntax.francoKeywords.forEach(keyword => {
-302 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
-303 |       highlighted = highlighted.replace(regex, (match) => {
-304 |         return createPlaceholder(createHighlightedSpan('flex-keyword-franco', match));
-305 |       });
-306 |     });
-307 | 
-308 |     // Highlight English keywords (for backward compatibility)
-309 |     flexSyntax.englishKeywords.forEach(keyword => {
-310 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
-311 |       highlighted = highlighted.replace(regex, (match) => {
-312 |         return createPlaceholder(createHighlightedSpan('flex-keyword-english', match));
-313 |       });
-314 |     });
-315 | 
-316 |     // Highlight function names (word followed by parentheses)
-317 |     highlighted = highlighted.replace(
-318 |       /\b([a-zA-Z_][a-zA-Z0-9_]*)\s*(?=\()/g,
-319 |       (match, funcName) => {
-320 |         return createPlaceholder(createHighlightedSpan('flex-function', funcName)) + match.substring(funcName.length);
-321 |       }
-322 |     );
-323 | 
-324 |     // Highlight operators - be very careful with HTML-sensitive characters
-325 |     const safeOperators = flexSyntax.operators.filter(op => {
-326 |       // Skip operators that could interfere with HTML tags
-327 |       return !['<', '>', '&'].some(htmlChar => op.includes(htmlChar.replace(/\\/g, '')));
-328 |     });
-329 |     
-330 |     safeOperators.forEach(op => {
-331 |       const regex = new RegExp(`(${op})`, 'g');
-332 |       highlighted = highlighted.replace(regex, (match) => {
-333 |         // Double-check we're not inside a placeholder
-334 |         if (match.includes('__FLEX_PLACEHOLDER_')) {
-335 |           return match;
-336 |         }
-337 |         return createPlaceholder(createHighlightedSpan('flex-operator', match));
-338 |       });
-339 |     });
-340 | 
-341 |     // Restore all placeholders to get final highlighted code
-342 |     highlighted = restorePlaceholders(highlighted);
-343 | 
-344 |     return highlighted;
-345 |   }
-346 | 
-347 |   // Create specialized Flex code snippet container
-348 |   function createFlexCodeSnippet(snippet) {
-349 |     const snippetContainer = document.createElement('div');
-350 |     snippetContainer.className = 'flex-code-snippet';
-351 |     snippetContainer.id = snippet.id;
-352 | 
-353 |     // Header with metadata and controls
-354 |     const header = document.createElement('div');
-355 |     header.className = 'flex-snippet-header';
-356 |     
-357 |     const metadata = document.createElement('div');
-358 |     metadata.className = 'flex-snippet-metadata';
-359 |     metadata.innerHTML = `
-360 |       <span class="flex-snippet-language">
-361 |         <span class="flex-icon">⚡</span>
-362 |         Flex Code
-363 |       </span>
-364 |       <span class="flex-snippet-stats">
-365 |         ${snippet.lineCount} lines • ${(snippet.size / 1024).toFixed(1)}KB • ${snippet.confidence}
-366 |       </span>
-367 |     `;
-368 | 
-369 |     const controls = document.createElement('div');
-370 |     controls.className = 'flex-snippet-controls';
-371 |     
-372 |     const copyButton = document.createElement('button');
-373 |     copyButton.className = 'flex-copy-button';
-374 |     copyButton.innerHTML = `
-375 |       <span class="copy-icon">📋</span>
-376 |       <span class="copy-text">Copy Code</span>
-377 |     `;
-378 |     copyButton.title = 'Copy Flex code to clipboard';
-379 | 
-380 |     const expandButton = document.createElement('button');
-381 |     expandButton.className = 'flex-expand-button';
-382 |     expandButton.innerHTML = `<span class="expand-icon">⤢</span>`;
-383 |     expandButton.title = 'Toggle fullscreen view';
-384 | 
-385 |     controls.appendChild(copyButton);
-386 |     controls.appendChild(expandButton);
-387 |     
-388 |     header.appendChild(metadata);
-389 |     header.appendChild(controls);
+260 |     // Highlight comments first (#, //, and /* */)
+261 |     highlighted = highlighted.replace(
+262 |       /(#.*$|\/\/.*$|\/\*[\s\S]*?\*\/)/gm,
+263 |       (match) => createPlaceholder(createHighlightedSpan('flex-comment', match))
+264 |     );
+265 | 
+266 |     // Highlight strings (single and double quotes) - protect them from further highlighting
+267 |     highlighted = highlighted.replace(
+268 |       /(['"])((?:(?!\1)[^\\]|\\.)*)(\1)/g,
+269 |       (match) => createPlaceholder(createHighlightedSpan('flex-string', match))
+270 |     );
+271 | 
+272 |     // Highlight numbers (integers, floats, hex)
+273 |     highlighted = highlighted.replace(
+274 |       /\b(0x[0-9a-fA-F]+|0b[01]+|\d+\.?\d*(?:[eE][+-]?\d+)?)\b/g,
+275 |       (match) => createPlaceholder(createHighlightedSpan('flex-number', match))
+276 |     );
+277 | 
+278 |     // Highlight function keywords (highest priority)
+279 |     flexSyntax.functionKeywords.forEach(keyword => {
+280 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+281 |       highlighted = highlighted.replace(regex, (match) => {
+282 |         return createPlaceholder(createHighlightedSpan('flex-function-keyword', match));
+283 |       });
+284 |     });
+285 | 
+286 |     // Highlight control flow keywords
+287 |     flexSyntax.controlKeywords.forEach(keyword => {
+288 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+289 |       highlighted = highlighted.replace(regex, (match) => {
+290 |         return createPlaceholder(createHighlightedSpan('flex-control-keyword', match));
+291 |       });
+292 |     });
+293 | 
+294 |     // Highlight loop keywords
+295 |     flexSyntax.loopKeywords.forEach(keyword => {
+296 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+297 |       highlighted = highlighted.replace(regex, (match) => {
+298 |         return createPlaceholder(createHighlightedSpan('flex-loop-keyword', match));
+299 |       });
+300 |     });
+301 | 
+302 |     // Highlight I/O keywords
+303 |     flexSyntax.ioKeywords.forEach(keyword => {
+304 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+305 |       highlighted = highlighted.replace(regex, (match) => {
+306 |         return createPlaceholder(createHighlightedSpan('flex-io-keyword', match));
+307 |       });
+308 |     });
+309 | 
+310 |     // Highlight data type keywords
+311 |     flexSyntax.dataTypeKeywords.forEach(keyword => {
+312 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+313 |       highlighted = highlighted.replace(regex, (match) => {
+314 |         return createPlaceholder(createHighlightedSpan('flex-datatype-keyword', match));
+315 |       });
+316 |     });
+317 | 
+318 |     // Highlight literals (boolean and null values)
+319 |     flexSyntax.literals.forEach(literal => {
+320 |       const regex = new RegExp(`\\b(${literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+321 |       highlighted = highlighted.replace(regex, (match) => {
+322 |         return createPlaceholder(createHighlightedSpan('flex-literal', match));
+323 |       });
+324 |     });
+325 | 
+326 |     // Highlight list methods
+327 |     flexSyntax.listMethods.forEach(method => {
+328 |       const regex = new RegExp(`(${method.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+329 |       highlighted = highlighted.replace(regex, (match) => {
+330 |         return createPlaceholder(createHighlightedSpan('flex-list-method', match));
+331 |       });
+332 |     });
+333 | 
+334 |     // Highlight Franco Arabic keywords (for backward compatibility)
+335 |     flexSyntax.francoKeywords.forEach(keyword => {
+336 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+337 |       highlighted = highlighted.replace(regex, (match) => {
+338 |         return createPlaceholder(createHighlightedSpan('flex-keyword-franco', match));
+339 |       });
+340 |     });
+341 | 
+342 |     // Highlight English keywords (for backward compatibility)
+343 |     flexSyntax.englishKeywords.forEach(keyword => {
+344 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+345 |       highlighted = highlighted.replace(regex, (match) => {
+346 |         return createPlaceholder(createHighlightedSpan('flex-keyword-english', match));
+347 |       });
+348 |     });
+349 | 
+350 |     // Highlight function names (word followed by parentheses)
+351 |     highlighted = highlighted.replace(
+352 |       /\b([a-zA-Z_][a-zA-Z0-9_]*)\s*(?=\()/g,
+353 |       (match, funcName) => {
+354 |         return createPlaceholder(createHighlightedSpan('flex-function', funcName)) + match.substring(funcName.length);
+355 |       }
+356 |     );
+357 | 
+358 |     // Highlight operators - be very careful with HTML-sensitive characters
+359 |     const safeOperators = flexSyntax.operators.filter(op => {
+360 |       // Skip operators that could interfere with HTML tags
+361 |       return !['<', '>', '&'].some(htmlChar => op.includes(htmlChar.replace(/\\/g, '')));
+362 |     });
+363 | 
+364 |     safeOperators.forEach(op => {
+365 |       const regex = new RegExp(`(${op})`, 'g');
+366 |       highlighted = highlighted.replace(regex, (match) => {
+367 |         // Double-check we're not inside a placeholder
+368 |         if (match.includes('__FLEX_PLACEHOLDER_')) {
+369 |           return match;
+370 |         }
+371 |         return createPlaceholder(createHighlightedSpan('flex-operator', match));
+372 |       });
+373 |     });
+374 | 
+375 |     // Restore all placeholders to get final highlighted code
+376 |     highlighted = restorePlaceholders(highlighted);
+377 | 
+378 |     return highlighted;
+379 |   }
+380 | 
+381 |   // Create specialized Flex code snippet container
+382 |   function createFlexCodeSnippet(snippet) {
+383 |     const snippetContainer = document.createElement('div');
+384 |     snippetContainer.className = 'flex-code-snippet';
+385 |     snippetContainer.id = snippet.id;
+386 | 
+387 |     // Header with metadata and controls
+388 |     const header = document.createElement('div');
+389 |     header.className = 'flex-snippet-header';
 390 | 
-391 |     // Code container with enhanced highlighting
-392 |     const codeContainer = document.createElement('div');
-393 |     codeContainer.className = 'flex-snippet-code-container';
-394 |     
-395 |     const lineNumbers = document.createElement('div');
-396 |     lineNumbers.className = 'flex-snippet-line-numbers';
-397 |     
-398 |     const codeContent = document.createElement('div');
-399 |     codeContent.className = 'flex-snippet-code-content';
-400 |     
-401 |     // Generate line numbers
-402 |     const lines = snippet.code.split('\n');
-403 |     lineNumbers.innerHTML = lines.map((_, index) => 
-404 |       `<span class="line-number">${index + 1}</span>`
-405 |     ).join('');
-406 |     
-407 |     // Apply enhanced Flex syntax highlighting
-408 |     const highlightedCode = highlightFlexSyntax(snippet.code);
-409 |     codeContent.innerHTML = highlightedCode;
-410 | 
-411 |     codeContainer.appendChild(lineNumbers);
-412 |     codeContainer.appendChild(codeContent);
+391 |     const metadata = document.createElement('div');
+392 |     metadata.className = 'flex-snippet-metadata';
+393 |     metadata.innerHTML = `
+394 |       <span class="flex-snippet-language">
+395 |         <span class="flex-icon">⚡</span>
+396 |         Flex Code
+397 |       </span>
+398 |       <span class="flex-snippet-stats">
+399 |         ${snippet.lineCount} lines • ${(snippet.size / 1024).toFixed(1)}KB • ${snippet.confidence}
+400 |       </span>
+401 |     `;
+402 | 
+403 |     const controls = document.createElement('div');
+404 |     controls.className = 'flex-snippet-controls';
+405 | 
+406 |     const copyButton = document.createElement('button');
+407 |     copyButton.className = 'flex-copy-button';
+408 |     copyButton.innerHTML = `
+409 |       <span class="copy-icon">📋</span>
+410 |       <span class="copy-text">Copy Code</span>
+411 |     `;
+412 |     copyButton.title = 'Copy Flex code to clipboard';
 413 | 
-414 |     // Footer with usage hint
-415 |     const footer = document.createElement('div');
-416 |     footer.className = 'flex-snippet-footer';
-417 |     footer.innerHTML = `
-418 |       <span class="flex-hint">
-419 |         💡 This code can be saved as a <code>.lx</code>, <code>.fx</code>, or <code>.flex</code> file
-420 |       </span>
-421 |     `;
-422 | 
-423 |     snippetContainer.appendChild(header);
-424 |     snippetContainer.appendChild(codeContainer);
-425 |     snippetContainer.appendChild(footer);
-426 | 
-427 |     // Add copy functionality
-428 |     copyButton.addEventListener('click', async () => {
-429 |       await copyFlexCodeToClipboard(snippet.code, copyButton);
-430 |     });
+414 |     const expandButton = document.createElement('button');
+415 |     expandButton.className = 'flex-expand-button';
+416 |     expandButton.innerHTML = `<span class="expand-icon">⤢</span>`;
+417 |     expandButton.title = 'Toggle fullscreen view';
+418 | 
+419 |     controls.appendChild(copyButton);
+420 |     controls.appendChild(expandButton);
+421 | 
+422 |     header.appendChild(metadata);
+423 |     header.appendChild(controls);
+424 | 
+425 |     // Code container with enhanced highlighting
+426 |     const codeContainer = document.createElement('div');
+427 |     codeContainer.className = 'flex-snippet-code-container';
+428 | 
+429 |     const lineNumbers = document.createElement('div');
+430 |     lineNumbers.className = 'flex-snippet-line-numbers';
 431 | 
-432 |     // Add expand functionality
-433 |     expandButton.addEventListener('click', () => {
-434 |       toggleFlexSnippetExpanded(snippetContainer);
-435 |     });
-436 | 
-437 |     return snippetContainer;
-438 |   }
-439 | 
-440 |   // Advanced copy functionality for Flex code
-441 |   async function copyFlexCodeToClipboard(code, buttonElement) {
-442 |     try {
-443 |       // Clean the code (remove any HTML tags that might have been added)
-444 |       const cleanCode = code.replace(/<[^>]*>/g, '');
-445 |       
-446 |       if (navigator.clipboard && window.isSecureContext) {
-447 |         await navigator.clipboard.writeText(cleanCode);
-448 |         showCopySuccess(buttonElement, 'Code copied!');
-449 |       } else {
-450 |         // Fallback for older browsers
-451 |         const textArea = document.createElement('textarea');
-452 |         textArea.value = cleanCode;
-453 |         textArea.style.position = 'fixed';
-454 |         textArea.style.left = '-999999px';
-455 |         textArea.style.top = '-999999px';
-456 |         document.body.appendChild(textArea);
-457 |         textArea.focus();
-458 |         textArea.select();
-459 |         
-460 |         const successful = document.execCommand('copy');
-461 |         document.body.removeChild(textArea);
-462 |         
-463 |         if (successful) {
-464 |           showCopySuccess(buttonElement, 'Code copied!');
-465 |         } else {
-466 |           showCopyError(buttonElement, 'Copy failed');
-467 |         }
-468 |       }
-469 |     } catch (err) {
-470 |       console.warn('Copy failed:', err);
-471 |       showCopyError(buttonElement, 'Copy failed');
-472 |     }
-473 |   }
+432 |     const codeContent = document.createElement('div');
+433 |     codeContent.className = 'flex-snippet-code-content';
+434 | 
+435 |     // Generate line numbers with padding
+436 |     const lines = snippet.code.split('\n');
+437 |     const lineCount = lines.length;
+438 |     let lineNumbersHtml = '';
+439 |     for (let i = 0; i < lineCount + 2; i++) {
+440 |       lineNumbersHtml += `<span class="line-number">${i + 1}</span>`;
+441 |     }
+442 |     lineNumbers.innerHTML = lineNumbersHtml;
+443 | 
+444 |     // Apply enhanced Flex syntax highlighting
+445 |     const highlightedCode = highlightFlexSyntax(snippet.code);
+446 |     codeContent.innerHTML = highlightedCode;
+447 | 
+448 |     codeContainer.appendChild(lineNumbers);
+449 |     codeContainer.appendChild(codeContent);
+450 | 
+451 |     // Footer with usage hint
+452 |     const footer = document.createElement('div');
+453 |     footer.className = 'flex-snippet-footer';
+454 |     footer.innerHTML = `
+455 |       <span class="flex-hint">
+456 |         💡 This code can be saved as a <code>.lx</code>, <code>.fx</code>, or <code>.flex</code> file
+457 |       </span>
+458 |     `;
+459 | 
+460 |     snippetContainer.appendChild(header);
+461 |     snippetContainer.appendChild(codeContainer);
+462 |     snippetContainer.appendChild(footer);
+463 | 
+464 |     // Add copy functionality
+465 |     copyButton.addEventListener('click', async () => {
+466 |       await copyFlexCodeToClipboard(snippet.code, copyButton);
+467 |     });
+468 | 
+469 |     // Add expand functionality
+470 |     expandButton.addEventListener('click', (e) => {
+471 |       e.stopPropagation();
+472 |       toggleFlexSnippetExpanded(snippetContainer);
+473 |     });
 474 | 
-475 |   // Visual feedback for copy operations
-476 |   function showCopySuccess(buttonElement, message) {
-477 |     const originalHTML = buttonElement.innerHTML;
-478 |     buttonElement.innerHTML = `
-479 |       <span class="copy-icon">✅</span>
-480 |       <span class="copy-text">${message}</span>
-481 |     `;
-482 |     buttonElement.classList.add('copy-success');
-483 |     
-484 |     setTimeout(() => {
-485 |       buttonElement.innerHTML = originalHTML;
-486 |       buttonElement.classList.remove('copy-success');
-487 |     }, 2000);
-488 |   }
-489 | 
-490 |   function showCopyError(buttonElement, message) {
-491 |     const originalHTML = buttonElement.innerHTML;
-492 |     buttonElement.innerHTML = `
-493 |       <span class="copy-icon">❌</span>
-494 |       <span class="copy-text">${message}</span>
-495 |     `;
-496 |     buttonElement.classList.add('copy-error');
-497 |     
-498 |     setTimeout(() => {
-499 |       buttonElement.innerHTML = originalHTML;
-500 |       buttonElement.classList.remove('copy-error');
-501 |     }, 2000);
-502 |   }
-503 | 
-504 |   // Toggle expanded view for large code snippets
-505 |   function toggleFlexSnippetExpanded(snippetContainer) {
-506 |     snippetContainer.classList.toggle('expanded');
-507 |     const expandButton = snippetContainer.querySelector('.flex-expand-button');
-508 |     const isExpanded = snippetContainer.classList.contains('expanded');
-509 |     
-510 |     expandButton.innerHTML = isExpanded 
-511 |       ? `<span class="expand-icon">⤡</span>` 
-512 |       : `<span class="expand-icon">⤢</span>`;
-513 |     expandButton.title = isExpanded ? 'Exit fullscreen view' : 'Toggle fullscreen view';
-514 |   }
-515 | 
-516 |   // Enhanced code block formatting with proper spacing and line breaks
-517 |   function formatCodeBlock(code, language = '') {
-518 |     const isFlexLang = language.toLowerCase() === 'flex' || isFlexCode(code);
-519 | 
-520 |     if (isFlexLang) {
-521 |       // Preserve original formatting and line breaks
-522 |       const formattedCode = code
-523 |         .split('\n')
-524 |         .map(line => line.trimEnd()) // Remove trailing spaces but preserve leading indentation
-525 |         .join('\n');
-526 |       
-527 |       const highlighted = highlightFlexSyntax(formattedCode);
-528 |       
-529 |       // Convert newlines to HTML line breaks after highlighting
-530 |       const finalHighlighted = highlighted.replace(/\n/g, '<br>\n');
-531 |       
-532 |       return `<div class="code-block flex-code" data-language="flex"><pre><code>${finalHighlighted}</code></pre></div>`;
-533 |     } else {
-534 |       // Basic highlighting for other languages
-535 |       let highlighted = code;
-536 | 
-537 |       // Basic keyword highlighting for common languages
-538 |       const basicKeywords = ['function', 'if', 'else', 'for', 'while', 'return', 'class', 'import', 'export', 'const', 'let', 'var'];
-539 |       basicKeywords.forEach(keyword => {
-540 |         const regex = new RegExp(`\\b(${keyword})\\b`, 'g');
-541 |         highlighted = highlighted.replace(regex, '<span class="flex-keyword-english">$1</span>');
-542 |       });
-543 | 
-544 |       // Highlight strings
-545 |       highlighted = highlighted.replace(
-546 |         /(['"])((?:(?!\1)[^\\]|\\.)*)(\1)/g,
-547 |         '<span class="flex-string">$1$2$3</span>'
-548 |       );
-549 | 
-550 |       // Highlight numbers
-551 |       highlighted = highlighted.replace(
-552 |         /\b(\d+\.?\d*)\b/g,
-553 |         '<span class="flex-number">$1</span>'
-554 |       );
-555 | 
-556 |       // Preserve line breaks and format with proper HTML structure
-557 |       const formattedHighlighted = highlighted.replace(/\n/g, '<br>\n');
-558 |       
-559 |       return `<div class="code-block" data-language="${language || 'code'}"><pre><code>${formattedHighlighted}</code></pre></div>`;
-560 |     }
-561 |   }
-562 | 
-563 |   // Enhanced text formatting function with Flex snippet extraction
-564 |   function formatText(text) {
-565 |     let formatted = text;
-566 | 
-567 |     // First, extract Flex code snippets for separate display
-568 |     const flexSnippets = extractFlexCodeSnippets(text);
-569 | 
-570 |     // Format code blocks with language specification
-571 |     formatted = formatted.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => {
-572 |       return formatCodeBlock(code.trim(), lang);
-573 |     });
-574 | 
-575 |     // Format code blocks without language specification
-576 |     formatted = formatted.replace(/```([\s\S]*?)```/g, (match, code) => {
-577 |       return formatCodeBlock(code.trim());
-578 |     });
-579 | 
-580 |     // Format inline code with enhanced styling
-581 |     formatted = formatted.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
-582 | 
-583 |     // Format **bold** text
-584 |     formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-585 | 
-586 |     // Format *italic* text
-587 |     formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
-588 | 
-589 |     // Format links [text](url)
-590 |     formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-591 | 
-592 |     // Format line breaks but preserve code block formatting
-593 |     formatted = formatted.replace(/\n(?![^<]*<\/div>)/g, '<br>');
-594 | 
-595 |     // Add syntax highlighting for Flex keywords in regular text
-596 |     if (isFlexCode(formatted)) {
-597 |       // Highlight common Flex terms in regular text (but not in code blocks)
-598 |       const flexTerms = ['Flex', 'franco', 'arabic', 'bilingual', 'programming'];
-599 |       flexTerms.forEach(term => {
-600 |         const regex = new RegExp(`\\b(${term})\\b(?![^<]*<\/(code|span|div)>)`, 'gi');
-601 |         formatted = formatted.replace(regex, '<span class="flex-highlight">$1</span>');
-602 |       });
-603 |     }
-604 | 
-605 |     return { formatted, flexSnippets };
-606 |   }
-607 | 
-608 |   // Enhanced message adding with Flex snippet support
-609 |   function addMessageWithFlexSnippets(content, sender, isStatus = false) {
-610 |     // Hide welcome message when first real message is added
-611 |     if (welcomeMessage && !isStatus) {
-612 |       welcomeMessage.style.display = 'none';
-613 |     }
-614 | 
-615 |     let processedContent;
-616 |     let flexSnippets = [];
+475 |     return snippetContainer;
+476 |   }
+477 | 
+478 |   // Advanced copy functionality for Flex code
+479 |   async function copyFlexCodeToClipboard(code, buttonElement) {
+480 |     try {
+481 |       // Clean the code (remove any HTML tags that might have been added)
+482 |       const cleanCode = code.replace(/<[^>]*>/g, '');
+483 | 
+484 |       if (navigator.clipboard && window.isSecureContext) {
+485 |         await navigator.clipboard.writeText(cleanCode);
+486 |         showCopySuccess(buttonElement, 'Code copied!');
+487 |       } else {
+488 |         // Fallback for older browsers
+489 |         const textArea = document.createElement('textarea');
+490 |         textArea.value = cleanCode;
+491 |         textArea.style.position = 'fixed';
+492 |         textArea.style.left = '-999999px';
+493 |         textArea.style.top = '-999999px';
+494 |         document.body.appendChild(textArea);
+495 |         textArea.focus();
+496 |         textArea.select();
+497 | 
+498 |         const successful = document.execCommand('copy');
+499 |         document.body.removeChild(textArea);
+500 | 
+501 |         if (successful) {
+502 |           showCopySuccess(buttonElement, 'Code copied!');
+503 |         } else {
+504 |           showCopyError(buttonElement, 'Copy failed');
+505 |         }
+506 |       }
+507 |     } catch (err) {
+508 |       console.warn('Copy failed:', err);
+509 |       showCopyError(buttonElement, 'Copy failed');
+510 |     }
+511 |   }
+512 | 
+513 |   // Visual feedback for copy operations
+514 |   function showCopySuccess(buttonElement, message) {
+515 |     const originalHTML = buttonElement.innerHTML;
+516 |     buttonElement.innerHTML = `
+517 |       <span class="copy-icon">✅</span>
+518 |       <span class="copy-text">${message}</span>
+519 |     `;
+520 |     buttonElement.classList.add('copy-success');
+521 | 
+522 |     setTimeout(() => {
+523 |       buttonElement.innerHTML = originalHTML;
+524 |       buttonElement.classList.remove('copy-success');
+525 |     }, 2000);
+526 |   }
+527 | 
+528 |   function showCopyError(buttonElement, message) {
+529 |     const originalHTML = buttonElement.innerHTML;
+530 |     buttonElement.innerHTML = `
+531 |       <span class="copy-icon">❌</span>
+532 |       <span class="copy-text">${message}</span>
+533 |     `;
+534 |     buttonElement.classList.add('copy-error');
+535 | 
+536 |     setTimeout(() => {
+537 |       buttonElement.innerHTML = originalHTML;
+538 |       buttonElement.classList.remove('copy-error');
+539 |     }, 2000);
+540 |   }
+541 | 
+542 |   // Toggle expanded view for large code snippets
+543 |   function toggleFlexSnippetExpanded(snippetContainer) {
+544 |     snippetContainer.classList.toggle('expanded');
+545 |     const isExpanded = snippetContainer.classList.contains('expanded');
+546 |     const expandButton = snippetContainer.querySelector('.flex-expand-button');
+547 |     if (expandButton) {
+548 |       expandButton.innerHTML = isExpanded ? `<span class="expand-icon">⤡</span>` : `<span class="expand-icon">⤢</span>`;
+549 |       expandButton.title = isExpanded ? 'Exit fullscreen view' : 'Toggle fullscreen view';
+550 |     }
+551 |   }
+552 | 
+553 |   // Enhanced code block formatting with proper spacing and line breaks
+554 |   function formatCodeBlock(code, language = '') {
+555 |     const isFlexLang = language.toLowerCase() === 'flex' || isFlexCode(code);
+556 | 
+557 |     if (isFlexLang) {
+558 |       // Preserve original formatting and line breaks
+559 |       const formattedCode = code
+560 |         .split('\n')
+561 |         .map(line => line.trimEnd()) // Remove trailing spaces but preserve leading indentation
+562 |         .join('\n');
+563 | 
+564 |       const highlighted = highlightFlexSyntax(formattedCode);
+565 | 
+566 |       // Convert newlines to HTML line breaks after highlighting
+567 |       const finalHighlighted = highlighted.replace(/\n/g, '<br>\n');
+568 | 
+569 |       return `<div class="code-block flex-code" data-language="flex"><pre><code>${finalHighlighted}</code></pre></div>`;
+570 |     } else {
+571 |       // Basic highlighting for other languages
+572 |       let highlighted = code;
+573 | 
+574 |       // Basic keyword highlighting for common languages
+575 |       const basicKeywords = ['function', 'if', 'else', 'for', 'while', 'return', 'class', 'import', 'export', 'const', 'let', 'var'];
+576 |       basicKeywords.forEach(keyword => {
+577 |         const regex = new RegExp(`\\b(${keyword})\\b`, 'g');
+578 |         highlighted = highlighted.replace(regex, '<span class="flex-keyword-english">$1</span>');
+579 |       });
+580 | 
+581 |       // Highlight strings
+582 |       highlighted = highlighted.replace(
+583 |         /(['"])((?:(?!\1)[^\\]|\\.)*)(\1)/g,
+584 |         '<span class="flex-string">$1$2$3</span>'
+585 |       );
+586 | 
+587 |       // Highlight numbers
+588 |       highlighted = highlighted.replace(
+589 |         /\b(\d+\.?\d*)\b/g,
+590 |         '<span class="flex-number">$1</span>'
+591 |       );
+592 | 
+593 |       // Preserve line breaks and format with proper HTML structure
+594 |       const formattedHighlighted = highlighted.replace(/\n/g, '<br>\n');
+595 | 
+596 |       return `<div class="code-block" data-language="${language || 'code'}"><pre><code>${formattedHighlighted}</code></pre></div>`;
+597 |     }
+598 |   }
+599 | 
+600 |   // Enhanced message adding with Flex snippet support
+601 |   function addMessageWithFlexSnippets(content, sender, isStatus = false) {
+602 |     // Hide welcome message when first real message is added
+603 |     if (welcomeMessage && !isStatus) {
+604 |       welcomeMessage.style.display = 'none';
+605 |     }
+606 | 
+607 |     let processedContent;
+608 |     let flexSnippets = [];
+609 | 
+610 |     if (sender === 'ai' && !isStatus) {
+611 |       const result = formatText(content);
+612 |       processedContent = result.formatted;
+613 |       flexSnippets = result.flexSnippets;
+614 |     } else {
+615 |       processedContent = sender === 'user' ? escapeHtml(content) : content;
+616 |     }
 617 | 
-618 |     if (sender === 'ai' && !isStatus) {
-619 |       const result = formatText(content);
-620 |       processedContent = result.formatted;
-621 |       flexSnippets = result.flexSnippets;
-622 |     } else {
-623 |       processedContent = sender === 'user' ? escapeHtml(content) : content;
-624 |     }
-625 | 
-626 |     // Create main message
-627 |     const messageDiv = document.createElement('div');
-628 | 
-629 |     if (isStatus) {
-630 |       messageDiv.className = 'status-message status-pulse';
-631 |       messageDiv.innerHTML = escapeHtml(content);
-632 |     } else {
-633 |       messageDiv.className = `message ${sender}-message message-animation`;
-634 | 
-635 |       const label = document.createElement('div');
-636 |       label.className = `${sender}-label`;
-637 |       label.innerHTML = sender === 'user' ?
-638 |         '<span class="user-icon">👤</span> You' :
-639 |         '<span class="ai-icon">⚡</span> Flex Assistant';
-640 | 
-641 |       const contentDiv = document.createElement('div');
-642 |       contentDiv.className = 'message-content';
-643 |       contentDiv.innerHTML = processedContent;
-644 | 
-645 |       messageDiv.appendChild(label);
-646 |       messageDiv.appendChild(contentDiv);
-647 |     }
-648 | 
-649 |     chatBox.appendChild(messageDiv);
-650 | 
-651 |     // Add Flex code snippets after the main message
-652 |     if (flexSnippets.length > 0) {
-653 |       flexSnippets.forEach((snippet, index) => {
-654 |         setTimeout(() => {
-655 |           const snippetElement = createFlexCodeSnippet(snippet);
-656 |           chatBox.appendChild(snippetElement);
-657 |           
-658 |           // Animate snippet appearance
-659 |           snippetElement.style.opacity = '0';
-660 |           snippetElement.style.transform = 'translateY(20px)';
-661 |           
-662 |           requestAnimationFrame(() => {
-663 |             snippetElement.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-664 |             snippetElement.style.opacity = '1';
-665 |             snippetElement.style.transform = 'translateY(0)';
-666 |           });
-667 |           
-668 |           scrollChatToBottom();
-669 |         }, index * 200); // Stagger snippet animations
-670 |       });
-671 |     }
-672 | 
-673 |     // Professional entrance animation for main message
-674 |     messageDiv.style.opacity = '0';
-675 |     messageDiv.style.transform = 'translateY(16px) scale(0.98)';
-676 | 
-677 |     requestAnimationFrame(() => {
-678 |       messageDiv.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-679 |       messageDiv.style.opacity = '1';
-680 |       messageDiv.style.transform = 'translateY(0) scale(1)';
-681 |     });
-682 | 
-683 |     // Smooth scroll to bottom
-684 |     scrollChatToBottom();
-685 | 
-686 |     // Add copy functionality to regular code blocks
-687 |     setTimeout(() => {
-688 |       addCopyButtonsToCodeBlocks();
-689 |     }, 150);
-690 | 
-691 |     return { messageDiv, flexSnippets };
-692 |   }
-693 | 
-694 |   // Professional message adding with enhanced animations and styling
-695 |   function addMessage(content, sender, isStatus = false) {
-696 |     return addMessageWithFlexSnippets(content, sender, isStatus);
-697 |   }
+618 |     // Create main message only if there's content for it
+619 |     if ((processedContent && processedContent.trim().length > 0) || isStatus) {
+620 |       const messageDiv = document.createElement('div');
+621 | 
+622 |       if (isStatus) {
+623 |         messageDiv.className = 'status-message status-pulse';
+624 |         messageDiv.innerHTML = escapeHtml(content);
+625 |       } else {
+626 |         messageDiv.className = `message ${sender}-message message-animation`;
+627 | 
+628 |         const label = document.createElement('div');
+629 |         label.className = `${sender}-label`;
+630 |         label.innerHTML = sender === 'user' ?
+631 |           '<span class="user-icon">👤</span> You' :
+632 |           '<span class="ai-icon">⚡</span> Flex Assistant';
+633 | 
+634 |         const contentDiv = document.createElement('div');
+635 |         contentDiv.className = 'message-content';
+636 |         contentDiv.innerHTML = processedContent;
+637 | 
+638 |         messageDiv.appendChild(label);
+639 |         messageDiv.appendChild(contentDiv);
+640 |       }
+641 |       chatBox.appendChild(messageDiv);
+642 | 
+643 |       // Professional entrance animation for main message
+644 |       messageDiv.style.opacity = '0';
+645 |       messageDiv.style.transform = 'translateY(16px) scale(0.98)';
+646 | 
+647 |       requestAnimationFrame(() => {
+648 |         messageDiv.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+649 |         messageDiv.style.opacity = '1';
+650 |         messageDiv.style.transform = 'translateY(0) scale(1)';
+651 |       });
+652 |     }
+653 | 
+654 |     // Add Flex code snippets after the main message
+655 |     if (flexSnippets.length > 0) {
+656 |       flexSnippets.forEach((snippet, index) => {
+657 |         setTimeout(() => {
+658 |           const snippetElement = createFlexCodeSnippet(snippet);
+659 |           chatBox.appendChild(snippetElement);
+660 | 
+661 |           // Animate snippet appearance
+662 |           snippetElement.style.opacity = '0';
+663 |           snippetElement.style.transform = 'translateY(20px)';
+664 | 
+665 |           requestAnimationFrame(() => {
+666 |             snippetElement.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+667 |             snippetElement.style.opacity = '1';
+668 |             snippetElement.style.transform = 'translateY(0)';
+669 |           });
+670 | 
+671 |           scrollChatToBottom();
+672 |         }, index * 200); // Stagger snippet animations
+673 |       });
+674 |     }
+675 | 
+676 |     // Smooth scroll to bottom
+677 |     scrollChatToBottom();
+678 | 
+679 |     // Add copy functionality to regular code blocks
+680 |     setTimeout(() => {
+681 |       addCopyButtonsToCodeBlocks();
+682 |     }, 150);
+683 | 
+684 |     return { flexSnippets };
+685 |   }
+686 | 
+687 |   // Professional message adding with enhanced animations and styling
+688 |   function addMessage(content, sender, isStatus = false) {
+689 |     return addMessageWithFlexSnippets(content, sender, isStatus);
+690 |   }
+691 | 
+692 |   // Professional copy button functionality for code blocks
+693 |   function addCopyButtonsToCodeBlocks() {
+694 |     const codeBlocks = chatBox.querySelectorAll('.code-block:not(.has-copy-button)');
+695 | 
+696 |     codeBlocks.forEach(block => {
+697 |       block.classList.add('has-copy-button');
 698 | 
-699 |   // Professional copy button functionality for code blocks
-700 |   function addCopyButtonsToCodeBlocks() {
-701 |     const codeBlocks = chatBox.querySelectorAll('.code-block:not(.has-copy-button)');
-702 | 
-703 |     codeBlocks.forEach(block => {
-704 |       block.classList.add('has-copy-button');
-705 | 
-706 |       const copyButton = document.createElement('button');
-707 |       copyButton.className = 'copy-code-button';
-708 |       copyButton.innerHTML = '📋';
-709 |       copyButton.title = 'Copy code to clipboard';
-710 |       copyButton.setAttribute('aria-label', 'Copy code to clipboard');
-711 | 
-712 |       copyButton.addEventListener('click', async () => {
-713 |         // Get clean text content without HTML tags
-714 |         const codeText = block.textContent || block.innerText;
-715 | 
-716 |         try {
-717 |           if (navigator.clipboard && window.isSecureContext) {
-718 |             await navigator.clipboard.writeText(codeText);
-719 | 
-720 |             // Professional success feedback
-721 |             copyButton.innerHTML = '✅';
-722 |             copyButton.title = 'Code copied!';
-723 |             copyButton.style.background = 'var(--success-color)';
-724 | 
-725 |             setTimeout(() => {
-726 |               copyButton.innerHTML = '📋';
-727 |               copyButton.title = 'Copy code to clipboard';
-728 |               copyButton.style.background = 'var(--accent-color)';
-729 |             }, 2000);
-730 |           } else {
-731 |             // Fallback for older browsers or non-secure contexts
-732 |             const textArea = document.createElement('textarea');
-733 |             textArea.value = codeText;
-734 |             textArea.style.position = 'fixed';
-735 |             textArea.style.left = '-999999px';
-736 |             textArea.style.top = '-999999px';
-737 |             document.body.appendChild(textArea);
-738 |             textArea.focus();
-739 |             textArea.select();
-740 | 
-741 |             const successful = document.execCommand('copy');
-742 |             document.body.removeChild(textArea);
-743 | 
-744 |             if (successful) {
-745 |               copyButton.innerHTML = '✅';
-746 |               copyButton.title = 'Code copied!';
-747 |               setTimeout(() => {
-748 |                 copyButton.innerHTML = '📋';
-749 |                 copyButton.title = 'Copy code to clipboard';
-750 |               }, 2000);
-751 |             } else {
-752 |               throw new Error('Copy command failed');
-753 |             }
-754 |           }
-755 |         } catch (err) {
-756 |           console.warn('Copy failed:', err);
-757 |           copyButton.innerHTML = '❌';
-758 |           copyButton.title = 'Copy failed';
-759 |           setTimeout(() => {
-760 |             copyButton.innerHTML = '📋';
-761 |             copyButton.title = 'Copy code to clipboard';
-762 |           }, 2000);
-763 |         }
-764 |       });
-765 | 
-766 |       // Ensure proper positioning
-767 |       if (getComputedStyle(block).position === 'static') {
-768 |         block.style.position = 'relative';
-769 |       }
-770 | 
-771 |       block.appendChild(copyButton);
-772 |     });
-773 |   }
+699 |       const copyButton = document.createElement('button');
+700 |       copyButton.className = 'copy-code-button';
+701 |       copyButton.innerHTML = '📋';
+702 |       copyButton.title = 'Copy code to clipboard';
+703 |       copyButton.setAttribute('aria-label', 'Copy code to clipboard');
+704 | 
+705 |       copyButton.addEventListener('click', async () => {
+706 |         // Get clean text content without HTML tags
+707 |         const codeText = block.textContent || block.innerText;
+708 | 
+709 |         try {
+710 |           if (navigator.clipboard && window.isSecureContext) {
+711 |             await navigator.clipboard.writeText(codeText);
+712 | 
+713 |             // Professional success feedback
+714 |             copyButton.innerHTML = '✅';
+715 |             copyButton.title = 'Code copied!';
+716 |             copyButton.style.background = 'var(--success-color)';
+717 | 
+718 |             setTimeout(() => {
+719 |               copyButton.innerHTML = '📋';
+720 |               copyButton.title = 'Copy code to clipboard';
+721 |               copyButton.style.background = 'var(--accent-color)';
+722 |             }, 2000);
+723 |           } else {
+724 |             // Fallback for older browsers or non-secure contexts
+725 |             const textArea = document.createElement('textarea');
+726 |             textArea.value = codeText;
+727 |             textArea.style.position = 'fixed';
+728 |             textArea.style.left = '-999999px';
+729 |             textArea.style.top = '-999999px';
+730 |             document.body.appendChild(textArea);
+731 |             textArea.focus();
+732 |             textArea.select();
+733 | 
+734 |             const successful = document.execCommand('copy');
+735 |             document.body.removeChild(textArea);
+736 | 
+737 |             if (successful) {
+738 |               copyButton.innerHTML = '✅';
+739 |               copyButton.title = 'Code copied!';
+740 |               setTimeout(() => {
+741 |                 copyButton.innerHTML = '📋';
+742 |                 copyButton.title = 'Copy code to clipboard';
+743 |               }, 2000);
+744 |             } else {
+745 |               throw new Error('Copy command failed');
+746 |             }
+747 |           }
+748 |         } catch (err) {
+749 |           console.warn('Copy failed:', err);
+750 |           copyButton.innerHTML = '❌';
+751 |           copyButton.title = 'Copy failed';
+752 |           setTimeout(() => {
+753 |             copyButton.innerHTML = '📋';
+754 |             copyButton.title = 'Copy code to clipboard';
+755 |           }, 2000);
+756 |         }
+757 |       });
+758 | 
+759 |       // Ensure proper positioning
+760 |       if (getComputedStyle(block).position === 'static') {
+761 |         block.style.position = 'relative';
+762 |       }
+763 | 
+764 |       block.appendChild(copyButton);
+765 |     });
+766 |   }
+767 | 
+768 |   // Enhanced scrolling function
+769 |   function scrollChatToBottom() {
+770 |     const scrollOptions = {
+771 |       top: chatBox.scrollHeight,
+772 |       behavior: 'smooth'
+773 |     };
 774 | 
-775 |   // Enhanced scrolling function
-776 |   function scrollChatToBottom() {
-777 |     const scrollOptions = {
-778 |       top: chatBox.scrollHeight,
-779 |       behavior: 'smooth'
-780 |     };
-781 | 
-782 |     chatBox.scrollTo(scrollOptions);
-783 | 
-784 |     // Fallback for browsers that don't support smooth scrolling
-785 |     setTimeout(() => {
-786 |       chatBox.scrollTop = chatBox.scrollHeight;
-787 |     }, 100);
-788 |   }
-789 | 
-790 |   // Enhanced streaming response functions with debugging
-791 |   let streamingMessage = null;
-792 |   let streamingContent = '';
-793 |   let streamingStartTime = 0;
-794 |   let chunkCount = 0;
-795 |   let streamingDebugLog = [];
-796 |   let streamingHealthCheck = null;
-797 |   const MAX_STREAMING_TIME = 600000; // 10 minutes max
-798 |   const MAX_STREAMING_SIZE = 5 * 1024 * 1024; // 5MB frontend limit
-799 | 
-800 |   function logStreamingDebug(event, data = {}) {
-801 |     const debugEntry = {
-802 |       timestamp: Date.now(),
-803 |       event,
-804 |       data: { ...data, chunkCount, contentLength: streamingContent.length }
-805 |     };
-806 |     streamingDebugLog.push(debugEntry);
-807 |     console.debug('[STREAMING]', event, debugEntry.data);
-808 |     
-809 |     // Keep only last 1000 debug entries to prevent memory issues
-810 |     if (streamingDebugLog.length > 1000) {
-811 |       streamingDebugLog = streamingDebugLog.slice(-1000);
-812 |     }
-813 |   }
-814 | 
-815 |   function startStreamingMessage() {
-816 |     try {
-817 |       logStreamingDebug('streaming_start');
-818 |       
-819 |       // Reset streaming state
-820 |       streamingContent = '';
-821 |       chunkCount = 0;
-822 |       streamingStartTime = Date.now();
-823 |       streamingDebugLog = [];
-824 |       
-825 |       // Clear any existing health check
-826 |       if (streamingHealthCheck) {
-827 |         clearInterval(streamingHealthCheck);
-828 |       }
-829 | 
-830 |       // Hide welcome message when streaming starts
-831 |       if (welcomeMessage) {
-832 |         welcomeMessage.style.display = 'none';
-833 |       }
-834 | 
-835 |       // Create streaming message container
-836 |       streamingMessage = document.createElement('div');
-837 |       streamingMessage.className = 'message ai-message message-animation streaming-message';
-838 |       streamingMessage.dataset.streamingId = Date.now().toString();
-839 | 
-840 |       const label = document.createElement('div');
-841 |       label.className = 'ai-label';
-842 |       label.innerHTML = '<span class="ai-icon">⚡</span> Flex Assistant <span class="streaming-status">Streaming...</span>';
-843 | 
-844 |       const contentDiv = document.createElement('div');
-845 |       contentDiv.className = 'message-content streaming-content';
-846 |       contentDiv.innerHTML = '<span class="streaming-cursor">|</span>';
-847 | 
-848 |       streamingMessage.appendChild(label);
-849 |       streamingMessage.appendChild(contentDiv);
-850 |       chatBox.appendChild(streamingMessage);
-851 | 
-852 |       // Professional entrance animation
-853 |       streamingMessage.style.opacity = '0';
-854 |       streamingMessage.style.transform = 'translateY(16px) scale(0.98)';
-855 | 
-856 |       requestAnimationFrame(() => {
-857 |         streamingMessage.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-858 |         streamingMessage.style.opacity = '1';
-859 |         streamingMessage.style.transform = 'translateY(0) scale(1)';
-860 |       });
-861 | 
-862 |       // Set up health monitoring
-863 |       streamingHealthCheck = setInterval(() => {
-864 |         const elapsed = Date.now() - streamingStartTime;
-865 |         const status = streamingMessage.querySelector('.streaming-status');
-866 |         
-867 |         if (elapsed > MAX_STREAMING_TIME) {
-868 |           logStreamingDebug('streaming_timeout', { elapsed });
-869 |           handleStreamingError(new Error('Streaming timeout exceeded'));
-870 |           return;
-871 |         }
-872 |         
-873 |         if (streamingContent.length > MAX_STREAMING_SIZE) {
-874 |           logStreamingDebug('streaming_size_limit', { contentLength: streamingContent.length });
-875 |           handleStreamingError(new Error('Response size limit exceeded'));
-876 |           return;
+775 |     chatBox.scrollTo(scrollOptions);
+776 | 
+777 |     // Fallback for browsers that don't support smooth scrolling
+778 |     setTimeout(() => {
+779 |       chatBox.scrollTop = chatBox.scrollHeight;
+780 |     }, 100);
+781 |   }
+782 | 
+783 |   // Enhanced streaming response functions with debugging
+784 |   let streamingMessage = null;
+785 |   let streamingContent = '';
+786 |   let streamingStartTime = 0;
+787 |   let chunkCount = 0;
+788 |   let streamingDebugLog = [];
+789 |   let streamingHealthCheck = null;
+790 |   const MAX_STREAMING_TIME = 600000; // 10 minutes max
+791 |   const MAX_STREAMING_SIZE = 5 * 1024 * 1024; // 5MB frontend limit
+792 | 
+793 |   function logStreamingDebug(event, data = {}) {
+794 |     const debugEntry = {
+795 |       timestamp: Date.now(),
+796 |       event,
+797 |       data: { ...data, chunkCount, contentLength: streamingContent.length }
+798 |     };
+799 |     streamingDebugLog.push(debugEntry);
+800 |     console.debug('[STREAMING]', event, debugEntry.data);
+801 | 
+802 |     // Keep only last 1000 debug entries to prevent memory issues
+803 |     if (streamingDebugLog.length > 1000) {
+804 |       streamingDebugLog = streamingDebugLog.slice(-1000);
+805 |     }
+806 |   }
+807 | 
+808 |   function startStreamingMessage() {
+809 |     try {
+810 |       logStreamingDebug('streaming_start');
+811 | 
+812 |       // Reset streaming state
+813 |       streamingContent = '';
+814 |       chunkCount = 0;
+815 |       streamingStartTime = Date.now();
+816 |       streamingDebugLog = [];
+817 | 
+818 |       // Clear any existing health check
+819 |       if (streamingHealthCheck) {
+820 |         clearInterval(streamingHealthCheck);
+821 |       }
+822 | 
+823 |       // Hide welcome message when streaming starts
+824 |       if (welcomeMessage) {
+825 |         welcomeMessage.style.display = 'none';
+826 |       }
+827 | 
+828 |       // Create streaming message container
+829 |       streamingMessage = document.createElement('div');
+830 |       streamingMessage.className = 'message ai-message message-animation streaming-message';
+831 |       streamingMessage.dataset.streamingId = Date.now().toString();
+832 | 
+833 |       const label = document.createElement('div');
+834 |       label.className = 'ai-label';
+835 |       label.innerHTML = '<span class="ai-icon">⚡</span> Flex Assistant <span class="streaming-status">Streaming...</span>';
+836 | 
+837 |       const contentDiv = document.createElement('div');
+838 |       contentDiv.className = 'message-content streaming-content';
+839 |       contentDiv.innerHTML = '<span class="streaming-cursor">|</span>';
+840 | 
+841 |       streamingMessage.appendChild(label);
+842 |       streamingMessage.appendChild(contentDiv);
+843 |       chatBox.appendChild(streamingMessage);
+844 | 
+845 |       // Professional entrance animation
+846 |       streamingMessage.style.opacity = '0';
+847 |       streamingMessage.style.transform = 'translateY(16px) scale(0.98)';
+848 | 
+849 |       requestAnimationFrame(() => {
+850 |         streamingMessage.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+851 |         streamingMessage.style.opacity = '1';
+852 |         streamingMessage.style.transform = 'translateY(0) scale(1)';
+853 |       });
+854 | 
+855 |       // Set up health monitoring
+856 |       streamingHealthCheck = setInterval(() => {
+857 |         const elapsed = Date.now() - streamingStartTime;
+858 |         const status = streamingMessage.querySelector('.streaming-status');
+859 | 
+860 |         if (elapsed > MAX_STREAMING_TIME) {
+861 |           logStreamingDebug('streaming_timeout', { elapsed });
+862 |           handleStreamingError(new Error('Streaming timeout exceeded'));
+863 |           return;
+864 |         }
+865 | 
+866 |         if (streamingContent.length > MAX_STREAMING_SIZE) {
+867 |           logStreamingDebug('streaming_size_limit', { contentLength: streamingContent.length });
+868 |           handleStreamingError(new Error('Response size limit exceeded'));
+869 |           return;
+870 |         }
+871 | 
+872 |         // Update status display
+873 |         if (status) {
+874 |           const seconds = Math.floor(elapsed / 1000);
+875 |           const size = (streamingContent.length / 1024).toFixed(1);
+876 |           status.textContent = `Streaming... ${seconds}s | ${size}KB | ${chunkCount} chunks`;
 877 |         }
-878 |         
-879 |         // Update status display
-880 |         if (status) {
-881 |           const seconds = Math.floor(elapsed / 1000);
-882 |           const size = (streamingContent.length / 1024).toFixed(1);
-883 |           status.textContent = `Streaming... ${seconds}s | ${size}KB | ${chunkCount} chunks`;
-884 |         }
-885 |       }, 1000);
-886 | 
-887 |       scrollChatToBottom();
-888 |       logStreamingDebug('streaming_initialized');
-889 |       
-890 |     } catch (error) {
-891 |       logStreamingDebug('streaming_start_error', { error: error.message });
-892 |       handleStreamingError(error);
-893 |     }
-894 |   }
+878 |       }, 1000);
+879 | 
+880 |       scrollChatToBottom();
+881 |       logStreamingDebug('streaming_initialized');
+882 | 
+883 |     } catch (error) {
+884 |       logStreamingDebug('streaming_start_error', { error: error.message });
+885 |       handleStreamingError(error);
+886 |     }
+887 |   }
+888 | 
+889 |   function addStreamingChunk(chunk) {
+890 |     try {
+891 |       if (!streamingMessage) {
+892 |         logStreamingDebug('chunk_received_no_message', { chunkLength: chunk.length });
+893 |         return;
+894 |       }
 895 | 
-896 |   function addStreamingChunk(chunk) {
-897 |     try {
-898 |       if (!streamingMessage) {
-899 |         logStreamingDebug('chunk_received_no_message', { chunkLength: chunk.length });
-900 |         return;
-901 |       }
-902 | 
-903 |       if (!chunk || typeof chunk !== 'string') {
-904 |         logStreamingDebug('invalid_chunk', { chunk, type: typeof chunk });
-905 |         return;
-906 |       }
-907 | 
-908 |       chunkCount++;
-909 |       const chunkSize = chunk.length;
-910 |       
-911 |       // Memory safety check
-912 |       if (streamingContent.length + chunkSize > MAX_STREAMING_SIZE) {
-913 |         logStreamingDebug('chunk_size_exceeded', { 
-914 |           currentSize: streamingContent.length, 
-915 |           chunkSize, 
-916 |           maxSize: MAX_STREAMING_SIZE 
-917 |         });
-918 |         handleStreamingError(new Error('Response size limit exceeded during chunk processing'));
-919 |         return;
-920 |       }
-921 | 
-922 |       streamingContent += chunk;
-923 |       const contentDiv = streamingMessage.querySelector('.streaming-content');
-924 |       
-925 |       if (!contentDiv) {
-926 |         logStreamingDebug('content_div_missing');
-927 |         handleStreamingError(new Error('Streaming content container missing'));
-928 |         return;
-929 |       }
-930 |       
-931 |       // Throttle DOM updates for performance
-932 |       if (chunkCount % 3 === 0 || chunkSize > 100) {
-933 |         try {
-934 |           const result = formatText(streamingContent);
-935 |           const formattedContent = result.formatted;
-936 |           contentDiv.innerHTML = formattedContent + '<span class="streaming-cursor">|</span>';
-937 |           
-938 |           // Auto-scroll but don't force it every time
-939 |           if (chunkCount % 10 === 0) {
-940 |             scrollChatToBottom();
-941 |           }
-942 |         } catch (formatError) {
-943 |           logStreamingDebug('format_error', { 
-944 |             error: formatError.message, 
-945 |             contentLength: streamingContent.length 
-946 |           });
-947 |           // Fallback to plain text if formatting fails
-948 |           contentDiv.innerHTML = escapeHtml(streamingContent) + '<span class="streaming-cursor">|</span>';
-949 |         }
-950 |       }
-951 |       
-952 |       // Log progress periodically
-953 |       if (chunkCount % 50 === 0) {
-954 |         logStreamingDebug('chunk_progress', {
-955 |           chunkSize,
-956 |           totalSize: streamingContent.length,
-957 |           avgChunkSize: streamingContent.length / chunkCount,
-958 |           elapsed: Date.now() - streamingStartTime
-959 |         });
-960 |       }
-961 |       
-962 |     } catch (error) {
-963 |       logStreamingDebug('chunk_processing_error', { error: error.message, chunkCount });
-964 |       handleStreamingError(error);
-965 |     }
-966 |   }
-967 | 
-968 |   function completeStreamingMessage() {
-969 |     try {
-970 |       logStreamingDebug('streaming_complete_start');
-971 |       
-972 |       if (!streamingMessage) {
-973 |         logStreamingDebug('complete_no_message');
-974 |         return;
-975 |       }
-976 | 
-977 |       // Clear health check
-978 |       if (streamingHealthCheck) {
-979 |         clearInterval(streamingHealthCheck);
-980 |         streamingHealthCheck = null;
+896 |       if (!chunk || typeof chunk !== 'string') {
+897 |         logStreamingDebug('invalid_chunk', { chunk, type: typeof chunk });
+898 |         return;
+899 |       }
+900 | 
+901 |       chunkCount++;
+902 |       const chunkSize = chunk.length;
+903 | 
+904 |       // Memory safety check
+905 |       if (streamingContent.length + chunkSize > MAX_STREAMING_SIZE) {
+906 |         logStreamingDebug('chunk_size_exceeded', {
+907 |           currentSize: streamingContent.length,
+908 |           chunkSize,
+909 |           maxSize: MAX_STREAMING_SIZE
+910 |         });
+911 |         handleStreamingError(new Error('Response size limit exceeded during chunk processing'));
+912 |         return;
+913 |       }
+914 | 
+915 |       streamingContent += chunk;
+916 |       const contentDiv = streamingMessage.querySelector('.streaming-content');
+917 | 
+918 |       if (!contentDiv) {
+919 |         logStreamingDebug('content_div_missing');
+920 |         handleStreamingError(new Error('Streaming content container missing'));
+921 |         return;
+922 |       }
+923 | 
+924 |       // Throttle DOM updates for performance
+925 |       if (chunkCount % 3 === 0 || chunkSize > 100) {
+926 |         try {
+927 |           const result = formatText(streamingContent);
+928 |           const formattedContent = result.formatted;
+929 |           contentDiv.innerHTML = formattedContent + '<span class="streaming-cursor">|</span>';
+930 | 
+931 |           // Auto-scroll but don't force it every time
+932 |           if (chunkCount % 10 === 0) {
+933 |             scrollChatToBottom();
+934 |           }
+935 |         } catch (formatError) {
+936 |           logStreamingDebug('format_error', {
+937 |             error: formatError.message,
+938 |             contentLength: streamingContent.length
+939 |           });
+940 |           // Fallback to plain text if formatting fails
+941 |           contentDiv.innerHTML = escapeHtml(streamingContent) + '<span class="streaming-cursor">|</span>';
+942 |         }
+943 |       }
+944 | 
+945 |       // Log progress periodically
+946 |       if (chunkCount % 50 === 0) {
+947 |         logStreamingDebug('chunk_progress', {
+948 |           chunkSize,
+949 |           totalSize: streamingContent.length,
+950 |           avgChunkSize: streamingContent.length / chunkCount,
+951 |           elapsed: Date.now() - streamingStartTime
+952 |         });
+953 |       }
+954 | 
+955 |     } catch (error) {
+956 |       logStreamingDebug('chunk_processing_error', { error: error.message, chunkCount });
+957 |       handleStreamingError(error);
+958 |     }
+959 |   }
+960 | 
+961 |   function completeStreamingMessage() {
+962 |     try {
+963 |       logStreamingDebug('streaming_complete_start');
+964 | 
+965 |       if (!streamingMessage) {
+966 |         logStreamingDebug('complete_no_message');
+967 |         return;
+968 |       }
+969 | 
+970 |       // Clear health check
+971 |       if (streamingHealthCheck) {
+972 |         clearInterval(streamingHealthCheck);
+973 |         streamingHealthCheck = null;
+974 |       }
+975 | 
+976 |       const contentDiv = streamingMessage.querySelector('.streaming-content');
+977 | 
+978 |       if (!contentDiv) {
+979 |         logStreamingDebug('complete_content_div_missing');
+980 |         return;
 981 |       }
 982 | 
-983 |       const contentDiv = streamingMessage.querySelector('.streaming-content');
-984 |       
-985 |       if (!contentDiv) {
-986 |         logStreamingDebug('complete_content_div_missing');
-987 |         return;
-988 |       }
-989 |       
-990 |       // Final content formatting and Flex snippet extraction
-991 |       let flexSnippets = [];
-992 |       try {
-993 |         const result = formatText(streamingContent);
-994 |         const finalContent = result.formatted;
-995 |         flexSnippets = result.flexSnippets;
-996 |         contentDiv.innerHTML = finalContent;
-997 |       } catch (formatError) {
-998 |         logStreamingDebug('final_format_error', { error: formatError.message });
-999 |         // Fallback to plain text
-1000 |         contentDiv.innerHTML = escapeHtml(streamingContent);
-1001 |       }
-1002 |       
-1003 |       // Remove streaming class and update status
-1004 |       streamingMessage.classList.remove('streaming-message');
-1005 |       const status = streamingMessage.querySelector('.streaming-status');
-1006 |       if (status) {
-1007 |         const elapsed = Date.now() - streamingStartTime;
-1008 |         const size = (streamingContent.length / 1024).toFixed(1);
-1009 |         status.textContent = `Complete - ${Math.floor(elapsed / 1000)}s | ${size}KB | ${chunkCount} chunks`;
-1010 |         status.style.color = 'var(--success-color)';
-1011 |       }
-1012 |       
-1013 |       // Add Flex code snippets after streaming completes
-1014 |       if (flexSnippets.length > 0) {
-1015 |         logStreamingDebug('adding_flex_snippets', { snippetCount: flexSnippets.length });
-1016 |         
-1017 |         flexSnippets.forEach((snippet, index) => {
-1018 |           setTimeout(() => {
-1019 |             const snippetElement = createFlexCodeSnippet(snippet);
-1020 |             chatBox.appendChild(snippetElement);
-1021 |             
-1022 |             // Animate snippet appearance
-1023 |             snippetElement.style.opacity = '0';
-1024 |             snippetElement.style.transform = 'translateY(20px)';
-1025 |             
-1026 |             requestAnimationFrame(() => {
-1027 |               snippetElement.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-1028 |               snippetElement.style.opacity = '1';
-1029 |               snippetElement.style.transform = 'translateY(0)';
-1030 |             });
-1031 |             
-1032 |             scrollChatToBottom();
-1033 |           }, index * 300); // Stagger snippet animations
-1034 |         });
-1035 |       }
-1036 | 
-1037 |       // Add copy functionality to regular code blocks
-1038 |       setTimeout(() => {
-1039 |         addCopyButtonsToCodeBlocks();
-1040 |       }, 150);
-1041 | 
-1042 |       // Final scroll to show complete content
-1043 |       scrollChatToBottom();
-1044 |       
-1045 |       logStreamingDebug('streaming_complete_success', {
-1046 |         totalChunks: chunkCount,
-1047 |         totalSize: streamingContent.length,
-1048 |         elapsed: Date.now() - streamingStartTime,
-1049 |         flexSnippets: flexSnippets.length
-1050 |       });
-1051 | 
-1052 |       // Reset streaming state
-1053 |       streamingMessage = null;
-1054 |       streamingContent = '';
-1055 |       chunkCount = 0;
-1056 |       
-1057 |     } catch (error) {
-1058 |       logStreamingDebug('complete_error', { error: error.message });
-1059 |       handleStreamingError(error);
-1060 |     }
-1061 |   }
-1062 | 
-1063 |   function handleStreamingError(error) {
-1064 |     try {
-1065 |       logStreamingDebug('streaming_error', { 
-1066 |         error: error.message,
-1067 |         contentLength: streamingContent.length,
-1068 |         elapsed: Date.now() - streamingStartTime
-1069 |       });
-1070 | 
-1071 |       // Clear health check
-1072 |       if (streamingHealthCheck) {
-1073 |         clearInterval(streamingHealthCheck);
-1074 |         streamingHealthCheck = null;
-1075 |       }
-1076 | 
-1077 |       // Show error in the UI
-1078 |       if (streamingMessage) {
-1079 |         const contentDiv = streamingMessage.querySelector('.streaming-content');
-1080 |         if (contentDiv) {
-1081 |           const errorHtml = `
-1082 |             <div class="streaming-error">
-1083 |               ⚠️ Streaming interrupted: ${escapeHtml(error.message)}
-1084 |               <br><br>
-1085 |               ${formatText(streamingContent)}
-1086 |               <div class="streaming-debug">
-1087 |                 <details>
-1088 |                   <summary>Debug Information</summary>
-1089 |                   <pre>${JSON.stringify({
-1090 |                     chunkCount,
-1091 |                     contentLength: streamingContent.length,
-1092 |                     elapsed: Date.now() - streamingStartTime,
-1093 |                     lastLogs: streamingDebugLog.slice(-10)
-1094 |                   }, null, 2)}</pre>
-1095 |                 </details>
-1096 |               </div>
-1097 |             </div>
-1098 |           `;
-1099 |           contentDiv.innerHTML = errorHtml;
-1100 |         }
-1101 | 
-1102 |         streamingMessage.classList.remove('streaming-message');
-1103 |         streamingMessage.classList.add('streaming-error-message');
-1104 |         
-1105 |         const status = streamingMessage.querySelector('.streaming-status');
-1106 |         if (status) {
-1107 |           status.textContent = 'Error - Check debug info below';
-1108 |           status.style.color = 'var(--error-color)';
-1109 |         }
-1110 |       }
-1111 | 
-1112 |       // Re-enable send button
-1113 |       if (sendButton) {
-1114 |         sendButton.disabled = false;
-1115 |         sendButton.innerHTML = '<span class="send-icon">📤</span>';
-1116 |       }
-1117 | 
-1118 |       // Reset state
-1119 |       streamingMessage = null;
-1120 |       streamingContent = '';
-1121 |       chunkCount = 0;
-1122 | 
-1123 |     } catch (handlerError) {
-1124 |       console.error('[STREAMING] Error in error handler:', handlerError);
-1125 |       // Last resort: show simple error message
-1126 |       addMessage(`⚠️ Streaming error: ${error.message}. Check browser console for details.`, 'ai');
-1127 |     }
-1128 |   }
-1129 | 
-1130 |   // Enhanced send message function
-1131 |   function sendMessage() {
-1132 |     const message = userInput.value.trim();
-1133 |     if (!message) return;
-1134 | 
-1135 |     // Disable send button temporarily
-1136 |     sendButton.disabled = true;
-1137 |     sendButton.innerHTML = '<span class="send-icon">⏳</span>';
-1138 | 
-1139 |     // Add user message to chat
-1140 |     addMessage(message, 'user');
-1141 | 
-1142 |     // Show typing indicator
-1143 |     const typingIndicator = document.createElement('div');
-1144 |     typingIndicator.className = 'status-message typing-indicator';
-1145 |     typingIndicator.innerHTML = '<span class="typing-dots">Flex Assistant is thinking</span><span class="dots">...</span>';
-1146 |     chatBox.appendChild(typingIndicator);
-1147 |     scrollChatToBottom();
-1148 | 
-1149 |     // Send message to extension
-1150 |     vscode.postMessage({
-1151 |       command: 'sendMessage',
-1152 |       text: message
-1153 |     });
-1154 | 
-1155 |     // Clear input field and focus
-1156 |     userInput.value = '';
-1157 |     userInput.focus();
-1158 | 
-1159 |     // Store the typing indicator reference
-1160 |     window.currentTypingIndicator = typingIndicator;
-1161 | 
-1162 |     // Re-enable send button after 2 seconds
-1163 |     setTimeout(() => {
-1164 |       sendButton.disabled = false;
-1165 |       sendButton.innerHTML = '<span class="send-icon">📤</span>';
-1166 |     }, 2000);
-1167 |   }
-1168 | 
-1169 |   // Event listeners
-1170 |   sendButton.addEventListener('click', sendMessage);
-1171 | 
-1172 |   clearButton.addEventListener('click', () => {
-1173 |     // Add confirmation for clearing chat
-1174 |     const confirmClear = confirm('Are you sure you want to clear the chat history?');
-1175 |     if (confirmClear) {
-1176 |       vscode.postMessage({
-1177 |         command: 'clearChat'
-1178 |       });
-1179 |     }
-1180 |   });
-1181 | 
-1182 |   // Change model button event listener
-1183 |   if (changeModelButton) {
-1184 |     changeModelButton.addEventListener('click', () => {
-1185 |       vscode.postMessage({
-1186 |         command: 'selectModel'
-1187 |       });
-1188 |     });
-1189 |   }
-1190 | 
-1191 |   // Professional input handling with enhanced UX
-1192 |   userInput.addEventListener('keydown', (e) => {
-1193 |     if (e.key === 'Enter' && !e.shiftKey) {
-1194 |       e.preventDefault();
-1195 |       sendMessage();
-1196 |     } else if (e.key === 'Enter' && e.shiftKey) {
-1197 |       // Allow Shift+Enter for line breaks
-1198 |       return true;
-1199 |     }
-1200 |   });
-1201 | 
-1202 |   // Auto-resize input with smooth animation
-1203 |   userInput.addEventListener('input', function () {
-1204 |     this.style.height = 'auto';
-1205 |     const newHeight = Math.min(this.scrollHeight, 120);
-1206 |     this.style.height = newHeight + 'px';
-1207 | 
-1208 |     // Add subtle animation for height changes
-1209 |     this.style.transition = 'height 0.2s ease-out';
-1210 |   });
-1211 | 
-1212 |   // Professional focus effects
-1213 |   userInput.addEventListener('focus', function () {
-1214 |     const container = this.closest('.input-container');
-1215 |     if (container) {
-1216 |       container.classList.add('input-focus-ring', 'focused');
-1217 |     }
-1218 |   });
-1219 | 
-1220 |   userInput.addEventListener('blur', function () {
-1221 |     const container = this.closest('.input-container');
-1222 |     if (container) {
-1223 |       container.classList.remove('focused');
-1224 |     }
-1225 |   });
-1226 | 
-1227 |   // Handle messages from the extension
-1228 |   window.addEventListener('message', event => {
-1229 |     const message = event.data;
-1230 | 
-1231 |     switch (message.command) {
-1232 |       case 'aiStreamStart':
-1233 |         // Remove typing indicator and start streaming response
-1234 |         if (window.currentTypingIndicator) {
-1235 |           window.currentTypingIndicator.remove();
-1236 |           window.currentTypingIndicator = null;
-1237 |         }
-1238 | 
-1239 |         // Create streaming message container
-1240 |         startStreamingMessage();
-1241 |         break;
-1242 | 
-1243 |       case 'aiStreamChunk':
-1244 |         // Add chunk to streaming message
-1245 |         addStreamingChunk(message.text);
-1246 |         break;
-1247 | 
-1248 |       case 'aiStreamComplete':
-1249 |         // Complete streaming response
-1250 |         completeStreamingMessage();
-1251 |         
-1252 |         // Re-enable send button
-1253 |         sendButton.disabled = false;
-1254 |         sendButton.innerHTML = '<span class="send-icon">📤</span>';
-1255 |         break;
-1256 | 
-1257 |       case 'aiResponse':
-1258 |         // Fallback for non-streaming responses
-1259 |         // Remove typing indicator
-1260 |         if (window.currentTypingIndicator) {
-1261 |           window.currentTypingIndicator.remove();
-1262 |           window.currentTypingIndicator = null;
-1263 |         }
-1264 | 
-1265 |         // Re-enable send button
-1266 |         sendButton.disabled = false;
-1267 |         sendButton.innerHTML = '<span class="send-icon">📤</span>';
-1268 | 
-1269 |         // Display AI response with enhanced formatting
-1270 |         addMessage(message.text, 'ai');
-1271 |         break;
-1272 | 
-1273 |       case 'statusUpdate':
-1274 |         // Handle status updates - if empty, clear typing indicator
-1275 |         if (!message.text || message.text.trim() === '') {
-1276 |           if (window.currentTypingIndicator) {
-1277 |             window.currentTypingIndicator.remove();
-1278 |             window.currentTypingIndicator = null;
-1279 |           }
-1280 |           // Re-enable send button
-1281 |           sendButton.disabled = false;
-1282 |           sendButton.innerHTML = '<span class="send-icon">📤</span>';
-1283 |         } else {
-1284 |           // Show status update in chat
-1285 |           addMessage(message.text, null, true);
-1286 |         }
-1287 |         break;
-1288 | 
-1289 |       case 'chatCleared':
-1290 |         // Clear the chat box with animation
-1291 |         const messages = chatBox.querySelectorAll('.message, .status-message');
-1292 |         messages.forEach((msg, index) => {
-1293 |           setTimeout(() => {
-1294 |             msg.style.transition = 'all 0.2s ease-out';
-1295 |             msg.style.opacity = '0';
-1296 |             msg.style.transform = 'translateY(-20px)';
-1297 |             setTimeout(() => msg.remove(), 200);
-1298 |           }, index * 50);
-1299 |         });
-1300 | 
-1301 |         setTimeout(() => {
-1302 |           chatBox.innerHTML = '';
-1303 |           // Re-add welcome message if it exists
-1304 |           if (welcomeMessage) {
-1305 |             const welcomeClone = welcomeMessage.cloneNode(true);
-1306 |             welcomeClone.style.display = 'flex';
-1307 |             chatBox.appendChild(welcomeClone);
-1308 |           }
-1309 |         }, messages.length * 50 + 200);
-1310 |         break;
-1311 | 
-1312 |       case 'error':
-1313 |         // Display error messages with special styling
-1314 |         const errorDiv = document.createElement('div');
-1315 |         errorDiv.className = 'status-message error-message';
-1316 |         errorDiv.innerHTML = `⚠️ ${escapeHtml(message.text)}`;
-1317 |         chatBox.appendChild(errorDiv);
-1318 |         scrollChatToBottom();
-1319 |         break;
-1320 |     }
-1321 |   });
-1322 | 
-1323 |   // Initialize chat
-1324 |   function initializeChat() {
-1325 |     userInput.focus();
-1326 | 
-1327 |     // Add welcome message if chat is empty
-1328 |     if (chatBox.children.length === 0) {
-1329 |       setTimeout(() => {
-1330 |         addMessage('Welcome! I\'m your Flex programming assistant. I can help you with Franco-Arabic programming, syntax, examples, and best practices. How can I assist you today?', null, true);
-1331 |       }, 500);
-1332 |     }
-1333 |   }
-1334 | 
-1335 |   // Professional dynamic styles
-1336 |   const style = document.createElement('style');
-1337 |   style.textContent = `
-1338 |     .typing-indicator .dots {
-1339 |       animation: typing 1.8s ease-in-out infinite;
-1340 |     }
-1341 |     
-1342 |     @keyframes typing {
-1343 |       0%, 60%, 100% { opacity: 1; }
-1344 |       30% { opacity: 0.4; }
-1345 |     }
-1346 |     
-1347 |     .flex-highlight {
-1348 |       background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
-1349 |       color: white;
-1350 |       padding: var(--space-1) var(--space-2);
-1351 |       border-radius: var(--radius-sm);
-1352 |       font-weight: var(--font-weight-semibold);
-1353 |       box-shadow: var(--shadow-sm);
-1354 |     }
-1355 |     
-1356 |     .error-message {
-1357 |       background: linear-gradient(135deg, 
-1358 |         rgba(239, 68, 68, 0.08) 0%, 
-1359 |         rgba(239, 68, 68, 0.05) 100%);
-1360 |       border: 1px solid rgba(239, 68, 68, 0.2);
-1361 |       border-left: 3px solid var(--error-color);
-1362 |       color: var(--error-color);
-1363 |       backdrop-filter: blur(10px);
-1364 |     }
-1365 |     
-1366 |     .message-animation {
-1367 |       animation: messageAppear 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-1368 |     }
-1369 |     
-1370 |     @keyframes messageAppear {
-1371 |       0% {
-1372 |         opacity: 0;
-1373 |         transform: translateY(20px) scale(0.95);
-1374 |       }
-1375 |       100% {
-1376 |         opacity: 1;
-1377 |         transform: translateY(0) scale(1);
-1378 |       }
-1379 |     }
-1380 |     
-1381 |     .status-pulse {
-1382 |       animation: statusPulse 2.5s ease-in-out infinite;
-1383 |     }
-1384 |     
-1385 |     @keyframes statusPulse {
-1386 |       0%, 100% { 
-1387 |         opacity: 0.8; 
-1388 |         transform: scale(1);
-1389 |       }
-1390 |       50% { 
-1391 |         opacity: 1; 
-1392 |         transform: scale(1.02);
-1393 |       }
-1394 |     }
-1395 |     
-1396 |     .input-focus-ring {
-1397 |       position: relative;
-1398 |     }
-1399 |     
-1400 |     .input-focus-ring::before {
-1401 |       content: '';
-1402 |       position: absolute;
-1403 |       inset: -2px;
-1404 |       background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
-1405 |       border-radius: calc(var(--radius-lg) + 2px);
-1406 |       opacity: 0;
-1407 |       transition: opacity 0.3s ease;
-1408 |       z-index: -1;
-1409 |     }
-1410 |     
-1411 |     .input-focus-ring.focused::before {
-1412 |       opacity: 0.1;
-1413 |     }
-1414 |     
-1415 |     .streaming-cursor {
-1416 |       display: inline-block;
-1417 |       background: var(--accent-color);
-1418 |       color: transparent;
-1419 |       margin-left: 2px;
-1420 |       animation: blink 1.2s ease-in-out infinite;
-1421 |     }
-1422 |     
-1423 |     @keyframes blink {
-1424 |       0%, 50% { opacity: 1; }
-1425 |       51%, 100% { opacity: 0; }
-1426 |     }
-1427 |     
-1428 |     .streaming-message {
-1429 |       position: relative;
-1430 |     }
-1431 |     
-1432 |     .streaming-message::after {
-1433 |       content: '';
-1434 |       position: absolute;
-1435 |       bottom: 0;
-1436 |       left: 0;
-1437 |       right: 0;
-1438 |       height: 2px;
-1439 |       background: linear-gradient(90deg, 
-1440 |         transparent 0%, 
-1441 |         var(--accent-color) 30%, 
-1442 |         transparent 70%);
-1443 |       animation: streamingProgress 2s ease-in-out infinite;
-1444 |     }
-1445 |     
-1446 |     @keyframes streamingProgress {
-1447 |       0% { transform: translateX(-100%); }
-1448 |       100% { transform: translateX(100%); }
-1449 |     }
-1450 |     
-1451 |     .streaming-status {
-1452 |       font-size: 0.75rem;
-1453 |       opacity: 0.7;
-1454 |       margin-left: var(--space-2);
-1455 |       font-family: var(--font-mono);
-1456 |     }
-1457 |     
-1458 |     .streaming-error {
-1459 |       background: rgba(239, 68, 68, 0.05);
-1460 |       border: 1px solid rgba(239, 68, 68, 0.2);
-1461 |       border-radius: var(--radius);
-1462 |       padding: var(--space-3);
-1463 |       margin: var(--space-2) 0;
-1464 |     }
-1465 |     
-1466 |     .streaming-error-message {
-1467 |       border-left: 3px solid var(--error-color);
-1468 |     }
-1469 |     
-1470 |     .streaming-debug {
-1471 |       margin-top: var(--space-3);
-1472 |       font-size: 0.875rem;
-1473 |     }
-1474 |     
-1475 |     .streaming-debug details {
-1476 |       background: rgba(0, 0, 0, 0.1);
-1477 |       border-radius: var(--radius);
-1478 |       padding: var(--space-2);
-1479 |     }
-1480 |     
-1481 |     .streaming-debug summary {
-1482 |       cursor: pointer;
-1483 |       font-weight: var(--font-weight-semibold);
-1484 |       padding: var(--space-1);
-1485 |     }
-1486 |     
-1487 |     .streaming-debug pre {
-1488 |       background: rgba(0, 0, 0, 0.2);
-1489 |       padding: var(--space-2);
-1490 |       border-radius: var(--radius);
-1491 |       overflow-x: auto;
-1492 |       font-size: 0.75rem;
-1493 |       margin-top: var(--space-2);
-1494 |     }
-1495 |     
-1496 |     /* Flex Code Snippet Professional Styling */
-1497 |     .flex-code-snippet {
-1498 |       background: linear-gradient(135deg, 
-1499 |         rgba(0, 122, 204, 0.03) 0%, 
-1500 |         rgba(0, 122, 204, 0.01) 100%);
-1501 |       border: 2px solid rgba(0, 122, 204, 0.2);
-1502 |       border-radius: var(--radius-lg);
-1503 |       margin: var(--space-4) 0;
-1504 |       box-shadow: 0 4px 20px rgba(0, 122, 204, 0.1);
-1505 |       overflow: hidden;
-1506 |       transition: all 0.3s ease;
-1507 |       position: relative;
-1508 |     }
-1509 |     
-1510 |     .flex-code-snippet:hover {
-1511 |       border-color: rgba(0, 122, 204, 0.4);
-1512 |       box-shadow: 0 8px 32px rgba(0, 122, 204, 0.15);
-1513 |       transform: translateY(-2px);
-1514 |     }
-1515 |     
-1516 |     .flex-code-snippet.expanded {
-1517 |       position: fixed;
-1518 |       top: var(--space-3);
-1519 |       left: var(--space-3);
-1520 |       right: var(--space-3);
-1521 |       bottom: var(--space-3);
-1522 |       z-index: 1000;
-1523 |       background: var(--bg-secondary);
-1524 |       border-color: var(--accent-color);
-1525 |       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-1526 |     }
-1527 |     
-1528 |     /* Snippet Header */
-1529 |     .flex-snippet-header {
-1530 |       background: linear-gradient(135deg, 
-1531 |         rgba(0, 122, 204, 0.08) 0%, 
-1532 |         rgba(0, 122, 204, 0.04) 100%);
-1533 |       padding: var(--space-3) var(--space-4);
-1534 |       border-bottom: 1px solid rgba(0, 122, 204, 0.2);
-1535 |       display: flex;
-1536 |       justify-content: space-between;
-1537 |       align-items: center;
-1538 |       backdrop-filter: blur(10px);
-1539 |     }
-1540 |     
-1541 |     .flex-snippet-metadata {
-1542 |       display: flex;
-1543 |       align-items: center;
-1544 |       gap: var(--space-3);
-1545 |     }
-1546 |     
-1547 |     .flex-snippet-language {
-1548 |       display: flex;
-1549 |       align-items: center;
-1550 |       gap: var(--space-2);
-1551 |       font-weight: var(--font-weight-bold);
-1552 |       color: var(--accent-color);
-1553 |       font-size: 1rem;
-1554 |     }
-1555 |     
-1556 |     .flex-icon {
-1557 |       font-size: 1.2em;
-1558 |       filter: drop-shadow(0 0 4px currentColor);
-1559 |     }
-1560 |     
-1561 |     .flex-snippet-stats {
-1562 |       font-size: 0.875rem;
-1563 |       color: var(--text-secondary);
-1564 |       font-family: var(--font-mono);
-1565 |       background: rgba(0, 122, 204, 0.1);
-1566 |       padding: var(--space-1) var(--space-2);
-1567 |       border-radius: var(--radius);
-1568 |       border: 1px solid rgba(0, 122, 204, 0.2);
-1569 |     }
-1570 |     
-1571 |     .flex-snippet-controls {
-1572 |       display: flex;
-1573 |       gap: var(--space-2);
-1574 |     }
-1575 |     
-1576 |     .flex-copy-button, .flex-expand-button {
-1577 |       display: flex;
-1578 |       align-items: center;
-1579 |       gap: var(--space-2);
-1580 |       padding: var(--space-2) var(--space-3);
-1581 |       background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
-1582 |       color: white;
-1583 |       border: none;
-1584 |       border-radius: var(--radius);
-1585 |       font-size: 0.875rem;
-1586 |       font-weight: var(--font-weight-medium);
-1587 |       cursor: pointer;
-1588 |       transition: all 0.2s ease;
-1589 |       box-shadow: 0 2px 8px rgba(0, 122, 204, 0.3);
-1590 |     }
-1591 |     
-1592 |     .flex-copy-button:hover, .flex-expand-button:hover {
-1593 |       transform: translateY(-1px);
-1594 |       box-shadow: 0 4px 16px rgba(0, 122, 204, 0.4);
-1595 |       background: linear-gradient(135deg, var(--accent-hover), var(--accent-color));
-1596 |     }
-1597 |     
-1598 |     .flex-copy-button:active, .flex-expand-button:active {
-1599 |       transform: translateY(0);
-1600 |       box-shadow: 0 1px 4px rgba(0, 122, 204, 0.3);
-1601 |     }
-1602 |     
-1603 |     .flex-copy-button.copy-success {
-1604 |       background: linear-gradient(135deg, var(--success-color), #10b981);
-1605 |     }
-1606 |     
-1607 |     .flex-copy-button.copy-error {
-1608 |       background: linear-gradient(135deg, var(--error-color), #dc2626);
-1609 |     }
-1610 |     
-1611 |     .flex-expand-button {
-1612 |       padding: var(--space-2);
-1613 |       min-width: auto;
-1614 |     }
-1615 |     
-1616 |     /* Code Container */
-1617 |     .flex-snippet-code-container {
-1618 |       display: flex;
-1619 |       background: var(--bg-primary);
-1620 |       max-height: 400px;
-1621 |       overflow: hidden;
-1622 |     }
-1623 |     
-1624 |     .flex-code-snippet.expanded .flex-snippet-code-container {
-1625 |       max-height: none;
-1626 |       flex: 1;
-1627 |       overflow-y: auto;
-1628 |     }
-1629 |     
-1630 |     .flex-snippet-line-numbers {
-1631 |       background: rgba(0, 122, 204, 0.05);
-1632 |       border-right: 1px solid rgba(0, 122, 204, 0.2);
-1633 |       padding: var(--space-3) var(--space-2);
-1634 |       font-family: var(--font-mono);
-1635 |       font-size: 0.875rem;
-1636 |       color: var(--text-muted);
-1637 |       user-select: none;
-1638 |       min-width: 60px;
-1639 |       text-align: right;
-1640 |     }
-1641 |     
-1642 |     .flex-snippet-line-numbers .line-number {
-1643 |       display: block;
-1644 |       line-height: 1.5;
-1645 |       transition: color 0.2s ease;
-1646 |     }
-1647 |     
-1648 |     .flex-snippet-line-numbers .line-number:hover {
-1649 |       color: var(--accent-color);
-1650 |     }
-1651 |     
-1652 |     .flex-snippet-code-content {
-1653 |       flex: 1;
-1654 |       padding: var(--space-3);
-1655 |       font-family: var(--font-mono);
-1656 |       font-size: 0.875rem;
-1657 |       line-height: 1.5;
-1658 |       overflow-x: auto;
-1659 |       white-space: pre;
-1660 |       color: var(--text-primary);
-1661 |       background: var(--bg-primary);
-1662 |     }
-1663 |     
-1664 |     /* Enhanced Flex syntax highlighting in snippets */
-1665 |     .flex-snippet-code-content .flex-keyword-franco {
-1666 |       color: #ff6b9d;
-1667 |       font-weight: var(--font-weight-bold);
-1668 |       text-shadow: 0 0 2px rgba(255, 107, 157, 0.3);
-1669 |     }
-1670 |     
-1671 |     .flex-snippet-code-content .flex-keyword-english {
-1672 |       color: #4ecdc4;
-1673 |       font-weight: var(--font-weight-bold);
-1674 |     }
-1675 |     
-1676 |     .flex-snippet-code-content .flex-string {
-1677 |       color: #45b7d1;
-1678 |     }
-1679 |     
-1680 |     .flex-snippet-code-content .flex-number {
-1681 |       color: #f9ca24;
-1682 |     }
-1683 |     
-1684 |     .flex-snippet-code-content .flex-comment {
-1685 |       color: var(--text-muted);
-1686 |       font-style: italic;
-1687 |     }
-1688 |     
-1689 |     .flex-snippet-code-content .flex-function {
-1690 |       color: #6c5ce7;
-1691 |       font-weight: var(--font-weight-medium);
-1692 |     }
-1693 |     
-1694 |     .flex-snippet-code-content .flex-operator {
-1695 |       color: #fd79a8;
-1696 |     }
-1697 |     
-1698 |     .flex-snippet-code-content .flex-variable {
-1699 |       color: #00b894;
-1700 |     }
-1701 |     
-1702 |     /* Snippet Footer */
-1703 |     .flex-snippet-footer {
-1704 |       background: rgba(0, 122, 204, 0.03);
-1705 |       border-top: 1px solid rgba(0, 122, 204, 0.1);
-1706 |       padding: var(--space-2) var(--space-4);
-1707 |       font-size: 0.875rem;
-1708 |     }
-1709 |     
-1710 |     .flex-hint {
-1711 |       color: var(--text-secondary);
-1712 |       display: flex;
-1713 |       align-items: center;
-1714 |       gap: var(--space-2);
-1715 |     }
-1716 |     
-1717 |     .flex-hint code {
-1718 |       background: rgba(0, 122, 204, 0.1);
-1719 |       color: var(--accent-color);
-1720 |       padding: var(--space-1);
-1721 |       border-radius: var(--radius-sm);
-1722 |       font-family: var(--font-mono);
-1723 |       font-size: 0.8em;
-1724 |     }
-1725 |     
-1726 |     /* Responsive design for mobile */
-1727 |     @media (max-width: 768px) {
-1728 |       .flex-code-snippet.expanded {
-1729 |         top: 0;
-1730 |         left: 0;
-1731 |         right: 0;
-1732 |         bottom: 0;
-1733 |       }
-1734 |       
-1735 |       .flex-snippet-header {
-1736 |         padding: var(--space-2) var(--space-3);
-1737 |         flex-direction: column;
-1738 |         gap: var(--space-2);
-1739 |       }
-1740 |       
-1741 |       .flex-snippet-metadata {
-1742 |         flex-direction: column;
-1743 |         gap: var(--space-1);
-1744 |         align-items: flex-start;
-1745 |       }
-1746 |       
-1747 |       .flex-copy-button .copy-text {
-1748 |         display: none;
-1749 |       }
-1750 |       
-1751 |       .flex-snippet-line-numbers {
-1752 |         min-width: 40px;
-1753 |         padding: var(--space-2) var(--space-1);
-1754 |       }
-1755 |       
-1756 |       .flex-snippet-code-content {
-1757 |         padding: var(--space-2);
-1758 |         font-size: 0.8rem;
-1759 |       }
-1760 |     }
-1761 |     
-1762 |     /* Scrollbar styling for code content */
-1763 |     .flex-snippet-code-content::-webkit-scrollbar {
-1764 |       height: 6px;
-1765 |     }
-1766 |     
-1767 |     .flex-snippet-code-content::-webkit-scrollbar-thumb {
-1768 |       background: rgba(0, 122, 204, 0.3);
-1769 |       border-radius: 3px;
-1770 |     }
-1771 |     
-1772 |     .flex-snippet-code-content::-webkit-scrollbar-thumb:hover {
-1773 |       background: rgba(0, 122, 204, 0.5);
-1774 |     }
-1775 |     
-1776 |     /* Animation for snippet appearance */
-1777 |     @keyframes flexSnippetAppear {
-1778 |       0% {
-1779 |         opacity: 0;
-1780 |         transform: translateY(30px) scale(0.95);
-1781 |       }
-1782 |       100% {
-1783 |         opacity: 1;
-1784 |         transform: translateY(0) scale(1);
-1785 |       }
-1786 |     }
-1787 |     
-1788 |     .flex-code-snippet {
-1789 |       animation: flexSnippetAppear 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-1790 |     }
-1791 |   `;
-1792 | 
-1793 |   document.head.appendChild(style);
-1794 | 
-1795 |   // Add global debugging function for streaming
-1796 |   window.exportStreamingDebugLog = function() {
-1797 |     const debugData = {
-1798 |       timestamp: new Date().toISOString(),
-1799 |       streamingDebugLog,
-1800 |       currentState: {
-1801 |         streamingMessage: !!streamingMessage,
-1802 |         streamingContent: streamingContent.length,
-1803 |         chunkCount,
-1804 |         streamingStartTime,
-1805 |         hasHealthCheck: !!streamingHealthCheck
-1806 |       },
-1807 |       memoryUsage: performance.memory ? {
-1808 |         usedJSHeapSize: performance.memory.usedJSHeapSize,
-1809 |         totalJSHeapSize: performance.memory.totalJSHeapSize,
-1810 |         jsHeapSizeLimit: performance.memory.jsHeapSizeLimit
-1811 |       } : 'Not available'
-1812 |     };
-1813 |     
-1814 |     console.log('Streaming Debug Export:', debugData);
-1815 |     
-1816 |     // Also copy to clipboard if available
-1817 |     if (navigator.clipboard) {
-1818 |       navigator.clipboard.writeText(JSON.stringify(debugData, null, 2))
-1819 |         .then(() => console.log('Debug data copied to clipboard'))
-1820 |         .catch(err => console.warn('Could not copy to clipboard:', err));
-1821 |     }
-1822 |     
-1823 |     return debugData;
-1824 |   };
-1825 | 
-1826 |   // Initialize the chat interface
-1827 |   initializeChat();
-1828 | }());
+983 |       // Final content formatting and Flex snippet extraction
+984 |       let flexSnippets = [];
+985 |       try {
+986 |         const result = formatText(streamingContent);
+987 |         const finalContent = result.formatted;
+988 |         flexSnippets = result.flexSnippets;
+989 | 
+990 |         // If the final content is empty but we have snippets, remove the now-empty message bubble.
+991 |         if (finalContent.trim().length === 0 && flexSnippets.length > 0) {
+992 |           streamingMessage.remove();
+993 |           logStreamingDebug('empty_stream_bubble_removed');
+994 |         } else {
+995 |           // Otherwise, populate the message bubble as usual.
+996 |           contentDiv.innerHTML = finalContent;
+997 |           streamingMessage.classList.remove('streaming-message');
+998 |           const status = streamingMessage.querySelector('.streaming-status');
+999 |           if (status) {
+1000 |             const elapsed = Date.now() - streamingStartTime;
+1001 |             const size = (streamingContent.length / 1024).toFixed(1);
+1002 |             status.textContent = `Complete - ${Math.floor(elapsed / 1000)}s | ${size}KB | ${chunkCount} chunks`;
+1003 |             status.style.color = 'var(--success-color)';
+1004 |           }
+1005 |         }
+1006 |       } catch (formatError) {
+1007 |         logStreamingDebug('final_format_error', { error: formatError.message });
+1008 |         // Fallback to plain text
+1009 |         contentDiv.innerHTML = escapeHtml(streamingContent);
+1010 |       }
+1011 | 
+1012 |       // Add Flex code snippets after streaming completes
+1013 |       if (flexSnippets.length > 0) {
+1014 |         logStreamingDebug('adding_flex_snippets', { snippetCount: flexSnippets.length });
+1015 | 
+1016 |         flexSnippets.forEach((snippet, index) => {
+1017 |           setTimeout(() => {
+1018 |             const snippetElement = createFlexCodeSnippet(snippet);
+1019 |             chatBox.appendChild(snippetElement);
+1020 | 
+1021 |             // Animate snippet appearance
+1022 |             snippetElement.style.opacity = '0';
+1023 |             snippetElement.style.transform = 'translateY(20px)';
+1024 | 
+1025 |             requestAnimationFrame(() => {
+1026 |               snippetElement.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+1027 |               snippetElement.style.opacity = '1';
+1028 |               snippetElement.style.transform = 'translateY(0)';
+1029 |             });
+1030 | 
+1031 |             scrollChatToBottom();
+1032 |           }, index * 300); // Stagger snippet animations
+1033 |         });
+1034 |       }
+1035 | 
+1036 |       // Add copy functionality to regular code blocks
+1037 |       setTimeout(() => {
+1038 |         addCopyButtonsToCodeBlocks();
+1039 |       }, 150);
+1040 | 
+1041 |       // Final scroll to show complete content
+1042 |       scrollChatToBottom();
+1043 | 
+1044 |       logStreamingDebug('streaming_complete_success', {
+1045 |         totalChunks: chunkCount,
+1046 |         totalSize: streamingContent.length,
+1047 |         elapsed: Date.now() - streamingStartTime,
+1048 |         flexSnippets: flexSnippets.length
+1049 |       });
+1050 | 
+1051 |       // Reset streaming state
+1052 |       streamingMessage = null;
+1053 |       streamingContent = '';
+1054 |       chunkCount = 0;
+1055 | 
+1056 |     } catch (error) {
+1057 |       logStreamingDebug('complete_error', { error: error.message });
+1058 |       handleStreamingError(error);
+1059 |     }
+1060 |   }
+1061 | 
+1062 |   function handleStreamingError(error) {
+1063 |     try {
+1064 |       logStreamingDebug('streaming_error', {
+1065 |         error: error.message,
+1066 |         contentLength: streamingContent.length,
+1067 |         elapsed: Date.now() - streamingStartTime
+1068 |       });
+1069 | 
+1070 |       // Clear health check
+1071 |       if (streamingHealthCheck) {
+1072 |         clearInterval(streamingHealthCheck);
+1073 |         streamingHealthCheck = null;
+1074 |       }
+1075 | 
+1076 |       // Show error in the UI
+1077 |       if (streamingMessage) {
+1078 |         const contentDiv = streamingMessage.querySelector('.streaming-content');
+1079 |         if (contentDiv) {
+1080 |           const errorHtml = `
+1081 |             <div class="streaming-error">
+1082 |               ⚠️ Streaming interrupted: ${escapeHtml(error.message)}
+1083 |               <br><br>
+1084 |               ${formatText(streamingContent)}
+1085 |               <div class="streaming-debug">
+1086 |                 <details>
+1087 |                   <summary>Debug Information</summary>
+1088 |                   <pre>${JSON.stringify({
+1089 |             chunkCount,
+1090 |             contentLength: streamingContent.length,
+1091 |             elapsed: Date.now() - streamingStartTime,
+1092 |             lastLogs: streamingDebugLog.slice(-10)
+1093 |           }, null, 2)}</pre>
+1094 |                 </details>
+1095 |               </div>
+1096 |             </div>
+1097 |           `;
+1098 |           contentDiv.innerHTML = errorHtml;
+1099 |         }
+1100 | 
+1101 |         streamingMessage.classList.remove('streaming-message');
+1102 |         streamingMessage.classList.add('streaming-error-message');
+1103 | 
+1104 |         const status = streamingMessage.querySelector('.streaming-status');
+1105 |         if (status) {
+1106 |           status.textContent = 'Error - Check debug info below';
+1107 |           status.style.color = 'var(--error-color)';
+1108 |         }
+1109 |       }
+1110 | 
+1111 |       // Re-enable send button
+1112 |       if (sendButton) {
+1113 |         sendButton.disabled = false;
+1114 |         sendButton.innerHTML = '<span class="send-icon">📤</span>';
+1115 |       }
+1116 | 
+1117 |       // Reset state
+1118 |       streamingMessage = null;
+1119 |       streamingContent = '';
+1120 |       chunkCount = 0;
+1121 | 
+1122 |     } catch (handlerError) {
+1123 |       console.error('[STREAMING] Error in error handler:', handlerError);
+1124 |       // Last resort: show simple error message
+1125 |       addMessage(`⚠️ Streaming error: ${error.message}. Check browser console for details.`, 'ai');
+1126 |     }
+1127 |   }
+1128 | 
+1129 |   // Enhanced send message function
+1130 |   function sendMessage() {
+1131 |     const message = userInput.value.trim();
+1132 |     if (!message) return;
+1133 | 
+1134 |     // Disable send button temporarily
+1135 |     sendButton.disabled = true;
+1136 |     sendButton.innerHTML = '<span class="send-icon">⏳</span>';
+1137 | 
+1138 |     // Add user message to chat
+1139 |     addMessage(message, 'user');
+1140 | 
+1141 |     // Show typing indicator
+1142 |     const typingIndicator = document.createElement('div');
+1143 |     typingIndicator.className = 'status-message typing-indicator';
+1144 |     typingIndicator.innerHTML = '<span class="typing-dots">Flex Assistant is thinking</span><span class="dots">...</span>';
+1145 |     chatBox.appendChild(typingIndicator);
+1146 |     scrollChatToBottom();
+1147 | 
+1148 |     // Send message to extension
+1149 |     vscode.postMessage({
+1150 |       command: 'sendMessage',
+1151 |       text: message
+1152 |     });
+1153 | 
+1154 |     // Clear input field and focus
+1155 |     userInput.value = '';
+1156 |     userInput.focus();
+1157 | 
+1158 |     // Store the typing indicator reference
+1159 |     window.currentTypingIndicator = typingIndicator;
+1160 | 
+1161 |     // Re-enable send button after 2 seconds
+1162 |     setTimeout(() => {
+1163 |       sendButton.disabled = false;
+1164 |       sendButton.innerHTML = '<span class="send-icon">📤</span>';
+1165 |     }, 2000);
+1166 |   }
+1167 | 
+1168 |   // Event listeners
+1169 |   sendButton.addEventListener('click', sendMessage);
+1170 | 
+1171 |   clearButton.addEventListener('click', () => {
+1172 |     // Add confirmation for clearing chat
+1173 |     const confirmClear = confirm('Are you sure you want to clear the chat history?');
+1174 |     if (confirmClear) {
+1175 |       vscode.postMessage({
+1176 |         command: 'clearChat'
+1177 |       });
+1178 |     }
+1179 |   });
+1180 | 
+1181 |   // Change model button event listener
+1182 |   if (changeModelButton) {
+1183 |     changeModelButton.addEventListener('click', () => {
+1184 |       vscode.postMessage({
+1185 |         command: 'selectModel'
+1186 |       });
+1187 |     });
+1188 |   }
+1189 | 
+1190 |   // Professional input handling with enhanced UX
+1191 |   userInput.addEventListener('keydown', (e) => {
+1192 |     if (e.key === 'Enter' && !e.shiftKey) {
+1193 |       e.preventDefault();
+1194 |       sendMessage();
+1195 |     } else if (e.key === 'Enter' && e.shiftKey) {
+1196 |       // Allow Shift+Enter for line breaks
+1197 |       return true;
+1198 |     }
+1199 |   });
+1200 | 
+1201 |   // Auto-resize input with smooth animation
+1202 |   userInput.addEventListener('input', function () {
+1203 |     this.style.height = 'auto';
+1204 |     const newHeight = Math.min(this.scrollHeight, 120);
+1205 |     this.style.height = newHeight + 'px';
+1206 | 
+1207 |     // Add subtle animation for height changes
+1208 |     this.style.transition = 'height 0.2s ease-out';
+1209 |   });
+1210 | 
+1211 |   // Professional focus effects
+1212 |   userInput.addEventListener('focus', function () {
+1213 |     const container = this.closest('.input-container');
+1214 |     if (container) {
+1215 |       container.classList.add('input-focus-ring', 'focused');
+1216 |     }
+1217 |   });
+1218 | 
+1219 |   userInput.addEventListener('blur', function () {
+1220 |     const container = this.closest('.input-container');
+1221 |     if (container) {
+1222 |       container.classList.remove('focused');
+1223 |     }
+1224 |   });
+1225 | 
+1226 |   // Handle messages from the extension
+1227 |   window.addEventListener('message', event => {
+1228 |     const message = event.data;
+1229 | 
+1230 |     switch (message.command) {
+1231 |       case 'aiStreamStart':
+1232 |         // Remove typing indicator and start streaming response
+1233 |         if (window.currentTypingIndicator) {
+1234 |           window.currentTypingIndicator.remove();
+1235 |           window.currentTypingIndicator = null;
+1236 |         }
+1237 | 
+1238 |         // Create streaming message container
+1239 |         startStreamingMessage();
+1240 |         break;
+1241 | 
+1242 |       case 'aiStreamChunk':
+1243 |         // Add chunk to streaming message
+1244 |         addStreamingChunk(message.text);
+1245 |         break;
+1246 | 
+1247 |       case 'aiStreamComplete':
+1248 |         // Complete streaming response
+1249 |         completeStreamingMessage();
+1250 | 
+1251 |         // Re-enable send button
+1252 |         sendButton.disabled = false;
+1253 |         sendButton.innerHTML = '<span class="send-icon">📤</span>';
+1254 |         break;
+1255 | 
+1256 |       case 'aiResponse':
+1257 |         // Fallback for non-streaming responses
+1258 |         // Remove typing indicator
+1259 |         if (window.currentTypingIndicator) {
+1260 |           window.currentTypingIndicator.remove();
+1261 |           window.currentTypingIndicator = null;
+1262 |         }
+1263 | 
+1264 |         // Re-enable send button
+1265 |         sendButton.disabled = false;
+1266 |         sendButton.innerHTML = '<span class="send-icon">📤</span>';
+1267 | 
+1268 |         // Display AI response with enhanced formatting
+1269 |         addMessage(message.text, 'ai');
+1270 |         break;
+1271 | 
+1272 |       case 'statusUpdate':
+1273 |         // Handle status updates - if empty, clear typing indicator
+1274 |         if (!message.text || message.text.trim() === '') {
+1275 |           if (window.currentTypingIndicator) {
+1276 |             window.currentTypingIndicator.remove();
+1277 |             window.currentTypingIndicator = null;
+1278 |           }
+1279 |           // Re-enable send button
+1280 |           sendButton.disabled = false;
+1281 |           sendButton.innerHTML = '<span class="send-icon">📤</span>';
+1282 |         } else {
+1283 |           // Show status update in chat
+1284 |           addMessage(message.text, null, true);
+1285 |         }
+1286 |         break;
+1287 | 
+1288 |       case 'chatCleared':
+1289 |         // Clear the chat box with animation
+1290 |         const messages = chatBox.querySelectorAll('.message, .status-message');
+1291 |         messages.forEach((msg, index) => {
+1292 |           setTimeout(() => {
+1293 |             msg.style.transition = 'all 0.2s ease-out';
+1294 |             msg.style.opacity = '0';
+1295 |             msg.style.transform = 'translateY(-20px)';
+1296 |             setTimeout(() => msg.remove(), 200);
+1297 |           }, index * 50);
+1298 |         });
+1299 | 
+1300 |         setTimeout(() => {
+1301 |           chatBox.innerHTML = '';
+1302 |           // Re-add welcome message if it exists
+1303 |           if (welcomeMessage) {
+1304 |             const welcomeClone = welcomeMessage.cloneNode(true);
+1305 |             welcomeClone.style.display = 'flex';
+1306 |             chatBox.appendChild(welcomeClone);
+1307 |           }
+1308 |         }, messages.length * 50 + 200);
+1309 |         break;
+1310 | 
+1311 |       case 'error':
+1312 |         // Display error messages with special styling
+1313 |         const errorDiv = document.createElement('div');
+1314 |         errorDiv.className = 'status-message error-message';
+1315 |         errorDiv.innerHTML = `⚠️ ${escapeHtml(message.text)}`;
+1316 |         chatBox.appendChild(errorDiv);
+1317 |         scrollChatToBottom();
+1318 |         break;
+1319 |     }
+1320 |   });
+1321 | 
+1322 |   // Initialize chat
+1323 |   function initializeChat() {
+1324 |     userInput.focus();
+1325 | 
+1326 |     // Add welcome message if chat is empty
+1327 |     if (chatBox.children.length === 0) {
+1328 |       setTimeout(() => {
+1329 |         addMessage('Welcome! I\'m your Flex programming assistant. I can help you with Franco-Arabic programming, syntax, examples, and best practices. How can I assist you today?', null, true);
+1330 |       }, 500);
+1331 |     }
+1332 |   }
+1333 | 
+1334 |   // Professional dynamic styles
+1335 |   const style = document.createElement('style');
+1336 |   style.textContent = `
+1337 |     .typing-indicator .dots {
+1338 |       animation: typing 1.8s ease-in-out infinite;
+1339 |     }
+1340 |     
+1341 |     @keyframes typing {
+1342 |       0%, 60%, 100% { opacity: 1; }
+1343 |       30% { opacity: 0.4; }
+1344 |     }
+1345 |     
+1346 |     .flex-highlight {
+1347 |       background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+1348 |       color: white;
+1349 |       padding: var(--space-1) var(--space-2);
+1350 |       border-radius: var(--radius-sm);
+1351 |       font-weight: var(--font-weight-semibold);
+1352 |       box-shadow: var(--shadow-sm);
+1353 |     }
+1354 |     
+1355 |     .error-message {
+1356 |       background: linear-gradient(135deg, 
+1357 |         rgba(239, 68, 68, 0.08) 0%, 
+1358 |         rgba(239, 68, 68, 0.05) 100%);
+1359 |       border: 1px solid rgba(239, 68, 68, 0.2);
+1360 |       border-left: 3px solid var(--error-color);
+1361 |       color: var(--error-color);
+1362 |       backdrop-filter: blur(10px);
+1363 |     }
+1364 |     
+1365 |     .message-animation {
+1366 |       animation: messageAppear 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+1367 |     }
+1368 |     
+1369 |     @keyframes messageAppear {
+1370 |       0% {
+1371 |         opacity: 0;
+1372 |         transform: translateY(20px) scale(0.95);
+1373 |       }
+1374 |       100% {
+1375 |         opacity: 1;
+1376 |         transform: translateY(0) scale(1);
+1377 |       }
+1378 |     }
+1379 |     
+1380 |     .status-pulse {
+1381 |       animation: statusPulse 2.5s ease-in-out infinite;
+1382 |     }
+1383 |     
+1384 |     @keyframes statusPulse {
+1385 |       0%, 100% { 
+1386 |         opacity: 0.8; 
+1387 |         transform: scale(1);
+1388 |       }
+1389 |       50% { 
+1390 |         opacity: 1; 
+1391 |         transform: scale(1.02);
+1392 |       }
+1393 |     }
+1394 |     
+1395 |     .input-focus-ring {
+1396 |       position: relative;
+1397 |     }
+1398 |     
+1399 |     .input-focus-ring::before {
+1400 |       content: '';
+1401 |       position: absolute;
+1402 |       inset: -2px;
+1403 |       background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+1404 |       border-radius: calc(var(--radius-lg) + 2px);
+1405 |       opacity: 0;
+1406 |       transition: opacity 0.3s ease;
+1407 |       z-index: -1;
+1408 |     }
+1409 |     
+1410 |     .input-focus-ring.focused::before {
+1411 |       opacity: 0.1;
+1412 |     }
+1413 |     
+1414 |     .streaming-cursor {
+1415 |       display: inline-block;
+1416 |       background: var(--accent-color);
+1417 |       color: transparent;
+1418 |       margin-left: 2px;
+1419 |       animation: blink 1.2s ease-in-out infinite;
+1420 |     }
+1421 |     
+1422 |     @keyframes blink {
+1423 |       0%, 50% { opacity: 1; }
+1424 |       51%, 100% { opacity: 0; }
+1425 |     }
+1426 |     
+1427 |     .streaming-message {
+1428 |       position: relative;
+1429 |     }
+1430 |     
+1431 |     .streaming-message::after {
+1432 |       content: '';
+1433 |       position: absolute;
+1434 |       bottom: 0;
+1435 |       left: 0;
+1436 |       right: 0;
+1437 |       height: 2px;
+1438 |       background: linear-gradient(90deg, 
+1439 |         transparent 0%, 
+1440 |         var(--accent-color) 30%, 
+1441 |         transparent 70%);
+1442 |       animation: streamingProgress 2s ease-in-out infinite;
+1443 |     }
+1444 |     
+1445 |     @keyframes streamingProgress {
+1446 |       0% { transform: translateX(-100%); }
+1447 |       100% { transform: translateX(100%); }
+1448 |     }
+1449 |     
+1450 |     .streaming-status {
+1451 |       font-size: 0.75rem;
+1452 |       opacity: 0.7;
+1453 |       margin-left: var(--space-2);
+1454 |       font-family: var(--font-mono);
+1455 |     }
+1456 |     
+1457 |     .streaming-error {
+1458 |       background: rgba(239, 68, 68, 0.05);
+1459 |       border: 1px solid rgba(239, 68, 68, 0.2);
+1460 |       border-radius: var(--radius);
+1461 |       padding: var(--space-3);
+1462 |       margin: var(--space-2) 0;
+1463 |     }
+1464 |     
+1465 |     .streaming-error-message {
+1466 |       border-left: 3px solid var(--error-color);
+1467 |     }
+1468 |     
+1469 |     .streaming-debug {
+1470 |       margin-top: var(--space-3);
+1471 |       font-size: 0.875rem;
+1472 |     }
+1473 |     
+1474 |     .streaming-debug details {
+1475 |       background: rgba(0, 0, 0, 0.1);
+1476 |       border-radius: var(--radius);
+1477 |       padding: var(--space-2);
+1478 |     }
+1479 |     
+1480 |     .streaming-debug summary {
+1481 |       cursor: pointer;
+1482 |       font-weight: var(--font-weight-semibold);
+1483 |       padding: var(--space-1);
+1484 |     }
+1485 |     
+1486 |     .streaming-debug pre {
+1487 |       background: rgba(0, 0, 0, 0.2);
+1488 |       padding: var(--space-2);
+1489 |       border-radius: var(--radius);
+1490 |       overflow-x: auto;
+1491 |       font-size: 0.75rem;
+1492 |       margin-top: var(--space-2);
+1493 |     }
+1494 |     
+1495 |     /* Flex Code Snippet Professional Styling */
+1496 |     .flex-code-snippet {
+1497 |       background: linear-gradient(135deg, 
+1498 |         rgba(0, 122, 204, 0.03) 0%, 
+1499 |         rgba(0, 122, 204, 0.01) 100%);
+1500 |       border: 2px solid rgba(0, 122, 204, 0.2);
+1501 |       border-radius: var(--radius-lg);
+1502 |       margin: var(--space-4) 0;
+1503 |       box-shadow: 0 4px 20px rgba(0, 122, 204, 0.1);
+1504 |       overflow: hidden;
+1505 |       transition: all 0.3s ease;
+1506 |       position: relative;
+1507 |     }
+1508 |     
+1509 |     .flex-code-snippet:hover {
+1510 |       border-color: rgba(0, 122, 204, 0.4);
+1511 |       box-shadow: 0 8px 32px rgba(0, 122, 204, 0.15);
+1512 |       transform: translateY(-2px);
+1513 |     }
+1514 |     
+1515 |     .flex-code-snippet.expanded {
+1516 |       position: fixed;
+1517 |       top: var(--space-3);
+1518 |       left: var(--space-3);
+1519 |       right: var(--space-3);
+1520 |       bottom: var(--space-3);
+1521 |       z-index: 1000;
+1522 |       background: var(--bg-secondary);
+1523 |       border-color: var(--accent-color);
+1524 |       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+1525 |     }
+1526 |     
+1527 |     /* Snippet Header */
+1528 |     .flex-snippet-header {
+1529 |       background: linear-gradient(135deg, 
+1530 |         rgba(0, 122, 204, 0.08) 0%, 
+1531 |         rgba(0, 122, 204, 0.04) 100%);
+1532 |       padding: var(--space-3) var(--space-4);
+1533 |       border-bottom: 1px solid rgba(0, 122, 204, 0.2);
+1534 |       display: flex;
+1535 |       justify-content: space-between;
+1536 |       align-items: center;
+1537 |       backdrop-filter: blur(10px);
+1538 |     }
+1539 |     
+1540 |     .flex-snippet-metadata {
+1541 |       display: flex;
+1542 |       align-items: center;
+1543 |       gap: var(--space-3);
+1544 |     }
+1545 |     
+1546 |     .flex-snippet-language {
+1547 |       display: flex;
+1548 |       align-items: center;
+1549 |       gap: var(--space-2);
+1550 |       font-weight: var(--font-weight-bold);
+1551 |       color: var(--accent-color);
+1552 |       font-size: 1rem;
+1553 |     }
+1554 |     
+1555 |     .flex-icon {
+1556 |       font-size: 1.2em;
+1557 |       filter: drop-shadow(0 0 4px currentColor);
+1558 |     }
+1559 |     
+1560 |     .flex-snippet-stats {
+1561 |       font-size: 0.875rem;
+1562 |       color: var(--text-secondary);
+1563 |       font-family: var(--font-mono);
+1564 |       background: rgba(0, 122, 204, 0.1);
+1565 |       padding: var(--space-1) var(--space-2);
+1566 |       border-radius: var(--radius);
+1567 |       border: 1px solid rgba(0, 122, 204, 0.2);
+1568 |     }
+1569 |     
+1570 |     .flex-snippet-controls {
+1571 |       display: flex;
+1572 |       gap: var(--space-2);
+1573 |     }
+1574 |     
+1575 |     .flex-copy-button, .flex-expand-button {
+1576 |       display: flex;
+1577 |       align-items: center;
+1578 |       gap: var(--space-2);
+1579 |       padding: var(--space-2) var(--space-3);
+1580 |       background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+1581 |       color: white;
+1582 |       border: none;
+1583 |       border-radius: var(--radius);
+1584 |       font-size: 0.875rem;
+1585 |       font-weight: var(--font-weight-medium);
+1586 |       cursor: pointer;
+1587 |       transition: all 0.2s ease;
+1588 |       box-shadow: 0 2px 8px rgba(0, 122, 204, 0.3);
+1589 |     }
+1590 |     
+1591 |     .flex-copy-button:hover, .flex-expand-button:hover {
+1592 |       transform: translateY(-1px);
+1593 |       box-shadow: 0 4px 16px rgba(0, 122, 204, 0.4);
+1594 |       background: linear-gradient(135deg, var(--accent-hover), var(--accent-color));
+1595 |     }
+1596 |     
+1597 |     .flex-copy-button:active, .flex-expand-button:active {
+1598 |       transform: translateY(0);
+1599 |       box-shadow: 0 1px 4px rgba(0, 122, 204, 0.3);
+1600 |     }
+1601 |     
+1602 |     .flex-copy-button.copy-success {
+1603 |       background: linear-gradient(135deg, var(--success-color), #10b981);
+1604 |     }
+1605 |     
+1606 |     .flex-copy-button.copy-error {
+1607 |       background: linear-gradient(135deg, var(--error-color), #dc2626);
+1608 |     }
+1609 |     
+1610 |     .flex-expand-button {
+1611 |       padding: var(--space-2);
+1612 |       min-width: auto;
+1613 |     }
+1614 |     
+1615 |     /* Code Container */
+1616 |     .flex-snippet-code-container {
+1617 |       display: flex;
+1618 |       background: var(--bg-primary);
+1619 |       max-height: 400px;
+1620 |       overflow: hidden;
+1621 |     }
+1622 |     
+1623 |     .flex-code-snippet.expanded .flex-snippet-code-container {
+1624 |       max-height: none;
+1625 |       flex: 1;
+1626 |       overflow-y: auto;
+1627 |     }
+1628 |     
+1629 |     .flex-snippet-line-numbers {
+1630 |       background: rgba(0, 122, 204, 0.05);
+1631 |       border-right: 1px solid rgba(0, 122, 204, 0.2);
+1632 |       padding: var(--space-3) var(--space-2);
+1633 |       font-family: var(--font-mono);
+1634 |       font-size: 0.875rem;
+1635 |       color: var(--text-muted);
+1636 |       user-select: none;
+1637 |       min-width: 60px;
+1638 |       text-align: right;
+1639 |     }
+1640 |     
+1641 |     .flex-snippet-line-numbers .line-number {
+1642 |       display: block;
+1643 |       line-height: 1.5;
+1644 |       transition: color 0.2s ease;
+1645 |     }
+1646 |     
+1647 |     .flex-snippet-line-numbers .line-number:hover {
+1648 |       color: var(--accent-color);
+1649 |     }
+1650 |     
+1651 |     .flex-snippet-code-content {
+1652 |       flex: 1;
+1653 |       padding: var(--space-3);
+1654 |       font-family: var(--font-mono);
+1655 |       font-size: 0.875rem;
+1656 |       line-height: 1.5;
+1657 |       overflow-x: auto;
+1658 |       white-space: pre;
+1659 |       color: var(--text-primary);
+1660 |       background: var(--bg-primary);
+1661 |     }
+1662 |     
+1663 |     /* Enhanced Flex syntax highlighting in snippets */
+1664 |     .flex-snippet-code-content .flex-keyword-franco {
+1665 |       color: #ff6b9d;
+1666 |       font-weight: var(--font-weight-bold);
+1667 |       text-shadow: 0 0 2px rgba(255, 107, 157, 0.3);
+1668 |     }
+1669 |     
+1670 |     .flex-snippet-code-content .flex-keyword-english {
+1671 |       color: #4ecdc4;
+1672 |       font-weight: var(--font-weight-bold);
+1673 |     }
+1674 |     
+1675 |     .flex-snippet-code-content .flex-string {
+1676 |       color: #45b7d1;
+1677 |     }
+1678 |     
+1679 |     .flex-snippet-code-content .flex-number {
+1680 |       color: #f9ca24;
+1681 |     }
+1682 |     
+1683 |     .flex-snippet-code-content .flex-comment {
+1684 |       color: var(--text-muted);
+1685 |       font-style: italic;
+1686 |     }
+1687 |     
+1688 |     .flex-snippet-code-content .flex-function {
+1689 |       color: #6c5ce7;
+1690 |       font-weight: var(--font-weight-medium);
+1691 |     }
+1692 |     
+1693 |     .flex-snippet-code-content .flex-operator {
+1694 |       color: #fd79a8;
+1695 |     }
+1696 |     
+1697 |     .flex-snippet-code-content .flex-variable {
+1698 |       color: #00b894;
+1699 |     }
+1700 |     
+1701 |     /* Snippet Footer */
+1702 |     .flex-snippet-footer {
+1703 |       background: rgba(0, 122, 204, 0.03);
+1704 |       border-top: 1px solid rgba(0, 122, 204, 0.1);
+1705 |       padding: var(--space-2) var(--space-4);
+1706 |       font-size: 0.875rem;
+1707 |     }
+1708 |     
+1709 |     .flex-hint {
+1710 |       color: var(--text-secondary);
+1711 |       display: flex;
+1712 |       align-items: center;
+1713 |       gap: var(--space-2);
+1714 |     }
+1715 |     
+1716 |     .flex-hint code {
+1717 |       background: rgba(0, 122, 204, 0.1);
+1718 |       color: var(--accent-color);
+1719 |       padding: var(--space-1);
+1720 |       border-radius: var(--radius-sm);
+1721 |       font-family: var(--font-mono);
+1722 |       font-size: 0.8em;
+1723 |     }
+1724 |     
+1725 |     /* Responsive design for mobile */
+1726 |     @media (max-width: 768px) {
+1727 |       .flex-code-snippet.expanded {
+1728 |         top: 0;
+1729 |         left: 0;
+1730 |         right: 0;
+1731 |         bottom: 0;
+1732 |       }
+1733 |       
+1734 |       .flex-snippet-header {
+1735 |         padding: var(--space-2) var(--space-3);
+1736 |         flex-direction: column;
+1737 |         gap: var(--space-2);
+1738 |       }
+1739 |       
+1740 |       .flex-snippet-metadata {
+1741 |         flex-direction: column;
+1742 |         gap: var(--space-1);
+1743 |         align-items: flex-start;
+1744 |       }
+1745 |       
+1746 |       .flex-copy-button .copy-text {
+1747 |         display: none;
+1748 |       }
+1749 |       
+1750 |       .flex-snippet-line-numbers {
+1751 |         min-width: 40px;
+1752 |         padding: var(--space-2) var(--space-1);
+1753 |       }
+1754 |       
+1755 |       .flex-snippet-code-content {
+1756 |         padding: var(--space-2);
+1757 |         font-size: 0.8rem;
+1758 |       }
+1759 |     }
+1760 |     
+1761 |     /* Scrollbar styling for code content */
+1762 |     .flex-snippet-code-content::-webkit-scrollbar {
+1763 |       height: 6px;
+1764 |     }
+1765 |     
+1766 |     .flex-snippet-code-content::-webkit-scrollbar-thumb {
+1767 |       background: rgba(0, 122, 204, 0.3);
+1768 |       border-radius: 3px;
+1769 |     }
+1770 |     
+1771 |     .flex-snippet-code-content::-webkit-scrollbar-thumb:hover {
+1772 |       background: rgba(0, 122, 204, 0.5);
+1773 |     }
+1774 |     
+1775 |     /* Animation for snippet appearance */
+1776 |     @keyframes flexSnippetAppear {
+1777 |       0% {
+1778 |         opacity: 0;
+1779 |         transform: translateY(30px) scale(0.95);
+1780 |       }
+1781 |       100% {
+1782 |         opacity: 1;
+1783 |         transform: translateY(0) scale(1);
+1784 |       }
+1785 |     }
+1786 |     
+1787 |     .flex-code-snippet {
+1788 |       animation: flexSnippetAppear 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+1789 |     }
+1790 |   `;
+1791 | 
+1792 |   document.head.appendChild(style);
+1793 | 
+1794 |   // Add global debugging function for streaming
+1795 |   window.exportStreamingDebugLog = function () {
+1796 |     const debugData = {
+1797 |       timestamp: new Date().toISOString(),
+1798 |       streamingDebugLog,
+1799 |       currentState: {
+1800 |         streamingMessage: !!streamingMessage,
+1801 |         streamingContent: streamingContent.length,
+1802 |         chunkCount,
+1803 |         streamingStartTime,
+1804 |         hasHealthCheck: !!streamingHealthCheck
+1805 |       },
+1806 |       memoryUsage: performance.memory ? {
+1807 |         usedJSHeapSize: performance.memory.usedJSHeapSize,
+1808 |         totalJSHeapSize: performance.memory.totalJSHeapSize,
+1809 |         jsHeapSizeLimit: performance.memory.jsHeapSizeLimit
+1810 |       } : 'Not available'
+1811 |     };
+1812 | 
+1813 |     console.log('Streaming Debug Export:', debugData);
+1814 | 
+1815 |     // Also copy to clipboard if available
+1816 |     if (navigator.clipboard) {
+1817 |       navigator.clipboard.writeText(JSON.stringify(debugData, null, 2))
+1818 |         .then(() => console.log('Debug data copied to clipboard'))
+1819 |         .catch(err => console.warn('Could not copy to clipboard:', err));
+1820 |     }
+1821 | 
+1822 |     return debugData;
+1823 |   };
+1824 | 
+1825 |   // Initialize the chat interface
+1826 |   initializeChat();
+1827 | }());
 ```
 
 assets/webview/js/highlighter.js

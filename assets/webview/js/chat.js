@@ -63,7 +63,7 @@
     // Operators (safe ones that won't break HTML)
     operators: [
       '\\+', '\\-', '\\*', '\\/', '%', '=', '==', '!=', '<=', '>=',
-      '&&', '\\|\\|', '!', '\\+=', '\\-=', '\\*=', '\\/=', '%=', 
+      '&&', '\\|\\|', '!', '\\+=', '\\-=', '\\*=', '\\/=', '%=',
       '\\+\\+', '\\-\\-', '\\?', ':', ';', ',', '\\.',
       '\\[', '\\]', '\\{', '\\}', '\\(', '\\)'
     ]
@@ -127,60 +127,94 @@
     return confidence >= threshold;
   }
 
-  // Extract Flex code snippets from text
-  function extractFlexCodeSnippets(text) {
-    const snippets = [];
-    
-    // Extract code blocks with language specification
-    const langCodeBlocks = text.match(/```(\w*)\n?([\s\S]*?)```/g);
-    if (langCodeBlocks) {
-      langCodeBlocks.forEach((block, index) => {
-        const match = block.match(/```(\w*)\n?([\s\S]*?)```/);
-        if (match) {
-          const lang = match[1].toLowerCase();
-          const code = match[2].trim();
-          
-          if (lang === 'flex' || lang === 'lx' || lang === 'fx' || isFlexCode(code, 0.4)) {
-            snippets.push({
-              id: `flex-snippet-${Date.now()}-${index}`,
-              code: code,
-              language: lang || 'flex',
-              confidence: isFlexCode(code, 0) ? 'high' : 'medium',
-              lineCount: code.split('\n').length,
-              size: code.length
-            });
-          }
-        }
-      });
-    }
+  // Enhanced text formatting function with Flex snippet extraction
+  function formatText(text) {
+    // Clean up broken flex tags that the model might generate
+    text = text.replace(/flex-[\w-]+"[^>]*>/g, '');
 
-    // Extract code blocks without language specification
-    const genericCodeBlocks = text.match(/```([\s\S]*?)```/g);
-    if (genericCodeBlocks) {
-      genericCodeBlocks.forEach((block, index) => {
-        const code = block.replace(/```/g, '').trim();
-        
-        if (isFlexCode(code, 0.5) && !snippets.some(s => s.code === code)) {
-          snippets.push({
-            id: `flex-snippet-generic-${Date.now()}-${index}`,
-            code: code,
+    const flexSnippets = [];
+    let textForMainMessage = text;
+
+    // Phase 1: Extract ```flex...``` blocks and replace them with placeholders
+    const flexBlockRegex = /```(flex|lx|fx)\n?([\s\S]*?)```/gi;
+    textForMainMessage = textForMainMessage.replace(flexBlockRegex, (match, lang, code) => {
+      const trimmedCode = code.trim();
+      flexSnippets.push({
+        id: `flex-snippet-lang-${Date.now()}-${flexSnippets.length}`,
+        code: trimmedCode,
+        language: lang.toLowerCase(),
+        confidence: 'high',
+        lineCount: trimmedCode.split('\n').length,
+        size: trimmedCode.length,
+      });
+      return `__FLEX_SNIPPET_PLACEHOLDER__`;
+    });
+
+    // Phase 2: Extract generic ```...``` blocks if they are Flex code, and replace them
+    const genericBlockRegex = /```\n?([\s\S]*?)```/g;
+    textForMainMessage = textForMainMessage.replace(genericBlockRegex, (match, code) => {
+      const trimmedCode = code.trim();
+      if (isFlexCode(trimmedCode, 0.5)) {
+        // This check is a safeguard, but the previous replace should prevent re-matching
+        if (!flexSnippets.some(s => s.code === trimmedCode)) {
+          flexSnippets.push({
+            id: `flex-snippet-generic-${Date.now()}-${flexSnippets.length}`,
+            code: trimmedCode,
             language: 'flex',
             confidence: 'auto-detected',
-            lineCount: code.split('\n').length,
-            size: code.length
+            lineCount: trimmedCode.split('\n').length,
+            size: trimmedCode.length,
           });
+          return `__FLEX_SNIPPET_PLACEHOLDER__`;
         }
+      }
+      return match; // Not a flex snippet, leave it for the next formatting pass
+    });
+
+    // Now, format the remaining text for the main message body
+    let formatted = textForMainMessage;
+
+    // Format any remaining (non-Flex) code blocks
+    formatted = formatted.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => {
+      return formatCodeBlock(code.trim(), lang);
+    });
+
+    // Clean up any remaining placeholders to avoid displaying them
+    formatted = formatted.replace(/__FLEX_SNIPPET_PLACEHOLDER__/g, '').trim();
+
+    // Format inline code with enhanced styling
+    formatted = formatted.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+
+    // Format **bold** text
+    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    // Format *italic* text
+    formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+    // Format links [text](url)
+    formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+    // Format line breaks but preserve code block formatting
+    formatted = formatted.replace(/\n(?![^<]*<\/div>)/g, '<br>');
+
+    // Add syntax highlighting for Flex keywords in regular text
+    if (isFlexCode(formatted)) {
+      // Highlight common Flex terms in regular text (but not in code blocks)
+      const flexTerms = ['Flex', 'franco', 'arabic', 'bilingual', 'programming'];
+      flexTerms.forEach(term => {
+        const regex = new RegExp(`\\b(${term})\\b(?![^<]*<\/(code|span|div)>)`, 'gi');
+        formatted = formatted.replace(regex, '<span class="flex-highlight">$1</span>');
       });
     }
 
-    return snippets;
+    return { formatted, flexSnippets };
   }
 
   // Enhanced Flex syntax highlighting with HTML corruption prevention
   function highlightFlexSyntax(code) {
     // DO NOT escape HTML here - we'll handle it differently to preserve syntax highlighting tags
     let highlighted = code;
-    
+
     // Create a temporary placeholder system to protect HTML tags during highlighting
     const placeholders = [];
     let placeholderIndex = 0;
@@ -191,7 +225,7 @@
       placeholders.push({ placeholder, content: htmlTaggedContent });
       return placeholder;
     }
-    
+
     // Helper function to safely escape HTML content inside spans
     function createHighlightedSpan(cssClass, textContent) {
       const escapedContent = escapeHtml(textContent);
@@ -209,7 +243,7 @@
           result = result.replace(placeholder, content);
         }
       }
-      
+
       // Debug: Check if any placeholders remain unreplaced
       const remainingPlaceholders = result.match(/__FLEX_PLACEHOLDER_\d+__/g);
       if (remainingPlaceholders) {
@@ -219,13 +253,13 @@
           result = result.replace(new RegExp(placeholder, 'g'), '');
         });
       }
-      
+
       return result;
     }
 
-    // Highlight comments first (// and /* */)
+    // Highlight comments first (#, //, and /* */)
     highlighted = highlighted.replace(
-      /(\/\/.*$|\/\*[\s\S]*?\*\/)/gm,
+      /(#.*$|\/\/.*$|\/\*[\s\S]*?\*\/)/gm,
       (match) => createPlaceholder(createHighlightedSpan('flex-comment', match))
     );
 
@@ -326,7 +360,7 @@
       // Skip operators that could interfere with HTML tags
       return !['<', '>', '&'].some(htmlChar => op.includes(htmlChar.replace(/\\/g, '')));
     });
-    
+
     safeOperators.forEach(op => {
       const regex = new RegExp(`(${op})`, 'g');
       highlighted = highlighted.replace(regex, (match) => {
@@ -353,7 +387,7 @@
     // Header with metadata and controls
     const header = document.createElement('div');
     header.className = 'flex-snippet-header';
-    
+
     const metadata = document.createElement('div');
     metadata.className = 'flex-snippet-metadata';
     metadata.innerHTML = `
@@ -368,7 +402,7 @@
 
     const controls = document.createElement('div');
     controls.className = 'flex-snippet-controls';
-    
+
     const copyButton = document.createElement('button');
     copyButton.className = 'flex-copy-button';
     copyButton.innerHTML = `
@@ -384,26 +418,29 @@
 
     controls.appendChild(copyButton);
     controls.appendChild(expandButton);
-    
+
     header.appendChild(metadata);
     header.appendChild(controls);
 
     // Code container with enhanced highlighting
     const codeContainer = document.createElement('div');
     codeContainer.className = 'flex-snippet-code-container';
-    
+
     const lineNumbers = document.createElement('div');
     lineNumbers.className = 'flex-snippet-line-numbers';
-    
+
     const codeContent = document.createElement('div');
     codeContent.className = 'flex-snippet-code-content';
-    
-    // Generate line numbers
+
+    // Generate line numbers with padding
     const lines = snippet.code.split('\n');
-    lineNumbers.innerHTML = lines.map((_, index) => 
-      `<span class="line-number">${index + 1}</span>`
-    ).join('');
-    
+    const lineCount = lines.length;
+    let lineNumbersHtml = '';
+    for (let i = 0; i < lineCount + 2; i++) {
+      lineNumbersHtml += `<span class="line-number">${i + 1}</span>`;
+    }
+    lineNumbers.innerHTML = lineNumbersHtml;
+
     // Apply enhanced Flex syntax highlighting
     const highlightedCode = highlightFlexSyntax(snippet.code);
     codeContent.innerHTML = highlightedCode;
@@ -430,7 +467,8 @@
     });
 
     // Add expand functionality
-    expandButton.addEventListener('click', () => {
+    expandButton.addEventListener('click', (e) => {
+      e.stopPropagation();
       toggleFlexSnippetExpanded(snippetContainer);
     });
 
@@ -442,7 +480,7 @@
     try {
       // Clean the code (remove any HTML tags that might have been added)
       const cleanCode = code.replace(/<[^>]*>/g, '');
-      
+
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(cleanCode);
         showCopySuccess(buttonElement, 'Code copied!');
@@ -456,10 +494,10 @@
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
-        
+
         const successful = document.execCommand('copy');
         document.body.removeChild(textArea);
-        
+
         if (successful) {
           showCopySuccess(buttonElement, 'Code copied!');
         } else {
@@ -480,7 +518,7 @@
       <span class="copy-text">${message}</span>
     `;
     buttonElement.classList.add('copy-success');
-    
+
     setTimeout(() => {
       buttonElement.innerHTML = originalHTML;
       buttonElement.classList.remove('copy-success');
@@ -494,7 +532,7 @@
       <span class="copy-text">${message}</span>
     `;
     buttonElement.classList.add('copy-error');
-    
+
     setTimeout(() => {
       buttonElement.innerHTML = originalHTML;
       buttonElement.classList.remove('copy-error');
@@ -503,14 +541,39 @@
 
   // Toggle expanded view for large code snippets
   function toggleFlexSnippetExpanded(snippetContainer) {
+    const isExpanding = !snippetContainer.classList.contains('expanded');
     snippetContainer.classList.toggle('expanded');
+
+    // Handle overlay
+    let overlay = document.getElementById('snippet-overlay');
+    if (isExpanding) {
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'snippet-overlay';
+        overlay.className = 'snippet-overlay';
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', () => {
+          const expandedSnippet = document.querySelector('.flex-code-snippet.expanded');
+          if (expandedSnippet) {
+            toggleFlexSnippetExpanded(expandedSnippet);
+          }
+        });
+      }
+      // Use requestAnimationFrame to ensure the class is added after the element is in the DOM
+      requestAnimationFrame(() => {
+        overlay.classList.add('visible');
+      });
+    } else {
+      if (overlay) {
+        overlay.classList.remove('visible');
+      }
+    }
+
     const expandButton = snippetContainer.querySelector('.flex-expand-button');
-    const isExpanded = snippetContainer.classList.contains('expanded');
-    
-    expandButton.innerHTML = isExpanded 
-      ? `<span class="expand-icon">⤡</span>` 
-      : `<span class="expand-icon">⤢</span>`;
-    expandButton.title = isExpanded ? 'Exit fullscreen view' : 'Toggle fullscreen view';
+    if (expandButton) {
+      expandButton.innerHTML = isExpanding ? `<span class="expand-icon">⤡</span>` : `<span class="expand-icon">⤢</span>`;
+      expandButton.title = isExpanding ? 'Exit fullscreen view' : 'Toggle fullscreen view';
+    }
   }
 
   // Enhanced code block formatting with proper spacing and line breaks
@@ -523,12 +586,12 @@
         .split('\n')
         .map(line => line.trimEnd()) // Remove trailing spaces but preserve leading indentation
         .join('\n');
-      
+
       const highlighted = highlightFlexSyntax(formattedCode);
-      
+
       // Convert newlines to HTML line breaks after highlighting
       const finalHighlighted = highlighted.replace(/\n/g, '<br>\n');
-      
+
       return `<div class="code-block flex-code" data-language="flex"><pre><code>${finalHighlighted}</code></pre></div>`;
     } else {
       // Basic highlighting for other languages
@@ -555,54 +618,9 @@
 
       // Preserve line breaks and format with proper HTML structure
       const formattedHighlighted = highlighted.replace(/\n/g, '<br>\n');
-      
+
       return `<div class="code-block" data-language="${language || 'code'}"><pre><code>${formattedHighlighted}</code></pre></div>`;
     }
-  }
-
-  // Enhanced text formatting function with Flex snippet extraction
-  function formatText(text) {
-    let formatted = text;
-
-    // First, extract Flex code snippets for separate display
-    const flexSnippets = extractFlexCodeSnippets(text);
-
-    // Format code blocks with language specification
-    formatted = formatted.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => {
-      return formatCodeBlock(code.trim(), lang);
-    });
-
-    // Format code blocks without language specification
-    formatted = formatted.replace(/```([\s\S]*?)```/g, (match, code) => {
-      return formatCodeBlock(code.trim());
-    });
-
-    // Format inline code with enhanced styling
-    formatted = formatted.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
-
-    // Format **bold** text
-    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-    // Format *italic* text
-    formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
-
-    // Format links [text](url)
-    formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-
-    // Format line breaks but preserve code block formatting
-    formatted = formatted.replace(/\n(?![^<]*<\/div>)/g, '<br>');
-
-    // Add syntax highlighting for Flex keywords in regular text
-    if (isFlexCode(formatted)) {
-      // Highlight common Flex terms in regular text (but not in code blocks)
-      const flexTerms = ['Flex', 'franco', 'arabic', 'bilingual', 'programming'];
-      flexTerms.forEach(term => {
-        const regex = new RegExp(`\\b(${term})\\b(?![^<]*<\/(code|span|div)>)`, 'gi');
-        formatted = formatted.replace(regex, '<span class="flex-highlight">$1</span>');
-      });
-    }
-
-    return { formatted, flexSnippets };
   }
 
   // Enhanced message adding with Flex snippet support
@@ -623,30 +641,41 @@
       processedContent = sender === 'user' ? escapeHtml(content) : content;
     }
 
-    // Create main message
-    const messageDiv = document.createElement('div');
+    // Create main message only if there's content for it
+    if ((processedContent && processedContent.trim().length > 0) || isStatus) {
+      const messageDiv = document.createElement('div');
 
-    if (isStatus) {
-      messageDiv.className = 'status-message status-pulse';
-      messageDiv.innerHTML = escapeHtml(content);
-    } else {
-      messageDiv.className = `message ${sender}-message message-animation`;
+      if (isStatus) {
+        messageDiv.className = 'status-message status-pulse';
+        messageDiv.innerHTML = escapeHtml(content);
+      } else {
+        messageDiv.className = `message ${sender}-message message-animation`;
 
-      const label = document.createElement('div');
-      label.className = `${sender}-label`;
-      label.innerHTML = sender === 'user' ?
-        '<span class="user-icon">👤</span> You' :
-        '<span class="ai-icon">⚡</span> Flex Assistant';
+        const label = document.createElement('div');
+        label.className = `${sender}-label`;
+        label.innerHTML = sender === 'user' ?
+          '<span class="user-icon">👤</span> You' :
+          '<span class="ai-icon">⚡</span> Flex Assistant';
 
-      const contentDiv = document.createElement('div');
-      contentDiv.className = 'message-content';
-      contentDiv.innerHTML = processedContent;
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        contentDiv.innerHTML = processedContent;
 
-      messageDiv.appendChild(label);
-      messageDiv.appendChild(contentDiv);
+        messageDiv.appendChild(label);
+        messageDiv.appendChild(contentDiv);
+      }
+      chatBox.appendChild(messageDiv);
+
+      // Professional entrance animation for main message
+      messageDiv.style.opacity = '0';
+      messageDiv.style.transform = 'translateY(16px) scale(0.98)';
+
+      requestAnimationFrame(() => {
+        messageDiv.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        messageDiv.style.opacity = '1';
+        messageDiv.style.transform = 'translateY(0) scale(1)';
+      });
     }
-
-    chatBox.appendChild(messageDiv);
 
     // Add Flex code snippets after the main message
     if (flexSnippets.length > 0) {
@@ -654,31 +683,21 @@
         setTimeout(() => {
           const snippetElement = createFlexCodeSnippet(snippet);
           chatBox.appendChild(snippetElement);
-          
+
           // Animate snippet appearance
           snippetElement.style.opacity = '0';
           snippetElement.style.transform = 'translateY(20px)';
-          
+
           requestAnimationFrame(() => {
             snippetElement.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
             snippetElement.style.opacity = '1';
             snippetElement.style.transform = 'translateY(0)';
           });
-          
+
           scrollChatToBottom();
         }, index * 200); // Stagger snippet animations
       });
     }
-
-    // Professional entrance animation for main message
-    messageDiv.style.opacity = '0';
-    messageDiv.style.transform = 'translateY(16px) scale(0.98)';
-
-    requestAnimationFrame(() => {
-      messageDiv.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-      messageDiv.style.opacity = '1';
-      messageDiv.style.transform = 'translateY(0) scale(1)';
-    });
 
     // Smooth scroll to bottom
     scrollChatToBottom();
@@ -688,7 +707,7 @@
       addCopyButtonsToCodeBlocks();
     }, 150);
 
-    return { messageDiv, flexSnippets };
+    return { flexSnippets };
   }
 
   // Professional message adding with enhanced animations and styling
@@ -805,7 +824,7 @@
     };
     streamingDebugLog.push(debugEntry);
     console.debug('[STREAMING]', event, debugEntry.data);
-    
+
     // Keep only last 1000 debug entries to prevent memory issues
     if (streamingDebugLog.length > 1000) {
       streamingDebugLog = streamingDebugLog.slice(-1000);
@@ -815,13 +834,13 @@
   function startStreamingMessage() {
     try {
       logStreamingDebug('streaming_start');
-      
+
       // Reset streaming state
       streamingContent = '';
       chunkCount = 0;
       streamingStartTime = Date.now();
       streamingDebugLog = [];
-      
+
       // Clear any existing health check
       if (streamingHealthCheck) {
         clearInterval(streamingHealthCheck);
@@ -863,19 +882,19 @@
       streamingHealthCheck = setInterval(() => {
         const elapsed = Date.now() - streamingStartTime;
         const status = streamingMessage.querySelector('.streaming-status');
-        
+
         if (elapsed > MAX_STREAMING_TIME) {
           logStreamingDebug('streaming_timeout', { elapsed });
           handleStreamingError(new Error('Streaming timeout exceeded'));
           return;
         }
-        
+
         if (streamingContent.length > MAX_STREAMING_SIZE) {
           logStreamingDebug('streaming_size_limit', { contentLength: streamingContent.length });
           handleStreamingError(new Error('Response size limit exceeded'));
           return;
         }
-        
+
         // Update status display
         if (status) {
           const seconds = Math.floor(elapsed / 1000);
@@ -886,7 +905,7 @@
 
       scrollChatToBottom();
       logStreamingDebug('streaming_initialized');
-      
+
     } catch (error) {
       logStreamingDebug('streaming_start_error', { error: error.message });
       handleStreamingError(error);
@@ -907,13 +926,13 @@
 
       chunkCount++;
       const chunkSize = chunk.length;
-      
+
       // Memory safety check
       if (streamingContent.length + chunkSize > MAX_STREAMING_SIZE) {
-        logStreamingDebug('chunk_size_exceeded', { 
-          currentSize: streamingContent.length, 
-          chunkSize, 
-          maxSize: MAX_STREAMING_SIZE 
+        logStreamingDebug('chunk_size_exceeded', {
+          currentSize: streamingContent.length,
+          chunkSize,
+          maxSize: MAX_STREAMING_SIZE
         });
         handleStreamingError(new Error('Response size limit exceeded during chunk processing'));
         return;
@@ -921,34 +940,34 @@
 
       streamingContent += chunk;
       const contentDiv = streamingMessage.querySelector('.streaming-content');
-      
+
       if (!contentDiv) {
         logStreamingDebug('content_div_missing');
         handleStreamingError(new Error('Streaming content container missing'));
         return;
       }
-      
+
       // Throttle DOM updates for performance
       if (chunkCount % 3 === 0 || chunkSize > 100) {
         try {
           const result = formatText(streamingContent);
           const formattedContent = result.formatted;
           contentDiv.innerHTML = formattedContent + '<span class="streaming-cursor">|</span>';
-          
+
           // Auto-scroll but don't force it every time
           if (chunkCount % 10 === 0) {
             scrollChatToBottom();
           }
         } catch (formatError) {
-          logStreamingDebug('format_error', { 
-            error: formatError.message, 
-            contentLength: streamingContent.length 
+          logStreamingDebug('format_error', {
+            error: formatError.message,
+            contentLength: streamingContent.length
           });
           // Fallback to plain text if formatting fails
           contentDiv.innerHTML = escapeHtml(streamingContent) + '<span class="streaming-cursor">|</span>';
         }
       }
-      
+
       // Log progress periodically
       if (chunkCount % 50 === 0) {
         logStreamingDebug('chunk_progress', {
@@ -958,7 +977,7 @@
           elapsed: Date.now() - streamingStartTime
         });
       }
-      
+
     } catch (error) {
       logStreamingDebug('chunk_processing_error', { error: error.message, chunkCount });
       handleStreamingError(error);
@@ -968,7 +987,7 @@
   function completeStreamingMessage() {
     try {
       logStreamingDebug('streaming_complete_start');
-      
+
       if (!streamingMessage) {
         logStreamingDebug('complete_no_message');
         return;
@@ -981,54 +1000,60 @@
       }
 
       const contentDiv = streamingMessage.querySelector('.streaming-content');
-      
+
       if (!contentDiv) {
         logStreamingDebug('complete_content_div_missing');
         return;
       }
-      
+
       // Final content formatting and Flex snippet extraction
       let flexSnippets = [];
       try {
         const result = formatText(streamingContent);
         const finalContent = result.formatted;
         flexSnippets = result.flexSnippets;
-        contentDiv.innerHTML = finalContent;
+
+        // If the final content is empty but we have snippets, remove the now-empty message bubble.
+        if (finalContent.trim().length === 0 && flexSnippets.length > 0) {
+          streamingMessage.remove();
+          logStreamingDebug('empty_stream_bubble_removed');
+        } else {
+          // Otherwise, populate the message bubble as usual.
+          contentDiv.innerHTML = finalContent;
+          streamingMessage.classList.remove('streaming-message');
+          const status = streamingMessage.querySelector('.streaming-status');
+          if (status) {
+            const elapsed = Date.now() - streamingStartTime;
+            const size = (streamingContent.length / 1024).toFixed(1);
+            status.textContent = `Complete - ${Math.floor(elapsed / 1000)}s | ${size}KB | ${chunkCount} chunks`;
+            status.style.color = 'var(--success-color)';
+          }
+        }
       } catch (formatError) {
         logStreamingDebug('final_format_error', { error: formatError.message });
         // Fallback to plain text
         contentDiv.innerHTML = escapeHtml(streamingContent);
       }
-      
-      // Remove streaming class and update status
-      streamingMessage.classList.remove('streaming-message');
-      const status = streamingMessage.querySelector('.streaming-status');
-      if (status) {
-        const elapsed = Date.now() - streamingStartTime;
-        const size = (streamingContent.length / 1024).toFixed(1);
-        status.textContent = `Complete - ${Math.floor(elapsed / 1000)}s | ${size}KB | ${chunkCount} chunks`;
-        status.style.color = 'var(--success-color)';
-      }
-      
+
       // Add Flex code snippets after streaming completes
       if (flexSnippets.length > 0) {
         logStreamingDebug('adding_flex_snippets', { snippetCount: flexSnippets.length });
-        
+
         flexSnippets.forEach((snippet, index) => {
           setTimeout(() => {
             const snippetElement = createFlexCodeSnippet(snippet);
             chatBox.appendChild(snippetElement);
-            
+
             // Animate snippet appearance
             snippetElement.style.opacity = '0';
             snippetElement.style.transform = 'translateY(20px)';
-            
+
             requestAnimationFrame(() => {
               snippetElement.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
               snippetElement.style.opacity = '1';
               snippetElement.style.transform = 'translateY(0)';
             });
-            
+
             scrollChatToBottom();
           }, index * 300); // Stagger snippet animations
         });
@@ -1041,7 +1066,7 @@
 
       // Final scroll to show complete content
       scrollChatToBottom();
-      
+
       logStreamingDebug('streaming_complete_success', {
         totalChunks: chunkCount,
         totalSize: streamingContent.length,
@@ -1053,7 +1078,7 @@
       streamingMessage = null;
       streamingContent = '';
       chunkCount = 0;
-      
+
     } catch (error) {
       logStreamingDebug('complete_error', { error: error.message });
       handleStreamingError(error);
@@ -1062,7 +1087,7 @@
 
   function handleStreamingError(error) {
     try {
-      logStreamingDebug('streaming_error', { 
+      logStreamingDebug('streaming_error', {
         error: error.message,
         contentLength: streamingContent.length,
         elapsed: Date.now() - streamingStartTime
@@ -1087,11 +1112,11 @@
                 <details>
                   <summary>Debug Information</summary>
                   <pre>${JSON.stringify({
-                    chunkCount,
-                    contentLength: streamingContent.length,
-                    elapsed: Date.now() - streamingStartTime,
-                    lastLogs: streamingDebugLog.slice(-10)
-                  }, null, 2)}</pre>
+            chunkCount,
+            contentLength: streamingContent.length,
+            elapsed: Date.now() - streamingStartTime,
+            lastLogs: streamingDebugLog.slice(-10)
+          }, null, 2)}</pre>
                 </details>
               </div>
             </div>
@@ -1101,7 +1126,7 @@
 
         streamingMessage.classList.remove('streaming-message');
         streamingMessage.classList.add('streaming-error-message');
-        
+
         const status = streamingMessage.querySelector('.streaming-status');
         if (status) {
           status.textContent = 'Error - Check debug info below';
@@ -1248,7 +1273,7 @@
       case 'aiStreamComplete':
         // Complete streaming response
         completeStreamingMessage();
-        
+
         // Re-enable send button
         sendButton.disabled = false;
         sendButton.innerHTML = '<span class="send-icon">📤</span>';
@@ -1793,7 +1818,7 @@
   document.head.appendChild(style);
 
   // Add global debugging function for streaming
-  window.exportStreamingDebugLog = function() {
+  window.exportStreamingDebugLog = function () {
     const debugData = {
       timestamp: new Date().toISOString(),
       streamingDebugLog,
@@ -1810,16 +1835,16 @@
         jsHeapSizeLimit: performance.memory.jsHeapSizeLimit
       } : 'Not available'
     };
-    
+
     console.log('Streaming Debug Export:', debugData);
-    
+
     // Also copy to clipboard if available
     if (navigator.clipboard) {
       navigator.clipboard.writeText(JSON.stringify(debugData, null, 2))
         .then(() => console.log('Debug data copied to clipboard'))
         .catch(err => console.warn('Could not copy to clipboard:', err));
     }
-    
+
     return debugData;
   };
 
