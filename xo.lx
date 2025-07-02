@@ -1,3 +1,0 @@
-klma greeting = "مرحبا"
-string name = "World"
-etb3("{greeting}, {name}!")

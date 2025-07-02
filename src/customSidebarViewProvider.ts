@@ -1,155 +1,128 @@
 import * as vscode from "vscode";
-import axios from "axios";
-import * as fs from 'fs';
-import * as path from 'path';
+import { ChatMessage, ModelInfo, WebviewMessage, ExtensionConfig } from './types';
+import { FlexDatasetService } from './services/flexDatasetService';
+import { ApiService } from './services/apiService';
+import { ConfigService } from './services/configService';
+import { logger } from './utils/logger';
 
-
+/**
+ * Enhanced Custom Sidebar View Provider with improved architecture
+ */
 export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "flexChatbot.openview";
 
   private _view?: vscode.WebviewView;
-  private _conversationHistory: { role: string, content: string }[] = [];
-  private _availableModels: any[] = [];
+  private _conversationHistory: ChatMessage[] = [];
+  private readonly MAX_CONVERSATION_HISTORY = 20; // Limit to prevent memory issues
+  private _isProcessingMessage: boolean = false; // Prevent concurrent requests
+  private _availableModels: ModelInfo[] = [];
   private _isModelListLoaded = false;
-
-  // Comprehensive system prompt about the Flex language loaded from JSON dataset
-  private readonly _flexSystemPrompt = (() => {
-    try {
-      const datasetPath = path.resolve(__dirname, '../dataset/flex_language_spec.json');
-      if (!fs.existsSync(datasetPath)) {
-        console.warn('Flex language specification not found at:', datasetPath);
-        return 'Flex programming language assistant. Please refer to official documentation for syntax and examples.';
-      }
-
-      const rawData = fs.readFileSync(datasetPath, 'utf-8');
-      const flexSpec = JSON.parse(rawData);
-
-      // Extract the AI system prompt and build comprehensive context
-      let systemPrompt = '';
-
-      // Add the main AI system prompt if available
-      if (flexSpec.ai_system_prompt) {
-        systemPrompt += `${JSON.stringify(flexSpec.ai_system_prompt, null, 2)}\n\n`;
-      }
-
-      // Add essential language knowledge
-      if (flexSpec.ESSENTIAL_FLEX_KNOWLEDGE) {
-        systemPrompt += `ESSENTIAL FLEX KNOWLEDGE:\n${JSON.stringify(flexSpec.ESSENTIAL_FLEX_KNOWLEDGE, null, 2)}\n\n`;
-      }
-
-      // Add critical syntax patterns
-      if (flexSpec.CRITICAL_SYNTAX_PATTERNS) {
-        systemPrompt += `CRITICAL SYNTAX PATTERNS:\n${JSON.stringify(flexSpec.CRITICAL_SYNTAX_PATTERNS, null, 2)}\n\n`;
-      }
-
-      // Add common error solutions
-      if (flexSpec.COMMON_ERROR_SOLUTIONS) {
-        systemPrompt += `COMMON ERROR SOLUTIONS:\n${JSON.stringify(flexSpec.COMMON_ERROR_SOLUTIONS, null, 2)}\n\n`;
-      }
-
-      // Add syntax rules
-      if (flexSpec.syntax_rules) {
-        systemPrompt += `SYNTAX RULES:\n${JSON.stringify(flexSpec.syntax_rules, null, 2)}\n\n`;
-      }
-
-      // Add code examples
-      if (flexSpec.code_examples) {
-        systemPrompt += `CODE EXAMPLES:\n${JSON.stringify(flexSpec.code_examples, null, 2)}\n\n`;
-      }
-
-      // Add error handling patterns
-      if (flexSpec.error_handling) {
-        systemPrompt += `ERROR HANDLING:\n${JSON.stringify(flexSpec.error_handling, null, 2)}\n\n`;
-      }
-
-      // Add best practices
-      if (flexSpec.best_practices) {
-        systemPrompt += `BEST PRACTICES:\n${JSON.stringify(flexSpec.best_practices, null, 2)}\n\n`;
-      }
-
-      return systemPrompt;
-
-    } catch (error) {
-      console.error('Error loading Flex language specification:', error);
-      return 'Flex programming language assistant. Error loading language specification - please refer to official documentation.';
-    }
-  })();
+  private _flexDatasetService: FlexDatasetService;
+  private _configWatcher?: vscode.Disposable;
 
   constructor(private readonly _extensionUri: vscode.Uri) {
-    // Fetch available models when the extension is loaded
-    this.fetchAvailableModels();
+    logger.logExtensionEvent('activate', { component: 'CustomSidebarViewProvider' });
+
+    // Initialize services
+    this._flexDatasetService = FlexDatasetService.getInstance(_extensionUri.fsPath);
+
+    // Set up configuration watcher
+    this._configWatcher = ConfigService.onConfigurationChanged((config) => {
+      this.onConfigurationChanged(config);
+    });
+
+    // Initialize available models
+    this.initializeModels();
   }
 
-  // Public methods
-  public async getAvailableModels(): Promise<any[]> {
-    // If models aren't loaded yet, try to fetch them
+  /**
+   * Dispose of resources
+   */
+  public dispose(): void {
+    if (this._configWatcher) {
+      this._configWatcher.dispose();
+    }
+    logger.logExtensionEvent('deactivate', { component: 'CustomSidebarViewProvider' });
+  }
+
+  /**
+   * Get available models
+   */
+  public async getAvailableModels(): Promise<ModelInfo[]> {
     if (!this._isModelListLoaded) {
-      await this.fetchAvailableModels();
+      await this.initializeModels();
     }
     return this._availableModels;
   }
 
+  /**
+   * Reset chat conversation
+   */
   public resetChat(): void {
+    logger.logUserAction('resetChat');
     this._conversationHistory = [];
     if (this._view) {
-      this._view.webview.postMessage({ command: 'chatCleared' });
+      this._view.webview.postMessage({ command: 'chatCleared' } as WebviewMessage);
     }
   }
 
+  /**
+   * Refresh webview content
+   */
   public refreshWebview(): void {
     if (this._view) {
       this._view.webview.html = this.getHtmlContent(this._view.webview);
+      logger.debug('Webview refreshed');
     }
   }
 
-  // Fetch available models from OpenRouter API
-  private async fetchAvailableModels() {
+  /**
+   * Initialize available models from API
+   */
+  private async initializeModels(): Promise<void> {
+    const timer = logger.createTimer('initializeModels');
+
     try {
-      const apiKey = vscode.workspace.getConfiguration('flexChatbot').get('apiKey') as string;
+      const config = ConfigService.getConfig();
 
-      if (apiKey && apiKey.trim() !== '') {
-        const response = await axios.get('https://openrouter.ai/api/v1/models', {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'HTTP-Referer': 'https://github.com/flex/flex-chatbot',
-            'X-Title': 'Flex Chat Bot'
-          }
-        });
+      if (!config.apiKey) {
+        logger.warn('API key not configured, skipping model initialization');
+        return;
+      }
 
-        if (response.data && Array.isArray(response.data.data)) {
-          this._availableModels = response.data.data;
-          this._isModelListLoaded = true;
+      this._availableModels = await ApiService.fetchAvailableModels(config.apiKey);
+      this._isModelListLoaded = true;
 
-          // Get the current selected model
-          const currentModel = vscode.workspace.getConfiguration('flexChatbot').get('model') as string;
+      logger.info(`Loaded ${this._availableModels.length} models`);
 
-          // Create QuickPick items from the available models
-          const items = this._availableModels.map(model => ({
-            label: model.id,
-            description: `${model.context_length} tokens - ${model.pricing?.prompt ? '$' + model.pricing.prompt.toFixed(6) + '/1K prompt tokens' : 'Pricing N/A'}`,
-            detail: model.description || ''
-          }));
-
-          // Update the configuration schema with available models
-          this.updateModelConfigurationSchema(items);
-
-          // Refresh the webview if it exists
-          if (this._view) {
-            this._view.webview.html = this.getHtmlContent(this._view.webview);
-          }
-        }
+      if (this._view) {
+        this.refreshWebview();
       }
     } catch (error) {
-      console.error('Error fetching available models:', error);
+      logger.error('Failed to initialize models', error);
+    } finally {
+      timer.end();
     }
   }
 
-  private updateModelConfigurationSchema(models: { label: string, description: string }[]) {
-    // This is more of a placeholder since we can't actually modify the package.json at runtime
-    // In a production environment, you'd want to store these models in user settings
-    console.log('Available models:', models.map(m => m.label).join(', '));
+  /**
+   * Handle configuration changes
+   */
+  private onConfigurationChanged(config: ExtensionConfig): void {
+    logger.logConfigChange('configuration', 'previous', 'new');
+
+    // Re-fetch models if API key changed
+    if (config.apiKey && !this._isModelListLoaded) {
+      this.initializeModels();
+    }
+
+    // Refresh webview to show updated configuration
+    this.refreshWebview();
   }
 
+  /**
+   * Resolve webview view and set up message handling
+   */
   resolveWebviewView(
     webviewView: vscode.WebviewView,
     context: vscode.WebviewViewResolveContext,
@@ -158,235 +131,423 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
     this._view = webviewView;
 
     webviewView.webview.options = {
-      // Allow scripts in the webview
       enableScripts: true,
       localResourceRoots: [this._extensionUri],
     };
+
     webviewView.webview.html = this.getHtmlContent(webviewView.webview);
 
-    // Handle messages from the webview
-    webviewView.webview.onDidReceiveMessage(async (message) => {
+    // Set up message handling
+    webviewView.webview.onDidReceiveMessage(async (message: WebviewMessage) => {
+      await this.handleWebviewMessage(message);
+    });
+
+    logger.info('Webview resolved and message handlers set up');
+  }
+
+  /**
+   * Handle messages from the webview
+   */
+  private async handleWebviewMessage(message: WebviewMessage): Promise<void> {
+    const timer = logger.createTimer(`handleMessage:${message.command}`);
+
+    try {
       switch (message.command) {
         case 'sendMessage':
-          const userMessage = message.text;
-          this._conversationHistory.push({ role: "user", content: userMessage });
-
-          // Check if user wants to search the web
-          const isWebSearch = userMessage.toLowerCase().includes('[web]');
-
-          try {
-            // Get config values
-            const apiKey = vscode.workspace.getConfiguration('flexChatbot').get('apiKey') as string;
-            const selectedModel = vscode.workspace.getConfiguration('flexChatbot').get('model') as string;
-            const temperature = vscode.workspace.getConfiguration('flexChatbot').get('temperature') as number;
-
-            if (!apiKey || apiKey.trim() === '') {
-              webviewView.webview.postMessage({
-                command: 'aiResponse',
-                text: "Please set your OpenRouter API key in the settings (File > Preferences > Settings > Extensions > Flex Chat Bot)."
-              });
-              return;
-            }
-
-            // If web search is requested and enabled in settings
-            let webSearchResults = null;
-            if (isWebSearch && vscode.workspace.getConfiguration('flexChatbot').get('enableWebSearch')) {
-              webviewView.webview.postMessage({
-                command: 'statusUpdate',
-                text: 'Searching the web...'
-              });
-
-              // Extract the search query by removing the [web] tag
-              const searchQuery = userMessage.replace(/\[web\]/gi, '').trim();
-              webSearchResults = await this.performWebSearch(searchQuery);
-            }
-
-            // Generate a message to send to the AI
-            let messageForAI = userMessage;
-
-            // Add web search results if available
-            if (webSearchResults) {
-              messageForAI = `The user asked: ${userMessage.replace(/\[web\]/gi, '').trim()}\n\nHere are some search results that might help answer the query:\n${webSearchResults}\n\nPlease synthesize this information to provide a helpful answer.`;
-            }
-
-            // Send a message to the AI service
-            webviewView.webview.postMessage({
-              command: 'statusUpdate',
-              text: 'bor3i is thinking...'
-            });
-
-            // Prepare messages for the API
-            const flex_data = this._flexSystemPrompt;
-
-            // Start messages array with the system prompt
-            const messages = [
-              {
-                role: "system",
-                content: "You are a specialized assistant for the Flex programming language. You have access to the complete Flex language specification including syntax rules, examples, error handling patterns, and best practices. Use this comprehensive knowledge to provide accurate, helpful responses about Flex programming.\n\nFLEX LANGUAGE SPECIFICATION:\n" + flex_data
-              },
-              ...this._conversationHistory
-            ];
-
-            // Send request to OpenRouter API
-            const response = await this.callOpenRouterAPI(messages, selectedModel, temperature, apiKey);
-
-            // Add AI response to conversation history
-            if (response) {
-              this._conversationHistory.push({ role: "assistant", content: response });
-              webviewView.webview.postMessage({ command: 'aiResponse', text: response });
-            }
-          } catch (error) {
-            console.error('Error in AI request:', error);
-            webviewView.webview.postMessage({
-              command: 'aiResponse',
-              text: `Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}`
-            });
-          }
+          await this.handleSendMessage(message.text || '');
           break;
 
         case 'clearChat':
-          this._conversationHistory = [];
-          webviewView.webview.postMessage({ command: 'chatCleared' });
+          this.handleClearChat();
           break;
 
         case 'selectModel':
-          vscode.commands.executeCommand('flexChatbot.selectModel');
+          await this.handleSelectModel();
           break;
+
+        default:
+          logger.warn(`Unknown message command: ${message.command}`);
       }
-    });
+    } catch (error) {
+      logger.error(`Error handling message: ${message.command}`, error);
+      this.sendErrorMessage(`Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      timer.end();
+    }
   }
 
-  private async callOpenRouterAPI(
-    messages: { role: string, content: string }[],
-    model: string,
-    temperature: number,
-    apiKey: string
-  ): Promise<string | null> {
+  /**
+   * Handle send message request
+   */
+  private async handleSendMessage(userMessage: string): Promise<void> {
+    if (!userMessage.trim()) {
+      return;
+    }
+
+    // Prevent concurrent requests and clear any hanging states
+    if (this._isProcessingMessage) {
+      this.sendErrorMessage('Please wait for the current message to be processed.');
+      return;
+    }
+    this._isProcessingMessage = true;
+
+    // Set up timeout to prevent hanging indefinitely
+    const processingTimeout = setTimeout(() => {
+      this._isProcessingMessage = false;
+      this.sendErrorMessage('Request processing timeout. Please try again.');
+    }, 600000); // 10 minutes max
+
+    logger.logUserAction('sendMessage', { messageLength: userMessage.length });
+
+    // Check configuration
+    const config = ConfigService.getConfig();
+    const configValidation = ConfigService.validateConfig();
+
+    if (!configValidation.isValid) {
+      this._isProcessingMessage = false;
+      this.sendErrorMessage(
+        `Configuration error: ${configValidation.errors.join(', ')}. Please check your settings.`
+      );
+      return;
+    }
+
     try {
-      const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
-        model: model,
-        messages: messages,
-        temperature: temperature,
-        stream: false
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-          'HTTP-Referer': 'https://github.com/flex/flex-chatbot',
-          'X-Title': 'Flex Chat Bot'
+      // Check for web search request (disabled by default for stability)
+      const isWebSearch = userMessage.toLowerCase().includes('[web]');
+      let webSearchResults: string = '';
+
+      if (isWebSearch && config.enableWebSearch) {
+        try {
+          this.sendStatusMessage('Searching the web...');
+          const searchQuery = userMessage.replace(/\[web\]/gi, '').trim();
+          const results = await Promise.race([
+            ApiService.performWebSearch(searchQuery),
+            new Promise<any[]>((_, reject) =>
+              setTimeout(() => reject(new Error('Web search timeout')), 10000)
+            )
+          ]);
+          webSearchResults = ApiService.formatWebSearchResults(results);
+        } catch (error) {
+          console.warn('Web search failed:', error);
+          webSearchResults = ''; // Continue without web search results
         }
+      }
+
+      // Prepare AI message
+      let messageForAI = userMessage;
+      if (webSearchResults) {
+        messageForAI = `The user asked: ${userMessage.replace(/\[web\]/gi, '').trim()}\n\nHere are some search results that might help:\n${webSearchResults}\n\nPlease synthesize this information to provide a helpful answer.`;
+      }
+
+      // Add user message to history (display version)
+      const userChatMessage: ChatMessage = {
+        role: 'user',
+        content: userMessage,
+        timestamp: new Date()
+      };
+      this._conversationHistory.push(userChatMessage);
+
+      // Trim conversation history to prevent memory issues
+      if (this._conversationHistory.length > this.MAX_CONVERSATION_HISTORY) {
+        this._conversationHistory = this._conversationHistory.slice(-this.MAX_CONVERSATION_HISTORY);
+      }
+
+      // Send thinking status
+      this.sendStatusMessage('Flex Assistant is thinking...');
+
+      // Prepare messages with system prompt
+      const systemPrompt = this._flexDatasetService.getSystemPrompt();
+      const messages: ChatMessage[] = [
+        {
+          role: 'system',
+          content: systemPrompt
+        },
+        ...this._conversationHistory.slice(0, -1), // All messages except the last one
+        {
+          role: 'user',
+          content: messageForAI, // Use the enhanced message for AI
+          timestamp: new Date()
+        }
+      ];
+
+      // Initialize streaming response
+      let fullResponse = '';
+      this.sendAiStreamStart();
+
+      // Get AI response with streaming
+      const response = await ApiService.streamChatCompletion(
+        messages, 
+        config,
+        (chunk: string) => {
+          // Send each chunk as it arrives
+          fullResponse += chunk;
+          this.sendAiStreamChunk(chunk);
+        },
+        (error: Error) => {
+          // Handle streaming errors
+          this.sendErrorMessage(`Streaming error: ${error.message}`);
+        },
+        () => {
+          // Mark streaming as complete
+          this.sendAiStreamComplete();
+        }
+      );
+
+      // Add AI response to history
+      const aiChatMessage: ChatMessage = {
+        role: 'assistant',
+        content: fullResponse,
+        timestamp: new Date()
+      };
+      this._conversationHistory.push(aiChatMessage);
+
+      logger.info('Message processed successfully', {
+        userMessageLength: userMessage.length,
+        responseLength: fullResponse.length,
+        historyLength: this._conversationHistory.length
       });
 
-      return response.data.choices[0].message.content;
+      // Clear timeout on success
+      clearTimeout(processingTimeout);
+
     } catch (error) {
-      console.error('OpenRouter API Error:', error);
-      if (axios.isAxiosError(error) && error.response) {
-        throw new Error(`API error: ${error.response.status} - ${error.response.data?.error?.message || 'Unknown error'}`);
+      logger.error('Error processing message', error);
+      
+      // Clear timeout on error
+      clearTimeout(processingTimeout);
+      
+      // Clear any status messages
+      if (this._view) {
+        this._view.webview.postMessage({ command: 'statusUpdate', text: '' });
       }
-      throw error;
+      
+      // Provide user-friendly error message
+      let errorMessage = 'Sorry, I encountered an error. ';
+      if (error instanceof Error) {
+        if (error.message.includes('timeout')) {
+          errorMessage += 'The request timed out. Please try again with a shorter message.';
+        } else if (error.message.includes('API key')) {
+          errorMessage += 'Please check your OpenRouter API key in the extension settings.';
+        } else if (error.message.includes('rate limit')) {
+          errorMessage += 'Rate limit exceeded. Please wait a moment before trying again.';
+        } else {
+          errorMessage += error.message;
+        }
+      } else {
+        errorMessage += 'Unknown error occurred. Please try again.';
+      }
+      
+      this.sendErrorMessage(errorMessage);
+    } finally {
+      this._isProcessingMessage = false;
     }
   }
 
-  private async performWebSearch(query: string): Promise<string> {
-    try {
-      // Using the SerpAPI for search results
-      const searchResponse = await axios.get(`https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=demo`);
-
-      if (searchResponse.data && searchResponse.data.organic_results) {
-        const results = searchResponse.data.organic_results.slice(0, 5);
-        return results.map((result: any, index: number) =>
-          `[${index + 1}] ${result.title}\n${result.snippet}\nURL: ${result.link}\n`
-        ).join('\n');
-      }
-
-      return "No search results found";
-    } catch (error) {
-      console.error('Web search error:', error);
-      return "Error performing web search";
+  /**
+   * Handle clear chat request
+   */
+  private handleClearChat(): void {
+    logger.logUserAction('clearChat');
+    this._conversationHistory = [];
+    if (this._view) {
+      this._view.webview.postMessage({ command: 'chatCleared' } as WebviewMessage);
     }
   }
 
+  /**
+ * Handle select model request
+ */
+  private async handleSelectModel(): Promise<void> {
+    logger.logUserAction('selectModel');
+    await vscode.commands.executeCommand('flexChatbot.selectModel');
+  }
+
+  /**
+   * Send AI response to webview
+   */
+  private sendAiResponse(text: string): void {
+    if (this._view) {
+      this._view.webview.postMessage({ command: 'aiResponse', text } as WebviewMessage);
+    }
+  }
+
+  /**
+   * Send status message to webview
+   */
+  private sendStatusMessage(text: string): void {
+    if (this._view) {
+      this._view.webview.postMessage({ command: 'statusUpdate', text } as WebviewMessage);
+    }
+  }
+
+  /**
+   * Send error message to webview
+   */
+  private sendErrorMessage(text: string): void {
+    if (this._view) {
+      this._view.webview.postMessage({ command: 'aiResponse', text } as WebviewMessage);
+    }
+  }
+
+  /**
+   * Start AI streaming response
+   */
+  private sendAiStreamStart(): void {
+    if (this._view) {
+      this._view.webview.postMessage({ command: 'aiStreamStart' } as WebviewMessage);
+    }
+  }
+
+  /**
+   * Send AI streaming chunk
+   */
+  private sendAiStreamChunk(chunk: string): void {
+    if (this._view) {
+      this._view.webview.postMessage({ command: 'aiStreamChunk', text: chunk } as WebviewMessage);
+    }
+  }
+
+  /**
+   * Complete AI streaming response
+   */
+  private sendAiStreamComplete(): void {
+    if (this._view) {
+      this._view.webview.postMessage({ command: 'aiStreamComplete' } as WebviewMessage);
+    }
+  }
+
+  /**
+   * Generate HTML content for the webview
+   */
   private getHtmlContent(webview: vscode.Webview): string {
-    // Get the local path to main script run in the webview
-    const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "assets", "chat.js")
+    // Get resource URIs for professional styling
+    const mainStyleUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "css", "main.css")
     );
 
-    // Stylesheets
-    const stylesheetUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "assets", "main.css")
+    const vscodeStyleUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "css", "vscode.css")
     );
 
-    // Path to the image
+    const resetStyleUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "css", "reset.css")
+    );
+
     const robotGifUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "assets", "robot.gif")
+      vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "images", "robot.gif")
     );
 
-    // Get settings for API and model display
-    const selectedModel = vscode.workspace.getConfiguration('flexChatbot').get('model') as string;
-    const apiKey = vscode.workspace.getConfiguration('flexChatbot').get('apiKey') as string;
-    const apiConfigured = apiKey && apiKey.trim() !== '';
+    const flexLogoUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "images", "logo_flex.svg")
+    );
 
-    // Display the model name more user-friendly (remove the provider prefix)
-    const modelDisplay = selectedModel.split('/').pop() || selectedModel;
+    const userIconUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "images", "user-icon.png")
+    );
 
-    // Check if we have models loaded to display the model selection button
-    const showModelSelector = this._isModelListLoaded && this._availableModels.length > 0;
+    const highlighterUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "js", "highlighter.js")
+    );
 
-    // Use a nonce to only allow a specific script to be run
+    const chatJsUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "js", "chat.js")
+    );
+
+    // Use a nonce for security
     const nonce = getNonce();
+
+    // Get current configuration and status
+    const config = ConfigService.getConfig();
+    const configValidation = ConfigService.validateConfig();
+    const isDatasetLoaded = this._flexDatasetService.isDatasetLoaded();
 
     return `<!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link href="${stylesheetUri}" rel="stylesheet">
-      <title>Flex Chat Bot</title>
+      <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}'; img-src ${webview.cspSource} data: https:; connect-src https:; font-src ${webview.cspSource} https:;">
+      <title>Flex Programming Assistant</title>
+      
+      <!-- Professional CSS Imports -->
+      <link rel="stylesheet" href="${resetStyleUri}" nonce="${nonce}">
+      <link rel="stylesheet" href="${vscodeStyleUri}" nonce="${nonce}">
+      <link rel="stylesheet" href="${mainStyleUri}" nonce="${nonce}">
     </head>
-    <body>
+    <body data-config-status="${configValidation.isValid ? 'valid' : 'invalid'}">
       <div id="maincont">
-        <div id="upbox">
-          <div id="item-1">
-            Welcome to Flex Chat Bot!
-            ${apiConfigured ?
-        `<div class="model-info">Using: ${modelDisplay} ${showModelSelector ? '<button id="change-model" title="Change model">⚙️</button>' : ''}</div>` :
-        `<div class="model-info api-warning">API key not set</div>`
-      }
-            <button id="clear-button" title="Clear conversation">Clear</button>
-          </div>
-          <div id="item-2">
-            <div>
-              <img src="${robotGifUri}" alt="Flex Chat Bot">
+        <!-- Minimalist Header Bar -->
+        <div id="header-bar">
+          <div class="header-left">
+            <img src="${flexLogoUri}" alt="Flex" class="header-logo">
+            <span class="header-title">Flex Assistant</span>
+            <div class="status-indicators">
+              <span class="status-dot ${configValidation.isValid ? 'success' : 'warning'}" title="${configValidation.isValid ? 'Configuration Ready' : 'Check Settings'}"></span>
+              <span class="status-dot ${isDatasetLoaded ? 'success' : 'loading'}" title="${isDatasetLoaded ? 'Dataset Loaded' : 'Loading Dataset'}"></span>
             </div>
-            <div id="ask">
-              ........... < bor3i is here to help />
-              <p class="me"><i>Powered by Flex</i></p>
-              <div class="system-prompt-info">Using Flex Language Specification v2.1</div>
+          </div>
+          <div class="header-right">
+            <div class="model-display">${config.model || 'Default'}</div>
+            <button id="change-model" class="icon-button" title="Change Model">⚙️</button>
+            <button id="clear-button" class="icon-button" title="Clear Chat">🗑️</button>
+          </div>
+        </div>
+
+        <!-- Enhanced Chat Container -->
+        <div id="chat-box">
+          <div class="welcome-message">
+            <div class="bot-avatar">
+              <img src="${robotGifUri}" alt="Flex Assistant">
+            </div>
+            <div class="welcome-content">
+              <h3>Welcome to Flex Programming Assistant! 🚀</h3>
+              <p>I'm here to help you with Flex syntax, Franco-Arabic programming concepts, and best practices.</p>
             </div>
           </div>
         </div>
-        <div id="chat-box"></div>
+
+        <!-- Enhanced Input Area -->
+        <div id="input-section">
+          <div class="input-container">
+            <div class="input-wrapper">
+              <textarea 
+                id="user-input" 
+                placeholder="Ask me anything about Flex programming..."
+                rows="1"
+                maxlength="4000"
+              ></textarea>
+              <button id="send-button" class="send-button">
+                <span class="send-icon">📤</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div id="cont">
-        <input type="text" id="user-input" placeholder="Type your message here (use [web] for web search)">
-        <button id="send-button">Send</button>
-      </div>
-      <script nonce="${nonce}" src="${scriptUri}"></script>
-      <script nonce="${nonce}">
-        // Add event listener for model change button if it exists
-        const changeModelBtn = document.getElementById('change-model');
-        if (changeModelBtn) {
-          changeModelBtn.addEventListener('click', () => {
-            const vscode = acquireVsCodeApi();
-            vscode.postMessage({
-              command: 'selectModel'
-            });
-          });
-        }
-      </script>
+      
+      <!-- Load External Scripts -->
+      <script src="${highlighterUri}" nonce="${nonce}"></script>
+      <script src="${chatJsUri}" nonce="${nonce}"></script>
     </body>
     </html>`;
+  }
+
+  /**
+   * Create status message for display
+   */
+  private createStatusMessage(
+    configValidation: { isValid: boolean; errors: string[] },
+    isDatasetLoaded: boolean,
+    datasetStats: Record<string, number>
+  ): string {
+    if (!configValidation.isValid) {
+      return `Configuration issues: ${configValidation.errors.join(', ')}`;
+    }
+
+    if (!isDatasetLoaded) {
+      return 'Dataset not loaded - using fallback';
+    }
+
+    return `Ready (${datasetStats.codeExamples || 0} examples loaded)`;
   }
 }
 
@@ -399,3 +560,4 @@ function getNonce() {
   }
   return text;
 }
+

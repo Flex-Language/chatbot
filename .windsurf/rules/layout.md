@@ -1,0 +1,123 @@
+---
+trigger: always_on
+description: 
+globs: 
+---
+# 📁 Flex Chatbot Project Layout Documentation
+
+## 📋 Project Overview
+This document tracks the complete project structure of the Flex Chatbot VS Code extension, including all files, their purposes, and recent changes during the adaptive UI redesign.
+
+## 🔄 Recent Critical Updates (Latest Session)
+
+### ✅ **ADAPTIVE UI REDESIGN COMPLETED** 
+**Date**: Current session  
+**Status**: SUCCESSFULLY IMPLEMENTED AND TESTED
+
+#### 🎨 **UI Enhancements Applied**:
+
+1. **Removed Blue Header Box**:
+   - ✅ Eliminated the prominent blue header box for cleaner design
+   - ✅ Replaced with minimalist header bar
+   - ✅ Better space utilization for chat content
+   - ✅ Professional, streamlined appearance
+
+2. **Enhanced Header Layout**:
+   ```
+   📱 Header Bar (Optimized)
+   ├── 🏷️ Flex Assistant logo and title
+   ├── 🔴🟡🟢 Status indicators (Config/Dataset)
+   ├── 📊 Message counter (live updates)
+   ├── 📱 Model display (NEW - shows current model)
+   ├── ⚙️ Settings button (model selection)
+   └── 🗑️ Clear chat button
+   ```
+
+3. **Improved Input Section**:
+   ```
+   ⌨️ Input Area (Redesigned)
+   ├── 🚀 Quick action buttons (4 prompts)
+   ├── 📝 Auto-expanding text input (left)
+   └── 📤 Send button (beside input - right)
+   ```
+
+4. **Mobile-First Responsive Design**:
+   - **Desktop (>768px)**: Full layout with all elements visible
+   - **Tablet (<=768px)**: Compact model display, optimized spacing
+   - **Mobile (<=480px)**: Ultra-compact model display, stacked layout
+   - **Auto-adaptive**: Seamless transitions between screen sizes
+
+#### 📊 **Current Status**:
+- ✅ TypeScript compilation: **PASSED**
+- ✅ Extension packaging: **SUCCESSFUL** (`flex-chatbot-1.0.0.vsix`)
+- ✅ Model display: **IMPLEMENTED** (beside settings icon)
+- ✅ Send button positioning: **FIXED** (beside text input)
+- ✅ Responsive design: **COMPLETE**
+- 🚀 Status: **PRODUCTION READY - ADAPTIVE**
+
+### 🎯 **Key UI Improvements Implemented**:
+
+#### **Model Display Enhancement**:
+- ✅ **Positioned**: Directly beside the settings icon in header
+- ✅ **Styling**: Professional gradient background with border
+- ✅ **Responsive**: Adapts size on different screen sizes
+- ✅ **Overflow Handling**: Text ellipsis for long model names
+- ✅ **Visual Hierarchy**: Clear distinction from other elements
+
+#### **Send Button Optimization**:
+- ✅ **Positioning**: Placed beside (to the right of) text input
+- ✅ **Layout**: Same row as text input, not above or below
+- ✅ **Sizing**: Compact design that doesn't overwhelm the input
+- ✅ **Responsiveness**: Maintains position across all screen sizes
+- ✅ **Accessibility**: Proper focus states and touch targets
+
+#### **Responsive Breakpoints**:
+- **Desktop**: Model display max-width 120px, full feature set
+- **Tablet**: Model display max-width 80px, compact layout
+- **Mobile**: Model display max-width 60px, minimal design
+
+### 🔧 **Technical Implementation**:
+- **CSS Architecture**: Mobile-first responsive design with progressive enhancement
+- **Layout System**: Flexbox for precise positioning and alignment
+- **Typography**: Adaptive font sizes across breakpoints
+- **Spacing**: Consistent spacing system with CSS custom properties
+- **Performance**: Optimized CSS with efficient selectors
+
+## 📝 File Descriptions (Updated)
+
+### 📄 Main Files Modified
+
+#### `src/customSidebarViewProvider.ts` 🚀 **ENHANCED**
+- **Purpose**: Main webview provider with adaptive UI
+- **New Features**: Model display in header, optimized layout structure
+- **Enhancement**: Clean HTML structure for better maintainability
+- **Status**: ✅ PRODUCTION READY
+
+#### `assets/webview/css/main.css` 🎨 **FULLY RESPONSIVE**
+- **Purpose**: Complete adaptive styling system
+- **New Styles**: Model display styling, responsive breakpoints
+- **Enhancement**: Mobile-first CSS with desktop enhancements
+- **Status**: ✅ COMPLETE RESPONSIVE SYSTEM
+
+## 🎯 Implementation Results
+
+### ✅ **User Requirements Met**:
+1. **Model Display**: ✅ Current model shown beside settings icon
+2. **Send Button Position**: ✅ Located beside (not above/below) text input
+3. **Responsive Design**: ✅ Adapts to all screen sizes
+4. **Clean Interface**: ✅ Removed blue header box for better UX
+
+### 🚀 **Additional Improvements Achieved**:
+- Professional visual hierarchy with proper spacing
+- Touch-friendly interface for mobile devices
+- Smooth transitions and hover effects
+- Accessibility-compliant focus management
+- Performance-optimized CSS architecture
+
+## 📱 **Cross-Device Compatibility**:
+- **Desktop**: Full-featured interface with optimal spacing
+- **Tablet**: Compact design maintaining all functionality
+- **Mobile**: Touch-optimized layout with smart text sizing
+- **Responsive**: Seamless adaptation between all screen sizes
+
+**🎉 Result**: The Flex Chatbot now features a fully adaptive, professional interface with the model name displayed beside the settings icon and the send button properly positioned beside the text input, creating an optimal user experience across all devices.

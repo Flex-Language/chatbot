@@ -17,7 +17,7 @@
     "url": "https://github.com/Flex-Language/chatbot/issues"
   },
   "homepage": "https://github.com/Flex-Language/chatbot",
-  "icon": "assets/data.png",
+  "icon": "assets/webview/images/icon.png",
   "engines": {
     "vscode": "^1.61.0"
   },
@@ -47,14 +47,14 @@
         {
           "id": "flex-chatbot",
           "title": "Flex Chat Bot",
-          "icon": "assets/logo_flex.svg"
+          "icon": "assets/webview/images/logo_flex.svg"
         }
       ]
     },
     "views": {
       "flex-chatbot": [
         {
-          "icon": "assets/logo_taijitu.svg",
+          "icon": "assets/webview/images/logo_taijitu.svg",
           "type": "webview",
           "id": "flexChatbot.openview",
           "name": "View",
@@ -65,21 +65,74 @@
     "commands": [
       {
         "command": "flexChatbot.openview",
-        "title": "Flex Chat Bot"
+        "title": "Open Flex Chat Bot",
+        "category": "Flex Chat Bot"
       },
       {
         "command": "flexChatbot.menu.view",
-        "category": "flex-chatbot",
-        "title": "Flex Chat Bot in VS Code Sidebar",
+        "category": "Flex Chat Bot",
+        "title": "Show in Sidebar",
         "icon": "$(clear-all)"
       },
       {
         "command": "flexChatbot.resetChat",
-        "title": "Flex Chat Bot: Reset Chat"
+        "title": "Reset Chat Conversation",
+        "category": "Flex Chat Bot",
+        "icon": "$(refresh)"
       },
       {
         "command": "flexChatbot.selectModel",
-        "title": "Flex Chat Bot: Select AI Model"
+        "title": "Select AI Model",
+        "category": "Flex Chat Bot",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "flexChatbot.configure",
+        "title": "Configure Settings",
+        "category": "Flex Chat Bot",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "flexChatbot.showLogs",
+        "title": "Show Extension Logs",
+        "category": "Flex Chat Bot",
+        "icon": "$(output)"
+      },
+      {
+        "command": "flexChatbot.datasetInfo",
+        "title": "Show Dataset Information",
+        "category": "Flex Chat Bot",
+        "icon": "$(info)"
+      },
+      {
+        "command": "flexChatbot.debug.dashboard",
+        "title": "Show Debug Dashboard",
+        "category": "Flex Chat Bot - Debug",
+        "icon": "$(bug)"
+      },
+      {
+        "command": "flexChatbot.debug.clearData",
+        "title": "Clear Debug Data",
+        "category": "Flex Chat Bot - Debug",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "flexChatbot.dev.dashboard",
+        "title": "Show Development Dashboard",
+        "category": "Flex Chat Bot - Development",
+        "icon": "$(tools)"
+      },
+      {
+        "command": "flexChatbot.dev.runTests",
+        "title": "Run All Tests",
+        "category": "Flex Chat Bot - Development",
+        "icon": "$(test-view-icon)"
+      },
+      {
+        "command": "flexChatbot.dev.exportData",
+        "title": "Export Development Data",
+        "category": "Flex Chat Bot - Development",
+        "icon": "$(export)"
       }
     ],
     "menus": {
@@ -97,24 +150,62 @@
         "flexChatbot.apiKey": {
           "type": "string",
           "default": "",
-          "description": "OpenRouter API key for accessing AI models"
+          "markdownDescription": "OpenRouter API key for accessing AI models. Get your key at [OpenRouter](https://openrouter.ai/keys).",
+          "order": 1
         },
         "flexChatbot.model": {
           "type": "string",
-          "default": "openai/gpt-4.1-mini",
-          "markdownDescription": "AI model to use for chat responses. You can search for available models in OpenRouter, or use the 'Flex Chat Bot: Select AI Model' command to see a list of models.\n\n[Browse models on OpenRouter](https://openrouter.ai/models)"
-        },
-        "flexChatbot.enableWebSearch": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable web search capability when [web] is included in the query"
+          "default": "openai/gpt-4o-mini",
+          "markdownDescription": "AI model to use for chat responses. Use the **Flex Chat Bot: Select AI Model** command to choose from available models.\n\n[Browse models on OpenRouter](https://openrouter.ai/models)",
+          "order": 2
         },
         "flexChatbot.temperature": {
           "type": "number",
           "default": 0.7,
           "minimum": 0,
           "maximum": 2,
-          "description": "Controls randomness of responses. Lower is more deterministic, higher is more creative."
+          "markdownDescription": "Controls randomness of AI responses:\n- **0-0.3**: More focused and deterministic\n- **0.4-0.7**: Balanced creativity and accuracy  \n- **0.8-2.0**: More creative and varied",
+          "order": 3
+        },
+        "flexChatbot.enableWebSearch": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enable web search capability when `[web]` is included in your query. Provides real-time information from search results. **Note:** Currently uses demo API which may be unreliable.",
+          "order": 4
+        },
+        "flexChatbot.maxTokens": {
+          "type": "number",
+          "default": 4000,
+          "minimum": 100,
+          "maximum": 32000,
+          "markdownDescription": "Maximum number of tokens in AI responses. Higher values allow longer responses but cost more.",
+          "order": 5
+        },
+        "flexChatbot.timeout": {
+          "type": "number",
+          "default": 30000,
+          "minimum": 5000,
+          "maximum": 300000,
+          "markdownDescription": "Request timeout in milliseconds (5-300 seconds). Increase if you experience timeout errors.",
+          "order": 6
+        },
+        "flexChatbot.debug.enabled": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enable debug mode for detailed logging and performance tracking. Useful for troubleshooting and development.",
+          "order": 7
+        },
+        "flexChatbot.debug.performanceTracking": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Track performance metrics for API calls and operations. Helps identify slow operations.",
+          "order": 8
+        },
+        "flexChatbot.debug.errorReporting": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable automatic error reporting and recovery attempts. Improves debugging experience.",
+          "order": 9
         }
       }
     }
