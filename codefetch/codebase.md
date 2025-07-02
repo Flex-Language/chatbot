@@ -1,8 +1,6 @@
 Project Structure:
 ├── LICENSE
 ├── assets
-│   ├── chat.js
-│   ├── main.css
 ├── codefetch
 │   └── codebase.md
 ├── docs
@@ -225,7 +223,7 @@ package.json
 155 |         },
 156 |         "flexChatbot.model": {
 157 |           "type": "string",
-158 |           "default": "openai/gpt-4.1-mini",
+158 |           "default": "openai/gpt-4o-mini",
 159 |           "markdownDescription": "AI model to use for chat responses. Use the **Flex Chat Bot: Select AI Model** command to choose from available models.\n\n[Browse models on OpenRouter](https://openrouter.ai/models)",
 160 |           "order": 2
 161 |         },
@@ -239,8 +237,8 @@ package.json
 169 |         },
 170 |         "flexChatbot.enableWebSearch": {
 171 |           "type": "boolean",
-172 |           "default": true,
-173 |           "markdownDescription": "Enable web search capability when `[web]` is included in your query. Provides real-time information from search results.",
+172 |           "default": false,
+173 |           "markdownDescription": "Enable web search capability when `[web]` is included in your query. Provides real-time information from search results. **Note:** Currently uses demo API which may be unreliable.",
 174 |           "order": 4
 175 |         },
 176 |         "flexChatbot.maxTokens": {
@@ -423,2209 +421,6 @@ tsconfig.json
 
 xo.lx
 ```
-```
-
-assets/chat.js
-```
-1 | (function () {
-2 |   const vscode = acquireVsCodeApi();
-3 | 
-4 |   // Enhanced DOM references
-5 |   const userInput = document.getElementById('user-input');
-6 |   const sendButton = document.getElementById('send-button');
-7 |   const clearButton = document.getElementById('clear-button');
-8 |   const chatBox = document.getElementById('chat-box');
-9 |   const mainCont = document.getElementById('maincont');
-10 |   const inputContainer = document.querySelector('.input-container');
-11 | 
-12 |   // Modern device and capability detection
-13 |   const deviceInfo = {
-14 |     isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
-15 |     isTablet: /iPad|Android(?!.*Mobile)/i.test(navigator.userAgent),
-16 |     isTouch: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
-17 |     hasHover: window.matchMedia('(hover: hover)').matches,
-18 |     supportsBackdropFilter: CSS.supports('backdrop-filter', 'blur(10px)'),
-19 |     supportsContainerQueries: CSS.supports('container-type', 'inline-size'),
-20 |     prefersReducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-21 |     isDarkMode: window.matchMedia('(prefers-color-scheme: dark)').matches
-22 |   };
-23 | 
-24 |   // Enhanced Flex language syntax patterns
-25 |   const flexSyntax = {
-26 |     francoKeywords: [
-27 |       'fonction', 'fi', 'law', 'walla', 'lamma', 'kol', 'men', 'ila', 'iza', 'yerga3',
-28 |       'safha', 'kateb', 'egra', 'esm', 'rakam', 'noss', 'sahih', 'khata', 'tamam',
-29 |       'bdaye', 'nehaye', 'loop', 'break', 'continue', 'class', 'struct', 'enum',
-30 |       'switch', 'case', 'default', 'try', 'catch', 'finally', 'throw', 'new',
-31 |       'delete', 'this', 'super', 'extends', 'implements', 'interface', 'package',
-32 |       'import', 'export', 'const', 'var', 'let', 'static', 'final', 'abstract',
-33 |       'public', 'private', 'protected', 'void', 'return', 'null', 'true', 'false'
-34 |     ],
-35 |     englishKeywords: [
-36 |       'function', 'if', 'else', 'elif', 'while', 'for', 'do', 'switch', 'case',
-37 |       'default', 'break', 'continue', 'return', 'class', 'struct', 'enum',
-38 |       'try', 'catch', 'finally', 'throw', 'new', 'delete', 'this', 'super',
-39 |       'extends', 'implements', 'interface', 'package', 'import', 'export',
-40 |       'const', 'var', 'let', 'static', 'final', 'abstract', 'public', 'private',
-41 |       'protected', 'void', 'null', 'true', 'false', 'async', 'await', 'promise'
-42 |     ],
-43 |     operators: [
-44 |       '\\+', '\\-', '\\*', '\\/', '%', '=', '==', '!=', '<', '>', '<=', '>=',
-45 |       '&&', '\\|\\|', '!', '&', '\\|', '\\^', '<<', '>>', '\\+=', '\\-=',
-46 |       '\\*=', '\\/=', '%=', '\\+\\+', '\\-\\-', '\\?', ':', ';', ',', '\\.',
-47 |       '\\[', '\\]', '\\{', '\\}', '\\(', '\\)'
-48 |     ]
-49 |   };
-50 | 
-51 |   // Performance tracking
-52 |   const performance = {
-53 |     messageCount: 0,
-54 |     startTime: Date.now(),
-55 |     lastInteraction: Date.now(),
-56 | 
-57 |     track(action, data = {}) {
-58 |       const now = Date.now();
-59 |       console.debug(`[Performance] ${action}:`, {
-60 |         ...data,
-61 |         timestamp: now,
-62 |         timeSinceStart: now - this.startTime,
-63 |         timeSinceLastInteraction: now - this.lastInteraction
-64 |       });
-65 |       this.lastInteraction = now;
-66 |     }
-67 |   };
-68 | 
-69 |   // Enhanced utility functions
-70 |   const utils = {
-71 |     // Debounce function for performance
-72 |     debounce(func, wait, immediate) {
-73 |       let timeout;
-74 |       return function executedFunction(...args) {
-75 |         const later = () => {
-76 |           timeout = null;
-77 |           if (!immediate) func(...args);
-78 |         };
-79 |         const callNow = immediate && !timeout;
-80 |         clearTimeout(timeout);
-81 |         timeout = setTimeout(later, wait);
-82 |         if (callNow) func(...args);
-83 |       };
-84 |     },
-85 | 
-86 |     // Throttle function for scroll events
-87 |     throttle(func, limit) {
-88 |       let inThrottle;
-89 |       return function (...args) {
-90 |         if (!inThrottle) {
-91 |           func.apply(this, args);
-92 |           inThrottle = true;
-93 |           setTimeout(() => inThrottle = false, limit);
-94 |         }
-95 |       };
-96 |     },
-97 | 
-98 |     // Enhanced HTML escaping
-99 |     escapeHtml(unsafe) {
-100 |       const map = {
-101 |         '&': '&amp;',
-102 |         '<': '&lt;',
-103 |         '>': '&gt;',
-104 |         '"': '&quot;',
-105 |         "'": '&#039;',
-106 |         '/': '&#x2F;',
-107 |         '`': '&#x60;',
-108 |         '=': '&#x3D;'
-109 |       };
-110 |       return String(unsafe).replace(/[&<>"'`=\/]/g, s => map[s]);
-111 |     },
-112 | 
-113 |     // Smooth animation helper
-114 |     animate(element, properties, duration = 300, easing = 'ease-out') {
-115 |       if (deviceInfo.prefersReducedMotion) {
-116 |         Object.assign(element.style, properties);
-117 |         return Promise.resolve();
-118 |       }
-119 | 
-120 |       return new Promise(resolve => {
-121 |         const keyframes = Object.entries(properties).map(([prop, value]) => ({
-122 |           [prop]: value
-123 |         }));
-124 | 
-125 |         const animation = element.animate([{}, ...keyframes], {
-126 |           duration,
-127 |           easing,
-128 |           fill: 'forwards'
-129 |         });
-130 | 
-131 |         animation.addEventListener('finish', resolve);
-132 |       });
-133 |     },
-134 | 
-135 |     // Intersection Observer for performance
-136 |     createIntersectionObserver(callback, options = {}) {
-137 |       const defaultOptions = {
-138 |         rootMargin: '10px',
-139 |         threshold: 0.1,
-140 |         ...options
-141 |       };
-142 |       return new IntersectionObserver(callback, defaultOptions);
-143 |     },
-144 | 
-145 |     // Modern copy to clipboard
-146 |     async copyToClipboard(text) {
-147 |       try {
-148 |         if (navigator.clipboard && window.isSecureContext) {
-149 |           await navigator.clipboard.writeText(text);
-150 |           return true;
-151 |         } else {
-152 |           // Fallback for older browsers
-153 |           const textArea = document.createElement('textarea');
-154 |           textArea.value = text;
-155 |           textArea.style.cssText = 'position:fixed;left:-999999px;top:-999999px;opacity:0;';
-156 |           document.body.appendChild(textArea);
-157 |           textArea.focus();
-158 |           textArea.select();
-159 | 
-160 |           const successful = document.execCommand('copy');
-161 |           document.body.removeChild(textArea);
-162 |           return successful;
-163 |         }
-164 |       } catch (err) {
-165 |         console.warn('Copy failed:', err);
-166 |         return false;
-167 |       }
-168 |     },
-169 | 
-170 |     // Responsive font size calculator
-171 |     getResponsiveFontSize(baseSize) {
-172 |       const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-173 |       if (vw < 480) return baseSize * 0.9;
-174 |       if (vw < 768) return baseSize * 0.95;
-175 |       if (vw > 1200) return baseSize * 1.05;
-176 |       return baseSize;
-177 |     }
-178 |   };
-179 | 
-180 |   // Enhanced Flex code detection
-181 |   function isFlexCode(text) {
-182 |     const flexIndicators = [
-183 |       ...flexSyntax.francoKeywords.slice(0, 15),
-184 |       ...flexSyntax.englishKeywords.slice(0, 15),
-185 |       'flex', 'Flex', 'FLEX', 'franco', 'arabic'
-186 |     ];
-187 | 
-188 |     const codePatterns = [
-189 |       /\b(fonction|function)\s+\w+\s*\(/,
-190 |       /\b(law|if)\s*\(/,
-191 |       /\b(kol|for)\s*\(/,
-192 |       /\b(class|struct)\s+\w+/,
-193 |       /\/\/.*|\/\*[\s\S]*?\*\//,
-194 |       /['"`].*['"`]/,
-195 |       /\{[\s\S]*\}/
-196 |     ];
-197 | 
-198 |     return flexIndicators.some(keyword =>
-199 |       text.toLowerCase().includes(keyword.toLowerCase())
-200 |     ) || codePatterns.some(pattern => pattern.test(text));
-201 |   }
-202 | 
-203 |   // Enhanced syntax highlighting with better performance
-204 |   function highlightFlexSyntax(code) {
-205 |     let highlighted = code;
-206 | 
-207 |     // Use document fragment for better performance
-208 |     const highlightPatterns = [
-209 |       // Comments (highest priority)
-210 |       {
-211 |         pattern: /(\/\/.*$|\/\*[\s\S]*?\*\/)/gm,
-212 |         className: 'flex-comment'
-213 |       },
-214 |       // Strings
-215 |       {
-216 |         pattern: /(['"])((?:(?!\1)[^\\]|\\.)*)(\1)/g,
-217 |         className: 'flex-string'
-218 |       },
-219 |       // Numbers
-220 |       {
-221 |         pattern: /\b(0x[0-9a-fA-F]+|0b[01]+|\d+\.?\d*(?:[eE][+-]?\d+)?)\b/g,
-222 |         className: 'flex-number'
-223 |       },
-224 |       // Franco Arabic keywords
-225 |       {
-226 |         pattern: new RegExp(`\\b(${flexSyntax.francoKeywords.join('|')})\\b`, 'gi'),
-227 |         className: 'flex-keyword-franco'
-228 |       },
-229 |       // English keywords
-230 |       {
-231 |         pattern: new RegExp(`\\b(${flexSyntax.englishKeywords.join('|')})\\b`, 'gi'),
-232 |         className: 'flex-keyword-english'
-233 |       },
-234 |       // Function names
-235 |       {
-236 |         pattern: /\b([a-zA-Z_][a-zA-Z0-9_]*)\s*(?=\()/g,
-237 |         className: 'flex-function'
-238 |       },
-239 |       // Operators
-240 |       {
-241 |         pattern: new RegExp(`(${flexSyntax.operators.join('|')})`, 'g'),
-242 |         className: 'flex-operator'
-243 |       }
-244 |     ];
-245 | 
-246 |     // Apply highlighting patterns
-247 |     highlightPatterns.forEach(({ pattern, className }) => {
-248 |       highlighted = highlighted.replace(pattern, `<span class="${className}">$&</span>`);
-249 |     });
-250 | 
-251 |     return highlighted;
-252 |   }
-253 | 
-254 |   // Enhanced code block formatting with language detection
-255 |   function formatCodeBlock(code, language = '') {
-256 |     const detectedLang = language.toLowerCase();
-257 |     const isFlexLang = detectedLang === 'flex' ||
-258 |       detectedLang === 'franco' ||
-259 |       detectedLang === 'arabic' ||
-260 |       isFlexCode(code);
-261 | 
-262 |     let highlighted;
-263 |     let blockClass = 'code-block';
-264 |     let langLabel = 'Code';
-265 | 
-266 |     if (isFlexLang) {
-267 |       highlighted = highlightFlexSyntax(code);
-268 |       blockClass += ' flex-code';
-269 |       langLabel = 'Flex';
-270 |     } else {
-271 |       // Enhanced syntax highlighting for other languages
-272 |       highlighted = highlightGenericCode(code, detectedLang);
-273 |       if (detectedLang) {
-274 |         blockClass += ` ${detectedLang}-code`;
-275 |         langLabel = detectedLang.charAt(0).toUpperCase() + detectedLang.slice(1);
-276 |       }
-277 |     }
-278 | 
-279 |     return `
-280 |       <div class="${blockClass}" data-language="${detectedLang || 'code'}" aria-label="${langLabel} block">
-281 |         <button class="copy-code-button" aria-label="Copy ${langLabel} to clipboard" title="Copy to clipboard">
-282 |           <span class="copy-icon">📋</span>
-283 |         </button>
-284 |         <div class="code-content">${highlighted}</div>
-285 |       </div>
-286 |     `;
-287 |   }
-288 | 
-289 |   // Generic code highlighting for common languages
-290 |   function highlightGenericCode(code, language) {
-291 |     const commonPatterns = {
-292 |       javascript: {
-293 |         keywords: ['function', 'const', 'let', 'var', 'if', 'else', 'for', 'while', 'return', 'class', 'import', 'export', 'async', 'await'],
-294 |         className: 'flex-keyword-english'
-295 |       },
-296 |       python: {
-297 |         keywords: ['def', 'class', 'if', 'else', 'elif', 'for', 'while', 'import', 'from', 'return', 'try', 'except', 'with', 'as'],
-298 |         className: 'flex-keyword-english'
-299 |       },
-300 |       typescript: {
-301 |         keywords: ['function', 'const', 'let', 'var', 'if', 'else', 'for', 'while', 'return', 'class', 'interface', 'type', 'import', 'export'],
-302 |         className: 'flex-keyword-english'
-303 |       }
-304 |     };
-305 | 
-306 |     let highlighted = code;
-307 | 
-308 |     // Apply basic highlighting
-309 |     const basicPatterns = [
-310 |       { pattern: /(\/\/.*$|\/\*[\s\S]*?\*\/|#.*$)/gm, className: 'flex-comment' },
-311 |       { pattern: /(['"])((?:(?!\1)[^\\]|\\.)*)(\1)/g, className: 'flex-string' },
-312 |       { pattern: /\b(\d+\.?\d*)\b/g, className: 'flex-number' }
-313 |     ];
-314 | 
-315 |     basicPatterns.forEach(({ pattern, className }) => {
-316 |       highlighted = highlighted.replace(pattern, `<span class="${className}">$&</span>`);
-317 |     });
-318 | 
-319 |     // Apply language-specific keywords
-320 |     const langConfig = commonPatterns[language];
-321 |     if (langConfig) {
-322 |       const keywordPattern = new RegExp(`\\b(${langConfig.keywords.join('|')})\\b`, 'g');
-323 |       highlighted = highlighted.replace(keywordPattern, `<span class="${langConfig.className}">$1</span>`);
-324 |     }
-325 | 
-326 |     return highlighted;
-327 |   }
-328 | 
-329 |   // Enhanced text formatting with better markdown support
-330 |   function formatText(text) {
-331 |     let formatted = text;
-332 | 
-333 |     // Process code blocks first (higher priority)
-334 |     const codeBlockRegex = /```(\w*)\n?([\s\S]*?)```/g;
-335 |     const codeBlocks = [];
-336 | 
-337 |     formatted = formatted.replace(codeBlockRegex, (match, lang, code) => {
-338 |       const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
-339 |       codeBlocks.push(formatCodeBlock(code.trim(), lang));
-340 |       return placeholder;
-341 |     });
-342 | 
-343 |     // Process inline code
-344 |     const inlineCodeRegex = /`([^`]+)`/g;
-345 |     const inlineCodes = [];
-346 | 
-347 |     formatted = formatted.replace(inlineCodeRegex, (match, code) => {
-348 |       const placeholder = `__INLINE_CODE_${inlineCodes.length}__`;
-349 |       inlineCodes.push(`<code class="inline-code">${utils.escapeHtml(code)}</code>`);
-350 |       return placeholder;
-351 |     });
-352 | 
-353 |     // Process other markdown elements
-354 |     const markdownPatterns = [
-355 |       // Bold text
-356 |       { pattern: /\*\*(.*?)\*\*/g, replacement: '<strong>$1</strong>' },
-357 |       // Italic text
-358 |       { pattern: /\*(.*?)\*/g, replacement: '<em>$1</em>' },
-359 |       // Strikethrough
-360 |       { pattern: /~~(.*?)~~/g, replacement: '<del>$1</del>' },
-361 |       // Links
-362 |       { pattern: /\[([^\]]+)\]\(([^)]+)\)/g, replacement: '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>' },
-363 |       // Headers (simple support)
-364 |       { pattern: /^### (.*$)/gm, replacement: '<h3>$1</h3>' },
-365 |       { pattern: /^## (.*$)/gm, replacement: '<h2>$1</h2>' },
-366 |       { pattern: /^# (.*$)/gm, replacement: '<h1>$1</h1>' }
-367 |     ];
-368 | 
-369 |     markdownPatterns.forEach(({ pattern, replacement }) => {
-370 |       formatted = formatted.replace(pattern, replacement);
-371 |     });
-372 | 
-373 |     // Replace placeholders
-374 |     codeBlocks.forEach((block, index) => {
-375 |       formatted = formatted.replace(`__CODE_BLOCK_${index}__`, block);
-376 |     });
-377 | 
-378 |     inlineCodes.forEach((code, index) => {
-379 |       formatted = formatted.replace(`__INLINE_CODE_${index}__`, code);
-380 |     });
-381 | 
-382 |     // Process line breaks (but preserve formatting)
-383 |     formatted = formatted.replace(/\n(?![^<]*<\/(?:div|code|pre|h[1-6])>)/g, '<br>');
-384 | 
-385 |     // Add Flex highlighting for regular text
-386 |     if (isFlexCode(formatted)) {
-387 |       const flexTerms = ['Flex', 'franco', 'arabic', 'bilingual', 'programming'];
-388 |       flexTerms.forEach(term => {
-389 |         const regex = new RegExp(`\\b(${term})\\b(?![^<]*<\/(code|span|div)>)`, 'gi');
-390 |         formatted = formatted.replace(regex, '<span class="flex-highlight">$1</span>');
-391 |       });
-392 |     }
-393 |     
-394 |     return formatted;
-395 |   }
-396 |   
-397 |   // Enhanced message creation with animations and accessibility
-398 |   function addMessage(content, sender, isStatus = false) {
-399 |     performance.track('addMessage', { sender, isStatus, contentLength: content.length });
-400 | 
-401 |     const messageDiv = document.createElement('div');
-402 |     messageDiv.setAttribute('role', isStatus ? 'status' : 'article');
-403 | 
-404 |     if (isStatus) {
-405 |       messageDiv.className = 'status-message';
-406 |       messageDiv.innerHTML = utils.escapeHtml(content);
-407 |       messageDiv.setAttribute('aria-live', 'polite');
-408 |     } else {
-409 |       performance.messageCount++;
-410 | 
-411 |     messageDiv.className = `message ${sender}-message`;
-412 |       messageDiv.setAttribute('data-message-id', performance.messageCount);
-413 |       messageDiv.setAttribute('tabindex', '0');
-414 |     
-415 |     const label = document.createElement('div');
-416 |     label.className = `${sender}-label`;
-417 |       label.innerHTML = sender === 'user' ?
-418 |         '<span class="user-icon" aria-hidden="true">👤</span> You' :
-419 |         '<span class="ai-icon" aria-hidden="true">⚡</span> Flex Assistant';
-420 |     
-421 |     const contentDiv = document.createElement('div');
-422 |     contentDiv.className = 'message-content';
-423 |       contentDiv.setAttribute('role', 'region');
-424 |       contentDiv.setAttribute('aria-label', `${sender} message`);
-425 | 
-426 |       const processedContent = sender === 'user' ?
-427 |         utils.escapeHtml(content) :
-428 |         formatText(content);
-429 | 
-430 |       contentDiv.innerHTML = processedContent;
-431 |     
-432 |     messageDiv.appendChild(label);
-433 |     messageDiv.appendChild(contentDiv);
-434 | 
-435 |       // Add timestamp
-436 |       const timestamp = document.createElement('div');
-437 |       timestamp.className = 'message-timestamp';
-438 |       timestamp.textContent = new Date().toLocaleTimeString();
-439 |       timestamp.setAttribute('aria-label', `Sent at ${timestamp.textContent}`);
-440 |       messageDiv.appendChild(timestamp);
-441 |     }
-442 | 
-443 |     chatBox.appendChild(messageDiv);
-444 |     
-445 |     // Enhanced entrance animation
-446 |     if (!deviceInfo.prefersReducedMotion) {
-447 |       utils.animate(messageDiv, {
-448 |         opacity: '1',
-449 |         transform: 'translateY(0) scale(1)'
-450 |       }, 400, 'cubic-bezier(0.25, 0.46, 0.45, 0.94)');
-451 |     } else {
-452 |       messageDiv.style.opacity = '1';
-453 |     }
-454 | 
-455 |     // Enhanced scroll behavior
-456 |     scrollChatToBottom();
-457 | 
-458 |     // Add copy functionality with delay for DOM updates
-459 |     requestAnimationFrame(() => {
-460 |       setTimeout(() => addCopyButtonsToCodeBlocks(), 100);
-461 |     });
-462 | 
-463 |     // Update message count in UI
-464 |     updateMessageCounter();
-465 |   }
-466 | 
-467 |   // Enhanced copy functionality with better feedback
-468 |   function addCopyButtonsToCodeBlocks() {
-469 |     const codeBlocks = chatBox.querySelectorAll('.code-block:not(.has-copy-button)');
-470 | 
-471 |     codeBlocks.forEach(block => {
-472 |       block.classList.add('has-copy-button');
-473 | 
-474 |       const copyButton = block.querySelector('.copy-code-button');
-475 |       if (!copyButton) return;
-476 | 
-477 |       const copyIcon = copyButton.querySelector('.copy-icon');
-478 | 
-479 |       copyButton.addEventListener('click', async (e) => {
-480 |         e.preventDefault();
-481 |         e.stopPropagation();
-482 | 
-483 |         performance.track('copyCode');
-484 | 
-485 |         const codeContent = block.querySelector('.code-content') || block;
-486 |         const codeText = codeContent.textContent || codeContent.innerText;
-487 | 
-488 |         const success = await utils.copyToClipboard(codeText);
-489 | 
-490 |         // Enhanced feedback
-491 |         if (success) {
-492 |           copyIcon.textContent = '✅';
-493 |           copyButton.title = 'Code copied!';
-494 |           copyButton.style.background = 'var(--success-color)';
-495 | 
-496 |           // Haptic feedback on mobile
-497 |           if (navigator.vibrate) {
-498 |             navigator.vibrate(50);
-499 |           }
-500 | 
-501 |           setTimeout(() => {
-502 |             copyIcon.textContent = '📋';
-503 |             copyButton.title = 'Copy to clipboard';
-504 |             copyButton.style.background = 'var(--accent-color)';
-505 |           }, 2000);
-506 |         } else {
-507 |           copyIcon.textContent = '❌';
-508 |           copyButton.title = 'Copy failed';
-509 |           setTimeout(() => {
-510 |             copyIcon.textContent = '📋';
-511 |             copyButton.title = 'Copy to clipboard';
-512 |           }, 2000);
-513 |         }
-514 |       });
-515 | 
-516 |       // Enhanced accessibility
-517 |       copyButton.addEventListener('keydown', (e) => {
-518 |         if (e.key === 'Enter' || e.key === ' ') {
-519 |           e.preventDefault();
-520 |           copyButton.click();
-521 |         }
-522 |       });
-523 |     });
-524 |   }
-525 | 
-526 |   // Enhanced scrolling with smooth behavior
-527 |   function scrollChatToBottom() {
-528 |     if (!chatBox) return;
-529 | 
-530 |     const isAtBottom = chatBox.scrollHeight - chatBox.clientHeight <= chatBox.scrollTop + 1;
-531 | 
-532 |     if (isAtBottom || chatBox.children.length === 1) {
-533 |       if (deviceInfo.prefersReducedMotion) {
-534 |     chatBox.scrollTop = chatBox.scrollHeight;
-535 |       } else {
-536 |         chatBox.scrollTo({
-537 |           top: chatBox.scrollHeight,
-538 |           behavior: 'smooth'
-539 |         });
-540 |       }
-541 |     }
-542 |   }
-543 | 
-544 |   // Enhanced input handling with better UX
-545 |   function setupInputHandling() {
-546 |     if (!userInput) return;
-547 | 
-548 |     // Auto-resize functionality
-549 |     const autoResize = utils.debounce(() => {
-550 |       userInput.style.height = 'auto';
-551 |       const newHeight = Math.min(userInput.scrollHeight, 120);
-552 |       userInput.style.height = newHeight + 'px';
-553 | 
-554 |       // Update container height for better mobile UX
-555 |       if (deviceInfo.isMobile) {
-556 |         inputContainer.style.minHeight = `${Math.max(60, newHeight + 20)}px`;
-557 |       }
-558 |     }, 50);
-559 | 
-560 |     userInput.addEventListener('input', autoResize);
-561 | 
-562 |     // Enhanced keyboard shortcuts
-563 |     userInput.addEventListener('keydown', (e) => {
-564 |       performance.track('keydown', { key: e.key, ctrlKey: e.ctrlKey, metaKey: e.metaKey });
-565 | 
-566 |       // Send message
-567 |       if (e.key === 'Enter' && !e.shiftKey) {
-568 |         e.preventDefault();
-569 |         sendMessage();
-570 |       }
-571 |       // Clear chat
-572 |       else if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-573 |         e.preventDefault();
-574 |         clearChat();
-575 |       }
-576 |       // Focus input
-577 |       else if ((e.ctrlKey || e.metaKey) && e.key === '/') {
-578 |         e.preventDefault();
-579 |         userInput.focus();
-580 |       }
-581 |     });
-582 | 
-583 |     // Enhanced focus handling
-584 |     userInput.addEventListener('focus', () => {
-585 |       inputContainer.classList.add('focused');
-586 |       performance.track('inputFocus');
-587 | 
-588 |       // Mobile optimization
-589 |       if (deviceInfo.isMobile) {
-590 |     setTimeout(() => { 
-591 |           userInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-592 |     }, 100);
-593 |       }
-594 |     });
-595 | 
-596 |     userInput.addEventListener('blur', () => {
-597 |       inputContainer.classList.remove('focused');
-598 |       performance.track('inputBlur');
-599 |     });
-600 | 
-601 |     // Character counter
-602 |     const maxLength = parseInt(userInput.getAttribute('maxlength') || '4000');
-603 |     userInput.addEventListener('input', utils.debounce(() => {
-604 |       const remaining = maxLength - userInput.value.length;
-605 |       const sendButton = document.getElementById('send-button');
-606 | 
-607 |       if (sendButton) {
-608 |         if (remaining < 100) {
-609 |           sendButton.title = `Send Message (${remaining} chars remaining)`;
-610 |           sendButton.style.opacity = remaining < 10 ? '0.5' : '1';
-611 |         } else {
-612 |           sendButton.title = 'Send Message (Enter)';
-613 |           sendButton.style.opacity = '1';
-614 |         }
-615 |       }
-616 |     }, 100));
-617 |   }
-618 | 
-619 |   // Enhanced message sending
-620 |   function sendMessage() {
-621 |     const message = userInput.value.trim();
-622 |     if (!message) return;
-623 | 
-624 |     performance.track('sendMessage', { messageLength: message.length });
-625 | 
-626 |     // Add user message with enhanced animation
-627 |     addMessage(message, 'user');
-628 | 
-629 |     // Show enhanced typing indicator
-630 |     showTypingIndicator();
-631 | 
-632 |     // Send to extension
-633 |       vscode.postMessage({
-634 |         command: 'sendMessage',
-635 |         text: message
-636 |       });
-637 |       
-638 |     // Enhanced input cleanup
-639 |       userInput.value = '';
-640 |     userInput.style.height = 'auto';
-641 |     userInput.focus();
-642 | 
-643 |     // Update container for mobile
-644 |     if (deviceInfo.isMobile) {
-645 |       inputContainer.style.minHeight = '60px';
-646 |     }
-647 |   }
-648 | 
-649 |   // Enhanced typing indicator
-650 |   function showTypingIndicator() {
-651 |     // Remove existing indicator
-652 |     const existingIndicator = chatBox.querySelector('.typing-indicator');
-653 |     if (existingIndicator) {
-654 |       existingIndicator.remove();
-655 |     }
-656 | 
-657 |     const typingIndicator = document.createElement('div');
-658 |     typingIndicator.className = 'status-message typing-indicator';
-659 |     typingIndicator.setAttribute('role', 'status');
-660 |     typingIndicator.setAttribute('aria-live', 'polite');
-661 |     typingIndicator.innerHTML = `
-662 |       <span class="typing-text">Flex Assistant is thinking</span>
-663 |       <span class="typing-dots">
-664 |         <span class="dot"></span>
-665 |         <span class="dot"></span>
-666 |         <span class="dot"></span>
-667 |       </span>
-668 |     `;
-669 | 
-670 |     chatBox.appendChild(typingIndicator);
-671 |     scrollChatToBottom();
-672 | 
-673 |     window.currentTypingIndicator = typingIndicator;
-674 |   }
-675 | 
-676 |   // Enhanced chat clearing
-677 |   function clearChat() {
-678 |     performance.track('clearChat');
-679 | 
-680 |     if (chatBox.children.length === 0) return;
-681 | 
-682 |     const confirmClear = confirm('Are you sure you want to clear the chat history?');
-683 |     if (!confirmClear) return;
-684 | 
-685 |     vscode.postMessage({ command: 'clearChat' });
-686 |   }
-687 | 
-688 |   // Message counter
-689 |   function updateMessageCounter() {
-690 |     const counter = document.querySelector('.message-counter');
-691 |     if (counter) {
-692 |       counter.textContent = `${performance.messageCount} messages`;
-693 |     }
-694 |   }
-695 | 
-696 |   // Viewport height handling for mobile
-697 |   function handleViewportHeight() {
-698 |     if (!deviceInfo.isMobile) return;
-699 | 
-700 |     const setVH = () => {
-701 |       const vh = window.innerHeight * 0.01;
-702 |       document.documentElement.style.setProperty('--vh', `${vh}px`);
-703 |     };
-704 | 
-705 |     setVH();
-706 |     window.addEventListener('resize', utils.debounce(setVH, 100));
-707 |     window.addEventListener('orientationchange', setVH);
-708 |   }
-709 | 
-710 |   // Enhanced event listeners setup
-711 |   function setupEventListeners() {
-712 |     // Send button
-713 |     if (sendButton) {
-714 |       sendButton.addEventListener('click', sendMessage);
-715 | 
-716 |       // Touch feedback for mobile
-717 |       if (deviceInfo.isTouch) {
-718 |         sendButton.addEventListener('touchstart', () => {
-719 |           sendButton.style.transform = 'scale(0.95)';
-720 |         });
-721 | 
-722 |         sendButton.addEventListener('touchend', () => {
-723 |           setTimeout(() => {
-724 |             sendButton.style.transform = '';
-725 |           }, 150);
-726 |         });
-727 |       }
-728 |     }
-729 | 
-730 |     // Clear button
-731 |     if (clearButton) {
-732 |       clearButton.addEventListener('click', clearChat);
-733 |     }
-734 | 
-735 |     // Global keyboard shortcuts
-736 |     document.addEventListener('keydown', (e) => {
-737 |       // Escape to focus input
-738 |       if (e.key === 'Escape') {
-739 |         userInput?.focus();
-740 |       }
-741 | 
-742 |       // Ctrl/Cmd + M for model selection
-743 |       if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
-744 |         e.preventDefault();
-745 |         const changeModelBtn = document.getElementById('change-model');
-746 |         changeModelBtn?.click();
-747 |       }
-748 |     });
-749 | 
-750 |     // Enhanced scroll handling
-751 |     if (chatBox) {
-752 |       let isScrolling = false;
-753 | 
-754 |       chatBox.addEventListener('scroll', utils.throttle(() => {
-755 |         isScrolling = true;
-756 |         performance.track('scroll');
-757 | 
-758 |         // Auto-hide/show elements based on scroll
-759 |         const isAtTop = chatBox.scrollTop < 50;
-760 |         const isAtBottom = chatBox.scrollHeight - chatBox.clientHeight <= chatBox.scrollTop + 50;
-761 | 
-762 |         document.body.classList.toggle('chat-at-top', isAtTop);
-763 |         document.body.classList.toggle('chat-at-bottom', isAtBottom);
-764 | 
-765 |         setTimeout(() => { isScrolling = false; }, 150);
-766 |       }, 100));
-767 |     }
-768 | 
-769 |     // Window resize handling
-770 |     window.addEventListener('resize', utils.debounce(() => {
-771 |       performance.track('resize', {
-772 |         width: window.innerWidth,
-773 |         height: window.innerHeight
-774 |       });
-775 | 
-776 |       // Adjust layout for new dimensions
-777 |       if (deviceInfo.isMobile) {
-778 |         userInput?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-779 |       }
-780 |     }, 250));
-781 | 
-782 |     // Visibility change handling
-783 |     document.addEventListener('visibilitychange', () => {
-784 |       if (document.visibilityState === 'visible') {
-785 |         performance.track('visibilityVisible');
-786 |         userInput?.focus();
-787 |       } else {
-788 |         performance.track('visibilityHidden');
-789 |       }
-790 |     });
-791 |   }
-792 | 
-793 |   // Enhanced message handling from extension
-794 |   window.addEventListener('message', event => {
-795 |     const message = event.data;
-796 |     performance.track('messageReceived', { command: message.command });
-797 |     
-798 |     switch (message.command) {
-799 |       case 'aiResponse':
-800 |         // Remove typing indicator
-801 |         if (window.currentTypingIndicator) {
-802 |           if (!deviceInfo.prefersReducedMotion) {
-803 |             utils.animate(window.currentTypingIndicator, {
-804 |               opacity: '0',
-805 |               transform: 'translateY(-10px)'
-806 |             }, 200).then(() => {
-807 |               window.currentTypingIndicator?.remove();
-808 |               window.currentTypingIndicator = null;
-809 |             });
-810 |           } else {
-811 |             window.currentTypingIndicator.remove();
-812 |             window.currentTypingIndicator = null;
-813 |           }
-814 |         }
-815 | 
-816 |         // Display AI response
-817 |         addMessage(message.text, 'ai');
-818 |         break;
-819 |         
-820 |       case 'statusUpdate':
-821 |         addMessage(message.text, null, true);
-822 |         break;
-823 | 
-824 |       case 'chatCleared':
-825 |         // Enhanced chat clearing animation
-826 |         const messages = chatBox.querySelectorAll('.message, .status-message');
-827 | 
-828 |         if (!deviceInfo.prefersReducedMotion && messages.length > 0) {
-829 |           messages.forEach((msg, index) => {
-830 |             setTimeout(() => {
-831 |               utils.animate(msg, {
-832 |                 opacity: '0',
-833 |                 transform: 'translateY(-20px) scale(0.9)'
-834 |               }, 200).then(() => msg.remove());
-835 |             }, index * 50);
-836 |           });
-837 | 
-838 |           setTimeout(() => {
-839 |             chatBox.innerHTML = '';
-840 |             performance.messageCount = 0;
-841 |             updateMessageCounter();
-842 |             addMessage('Chat cleared. How can I help you with Flex programming today?', null, true);
-843 |           }, messages.length * 50 + 200);
-844 |         } else {
-845 |           chatBox.innerHTML = '';
-846 |           performance.messageCount = 0;
-847 |           updateMessageCounter();
-848 |           addMessage('Chat cleared. How can I help you with Flex programming today?', null, true);
-849 |         }
-850 |         break;
-851 | 
-852 |       case 'error':
-853 |         const errorDiv = document.createElement('div');
-854 |         errorDiv.className = 'status-message error-message';
-855 |         errorDiv.setAttribute('role', 'alert');
-856 |         errorDiv.innerHTML = `⚠️ ${utils.escapeHtml(message.text)}`;
-857 |         chatBox.appendChild(errorDiv);
-858 |         scrollChatToBottom();
-859 |         
-860 |         // Auto-remove error after 5 seconds
-861 |         setTimeout(() => {
-862 |           if (errorDiv.parentNode) {
-863 |             utils.animate(errorDiv, { opacity: '0' }, 300).then(() => {
-864 |               errorDiv.remove();
-865 |             });
-866 |           }
-867 |         }, 5000);
-868 |         break;
-869 |     }
-870 |   });
-871 |   
-872 |   // Enhanced initialization
-873 |   function initializeChat() {
-874 |     performance.track('initialize');
-875 | 
-876 |     // Set up device-specific optimizations
-877 |     document.body.classList.toggle('is-mobile', deviceInfo.isMobile);
-878 |     document.body.classList.toggle('is-tablet', deviceInfo.isTablet);
-879 |     document.body.classList.toggle('is-touch', deviceInfo.isTouch);
-880 |     document.body.classList.toggle('has-hover', deviceInfo.hasHover);
-881 |     document.body.classList.toggle('supports-backdrop-filter', deviceInfo.supportsBackdropFilter);
-882 | 
-883 |     // Initialize components
-884 |     setupInputHandling();
-885 |     setupEventListeners();
-886 |     handleViewportHeight();
-887 | 
-888 |     // Focus input
-889 |     setTimeout(() => {
-890 |       userInput?.focus();
-891 |     }, 100);
-892 | 
-893 |     // Add welcome message if chat is empty
-894 |     if (chatBox.children.length === 0) {
-895 |       setTimeout(() => {
-896 |         const welcomeMessage = deviceInfo.isMobile
-897 |           ? 'Welcome! I\'m your Flex assistant. Tap to start coding with Franco-Arabic syntax!'
-898 |           : 'Welcome! I\'m your Flex programming assistant. I can help you with Franco-Arabic programming, syntax, examples, and best practices. How can I assist you today?';
-899 | 
-900 |         addMessage(welcomeMessage, null, true);
-901 |       }, 500);
-902 |     }
-903 | 
-904 |     // Add debug info in development
-905 |     if (window.location.search.includes('debug=true')) {
-906 |       console.debug('Device Info:', deviceInfo);
-907 |       console.debug('Performance:', performance);
-908 |     }
-909 |   }
-910 | 
-911 |   // Enhanced dynamic styles with CSS custom properties
-912 |   const dynamicStyles = document.createElement('style');
-913 |   dynamicStyles.textContent = `
-914 |     /* Enhanced typing indicator animation */
-915 |     .typing-dots {
-916 |       display: inline-flex;
-917 |       gap: 2px;
-918 |       margin-left: 8px;
-919 |     }
-920 |     
-921 |     .typing-dots .dot {
-922 |       width: 4px;
-923 |       height: 4px;
-924 |       border-radius: 50%;
-925 |       background: var(--accent-color);
-926 |       animation: typingDot 1.8s ease-in-out infinite;
-927 |     }
-928 |     
-929 |     .typing-dots .dot:nth-child(2) { animation-delay: 0.2s; }
-930 |     .typing-dots .dot:nth-child(3) { animation-delay: 0.4s; }
-931 |     
-932 |     @keyframes typingDot {
-933 |       0%, 60%, 100% { transform: scale(0.8); opacity: 0.5; }
-934 |       30% { transform: scale(1.2); opacity: 1; }
-935 |     }
-936 |     
-937 |     /* Enhanced flex highlighting */
-938 |     .flex-highlight {
-939 |       background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
-940 |       color: white;
-941 |       padding: var(--space-1) var(--space-2);
-942 |       border-radius: var(--radius-sm);
-943 |       font-weight: var(--font-semibold);
-944 |       box-shadow: var(--shadow-sm);
-945 |       display: inline-block;
-946 |       margin: 0 2px;
-947 |     }
-948 |     
-949 |     /* Message timestamps */
-950 |     .message-timestamp {
-951 |       font-size: var(--text-xs);
-952 |       color: var(--text-subtle);
-953 |       text-align: right;
-954 |       margin-top: var(--space-2);
-955 |       opacity: 0.7;
-956 |     }
-957 |     
-958 |     .user-message .message-timestamp {
-959 |       text-align: right;
-960 |     }
-961 |     
-962 |     .ai-message .message-timestamp {
-963 |       text-align: left;
-964 |     }
-965 |     
-966 |     /* Enhanced mobile styles */
-967 |     @media (max-width: 479px) {
-968 |       .message-timestamp {
-969 |         font-size: 0.6875rem;
-970 |         margin-top: var(--space-1);
-971 |       }
-972 |       
-973 |       .typing-dots .dot {
-974 |         width: 3px;
-975 |         height: 3px;
-976 |       }
-977 |     }
-978 |     
-979 |     /* Touch feedback */
-980 |     .is-touch .copy-code-button:active,
-981 |     .is-touch #send-button:active,
-982 |     .is-touch #clear-button:active {
-983 |       transform: scale(0.95);
-984 |     }
-985 |     
-986 |     /* Reduced motion support */
-987 |     @media (prefers-reduced-motion: reduce) {
-988 |       .typing-dots .dot {
-989 |         animation: none;
-990 |       }
-991 |       
-992 |       .message {
-993 |         animation: none;
-994 |         opacity: 1;
-995 |       }
-996 |     }
-997 |     
-998 |     /* High contrast support */
-999 |     @media (prefers-contrast: high) {
-1000 |       .flex-highlight {
-1001 |         border: 2px solid var(--text-primary);
-1002 |       }
-1003 |       
-1004 |       .copy-code-button {
-1005 |         border: 1px solid var(--text-primary);
-1006 |       }
-1007 |     }
-1008 |     
-1009 |     /* Chat state classes */
-1010 |     .chat-at-top .upbox {
-1011 |       box-shadow: none;
-1012 |     }
-1013 |     
-1014 |     .chat-at-bottom #cont {
-1015 |       border-top-color: var(--border-accent);
-1016 |     }
-1017 |   `;
-1018 | 
-1019 |   document.head.appendChild(dynamicStyles);
-1020 | 
-1021 |   // Initialize when DOM is ready
-1022 |   if (document.readyState === 'loading') {
-1023 |     document.addEventListener('DOMContentLoaded', initializeChat);
-1024 |   } else {
-1025 |     initializeChat();
-1026 |   }
-1027 | 
-1028 |   // Expose utilities for debugging
-1029 |   if (window.location.search.includes('debug=true')) {
-1030 |     window.flexChatDebug = {
-1031 |       performance,
-1032 |       deviceInfo,
-1033 |       utils,
-1034 |       addMessage,
-1035 |       clearChat: () => clearChat()
-1036 |     };
-1037 |   }
-1038 | 
-1039 | })();
-1040 | 
-```
-
-assets/main.css
-```
-1 | /* 
-2 |  * Flex Chatbot - Modern Adaptive UI
-3 |  * Mobile-first responsive design with enterprise-grade styling
-4 |  */
-5 | 
-6 | /* Modern CSS Custom Properties with Responsive Values */
-7 | :root {
-8 | 	/* Responsive Color System */
-9 | 	--primary-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #1e293b 75%, #0f172a 100%);
-10 | 	--secondary-bg: rgba(248, 250, 252, 0.03);
-11 | 	--card-bg: rgba(248, 250, 252, 0.05);
-12 | 	--glass-bg: rgba(248, 250, 252, 0.08);
-13 | 	--accent-color: #3b82f6;
-14 | 	--accent-hover: #2563eb;
-15 | 	--accent-light: #60a5fa;
-16 | 	--accent-dark: #1d4ed8;
-17 | 	--user-color: #6366f1;
-18 | 	--ai-color: #8b5cf6;
-19 | 	--success-color: #10b981;
-20 | 	--warning-color: #f59e0b;
-21 | 	--error-color: #ef4444;
-22 | 	--text-primary: #f8fafc;
-23 | 	--text-secondary: rgba(248, 250, 252, 0.9);
-24 | 	--text-muted: rgba(248, 250, 252, 0.7);
-25 | 	--text-subtle: rgba(248, 250, 252, 0.5);
-26 | 	--border-color: rgba(248, 250, 252, 0.1);
-27 | 	--border-accent: rgba(59, 130, 246, 0.3);
-28 | 	--border-focus: rgba(59, 130, 246, 0.5);
-29 | 
-30 | 	/* Modern Shadows */
-31 | 	--shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-32 | 	--shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-33 | 	--shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-34 | 	--shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-35 | 	--shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-36 | 	--shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-37 | 	--shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
-38 | 
-39 | 	/* Responsive Spacing System */
-40 | 	--space-0: 0;
-41 | 	--space-px: 1px;
-42 | 	--space-0_5: 0.125rem;
-43 | 	--space-1: 0.25rem;
-44 | 	--space-1_5: 0.375rem;
-45 | 	--space-2: 0.5rem;
-46 | 	--space-2_5: 0.625rem;
-47 | 	--space-3: 0.75rem;
-48 | 	--space-3_5: 0.875rem;
-49 | 	--space-4: 1rem;
-50 | 	--space-5: 1.25rem;
-51 | 	--space-6: 1.5rem;
-52 | 	--space-7: 1.75rem;
-53 | 	--space-8: 2rem;
-54 | 	--space-9: 2.25rem;
-55 | 	--space-10: 2.5rem;
-56 | 	--space-11: 2.75rem;
-57 | 	--space-12: 3rem;
-58 | 	--space-14: 3.5rem;
-59 | 	--space-16: 4rem;
-60 | 	--space-20: 5rem;
-61 | 	--space-24: 6rem;
-62 | 	--space-28: 7rem;
-63 | 	--space-32: 8rem;
-64 | 
-65 | 	/* Modern Border Radius System */
-66 | 	--radius-none: 0;
-67 | 	--radius-sm: 0.25rem;
-68 | 	--radius-md: 0.375rem;
-69 | 	--radius-lg: 0.5rem;
-70 | 	--radius-xl: 0.75rem;
-71 | 	--radius-2xl: 1rem;
-72 | 	--radius-3xl: 1.5rem;
-73 | 	--radius-full: 9999px;
-74 | 
-75 | 	/* Responsive Typography Scale */
-76 | 	--font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-77 | 	--font-family-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Monaco', 'Cascadia Code', 'Consolas', monospace;
-78 | 
-79 | 	/* Mobile-first font sizes */
-80 | 	--text-xs: 0.75rem;
-81 | 	/* 12px */
-82 | 	--text-sm: 0.875rem;
-83 | 	/* 14px */
-84 | 	--text-base: 1rem;
-85 | 	/* 16px */
-86 | 	--text-lg: 1.125rem;
-87 | 	/* 18px */
-88 | 	--text-xl: 1.25rem;
-89 | 	/* 20px */
-90 | 	--text-2xl: 1.5rem;
-91 | 	/* 24px */
-92 | 	--text-3xl: 1.875rem;
-93 | 	/* 30px */
-94 | 	--text-4xl: 2.25rem;
-95 | 	/* 36px */
-96 | 
-97 | 	/* Font weights */
-98 | 	--font-thin: 100;
-99 | 	--font-light: 300;
-100 | 	--font-normal: 400;
-101 | 	--font-medium: 500;
-102 | 	--font-semibold: 600;
-103 | 	--font-bold: 700;
-104 | 	--font-extrabold: 800;
-105 | 	--font-black: 900;
-106 | 
-107 | 	/* Line heights */
-108 | 	--leading-none: 1;
-109 | 	--leading-tight: 1.25;
-110 | 	--leading-snug: 1.375;
-111 | 	--leading-normal: 1.5;
-112 | 	--leading-relaxed: 1.625;
-113 | 	--leading-loose: 2;
-114 | 
-115 | 	/* Responsive breakpoints */
-116 | 	--breakpoint-sm: 640px;
-117 | 	--breakpoint-md: 768px;
-118 | 	--breakpoint-lg: 1024px;
-119 | 	--breakpoint-xl: 1280px;
-120 | 	--breakpoint-2xl: 1536px;
-121 | 
-122 | 	/* Animation and transition timings */
-123 | 	--duration-75: 75ms;
-124 | 	--duration-100: 100ms;
-125 | 	--duration-150: 150ms;
-126 | 	--duration-200: 200ms;
-127 | 	--duration-300: 300ms;
-128 | 	--duration-500: 500ms;
-129 | 	--duration-700: 700ms;
-130 | 	--duration-1000: 1000ms;
-131 | 
-132 | 	/* Easing functions */
-133 | 	--ease-linear: linear;
-134 | 	--ease-in: cubic-bezier(0.4, 0, 1, 1);
-135 | 	--ease-out: cubic-bezier(0, 0, 0.2, 1);
-136 | 	--ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-137 | 	--ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-138 | 
-139 | 	/* Z-index layers */
-140 | 	--z-0: 0;
-141 | 	--z-10: 10;
-142 | 	--z-20: 20;
-143 | 	--z-30: 30;
-144 | 	--z-40: 40;
-145 | 	--z-50: 50;
-146 | }
-147 | 
-148 | /* Enhanced Typography Scale for Larger Screens */
-149 | @media (min-width: 768px) {
-150 | 	:root {
-151 | 		--text-xs: 0.75rem;
-152 | 		/* 12px */
-153 | 		--text-sm: 0.875rem;
-154 | 		/* 14px */
-155 | 		--text-base: 1rem;
-156 | 		/* 16px */
-157 | 		--text-lg: 1.125rem;
-158 | 		/* 18px */
-159 | 		--text-xl: 1.25rem;
-160 | 		/* 20px */
-161 | 		--text-2xl: 1.5rem;
-162 | 		/* 24px */
-163 | 		--text-3xl: 1.875rem;
-164 | 		/* 30px */
-165 | 		--text-4xl: 2.25rem;
-166 | 		/* 36px */
-167 | 		--text-5xl: 3rem;
-168 | 		/* 48px */
-169 | 		--text-6xl: 3.75rem;
-170 | 		/* 60px */
-171 | 	}
-172 | }
-173 | 
-174 | /* Modern CSS Reset and Base Styles */
-175 | *,
-176 | *::before,
-177 | *::after {
-178 | 	box-sizing: border-box;
-179 | }
-180 | 
-181 | * {
-182 | 	margin: 0;
-183 | 	padding: 0;
-184 | }
-185 | 
-186 | html {
-187 | 	color-scheme: dark;
-188 | 	-webkit-text-size-adjust: 100%;
-189 | 	-webkit-font-smoothing: antialiased;
-190 | 	-moz-osx-font-smoothing: grayscale;
-191 | 	text-rendering: optimizeLegibility;
-192 | }
-193 | 
-194 | body {
-195 | 	background: var(--primary-bg);
-196 | 	font-family: var(--font-family);
-197 | 	font-size: var(--text-sm);
-198 | 	font-weight: var(--font-normal);
-199 | 	line-height: var(--leading-normal);
-200 | 	color: var(--text-primary);
-201 | 	min-height: 100vh;
-202 | 	min-height: 100dvh;
-203 | 	/* Dynamic viewport height for mobile */
-204 | 	display: flex;
-205 | 	flex-direction: column;
-206 | 	overflow: hidden;
-207 | 	letter-spacing: -0.01em;
-208 | 	-webkit-overflow-scrolling: touch;
-209 | }
-210 | 
-211 | /* Hide scrollbars but keep functionality */
-212 | * {
-213 | 	scrollbar-width: thin;
-214 | 	scrollbar-color: rgba(248, 250, 252, 0.2) transparent;
-215 | }
-216 | 
-217 | *::-webkit-scrollbar {
-218 | 	width: 6px;
-219 | 	height: 6px;
-220 | }
-221 | 
-222 | *::-webkit-scrollbar-thumb {
-223 | 	background: rgba(248, 250, 252, 0.2);
-224 | 	border-radius: var(--radius-full);
-225 | }
-226 | 
-227 | *::-webkit-scrollbar-track {
-228 | 	background: transparent;
-229 | }
-230 | 
-231 | /* Modern Focus Styles */
-232 | :focus-visible {
-233 | 	outline: 2px solid var(--accent-color);
-234 | 	outline-offset: 2px;
-235 | 	border-radius: var(--radius-sm);
-236 | }
-237 | 
-238 | /* Main Container with Modern Layout */
-239 | #maincont {
-240 | 	display: flex;
-241 | 	flex-direction: column;
-242 | 	flex: 1;
-243 | 	min-height: 0;
-244 | 	/* Important for flex children with overflow */
-245 | 	container-type: size;
-246 | 	/* Container queries support */
-247 | }
-248 | 
-249 | /* NEW: Minimalist Header Bar */
-250 | #header-bar {
-251 | 	background: var(--glass-bg);
-252 | 	backdrop-filter: blur(20px) saturate(180%);
-253 | 	-webkit-backdrop-filter: blur(20px) saturate(180%);
-254 | 	border-bottom: 1px solid var(--border-color);
-255 | 	padding: var(--space-3) var(--space-4);
-256 | 	display: flex;
-257 | 	align-items: center;
-258 | 	justify-content: space-between;
-259 | 	height: 48px;
-260 | 	flex-shrink: 0;
-261 | 	position: relative;
-262 | }
-263 | 
-264 | #header-bar::after {
-265 | 	content: '';
-266 | 	position: absolute;
-267 | 	bottom: 0;
-268 | 	left: 0;
-269 | 	right: 0;
-270 | 	height: 1px;
-271 | 	background: linear-gradient(90deg,
-272 | 			transparent 0%,
-273 | 			var(--accent-color) 50%,
-274 | 			transparent 100%);
-275 | }
-276 | 
-277 | .header-left {
-278 | 	display: flex;
-279 | 	align-items: center;
-280 | 	gap: var(--space-3);
-281 | 	flex: 1;
-282 | }
-283 | 
-284 | .header-logo {
-285 | 	width: 20px;
-286 | 	height: 20px;
-287 | 	flex-shrink: 0;
-288 | }
-289 | 
-290 | .header-title {
-291 | 	font-size: var(--text-sm);
-292 | 	font-weight: var(--font-semibold);
-293 | 	color: var(--text-primary);
-294 | 	white-space: nowrap;
-295 | }
-296 | 
-297 | .status-indicators {
-298 | 	display: flex;
-299 | 	align-items: center;
-300 | 	gap: var(--space-2);
-301 | 	margin-left: var(--space-3);
-302 | }
-303 | 
-304 | .status-dot {
-305 | 	width: 8px;
-306 | 	height: 8px;
-307 | 	border-radius: 50%;
-308 | 	flex-shrink: 0;
-309 | 	position: relative;
-310 | }
-311 | 
-312 | .status-dot.success {
-313 | 	background: var(--success-color);
-314 | 	box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
-315 | }
-316 | 
-317 | .status-dot.warning {
-318 | 	background: var(--warning-color);
-319 | 	box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
-320 | }
-321 | 
-322 | .status-dot.loading {
-323 | 	background: var(--accent-color);
-324 | 	animation: pulse 2s infinite;
-325 | }
-326 | 
-327 | .header-right {
-328 | 	display: flex;
-329 | 	align-items: center;
-330 | 	gap: var(--space-2);
-331 | }
-332 | 
-333 | .model-display {
-334 | 	background: linear-gradient(135deg,
-335 | 			rgba(59, 130, 246, 0.15) 0%,
-336 | 			rgba(99, 102, 241, 0.15) 100%);
-337 | 	border: 1px solid var(--border-accent);
-338 | 	color: var(--accent-light);
-339 | 	padding: var(--space-1) var(--space-3);
-340 | 	border-radius: var(--radius-lg);
-341 | 	font-size: var(--text-xs);
-342 | 	font-weight: var(--font-medium);
-343 | 	backdrop-filter: blur(10px);
-344 | 	white-space: nowrap;
-345 | }
-346 | 
-347 | .icon-button {
-348 | 	background: var(--card-bg);
-349 | 	border: 1px solid var(--border-color);
-350 | 	color: var(--text-secondary);
-351 | 	padding: var(--space-2);
-352 | 	border-radius: var(--radius-lg);
-353 | 	cursor: pointer;
-354 | 	transition: all var(--duration-200) var(--ease-out);
-355 | 	font-size: var(--text-xs);
-356 | 	display: flex;
-357 | 	align-items: center;
-358 | 	justify-content: center;
-359 | 	min-width: 32px;
-360 | 	height: 32px;
-361 | }
-362 | 
-363 | .icon-button:hover {
-364 | 	background: var(--accent-color);
-365 | 	border-color: var(--accent-color);
-366 | 	color: white;
-367 | 	transform: translateY(-1px);
-368 | }
-369 | 
-370 | .icon-button:active {
-371 | 	transform: translateY(0);
-372 | }
-373 | 
-374 | /* Chat Container */
-375 | #chat-box {
-376 | 	flex: 1;
-377 | 	overflow-y: auto;
-378 | 	padding: var(--space-4);
-379 | 	display: flex;
-380 | 	flex-direction: column;
-381 | 	gap: var(--space-4);
-382 | 	scroll-behavior: smooth;
-383 | }
-384 | 
-385 | /* Welcome Message */
-386 | .welcome-message {
-387 | 	display: flex;
-388 | 	flex-direction: column;
-389 | 	align-items: center;
-390 | 	text-align: center;
-391 | 	padding: var(--space-8);
-392 | 	background: var(--card-bg);
-393 | 	border: 1px solid var(--border-color);
-394 | 	border-radius: var(--radius-2xl);
-395 | 	backdrop-filter: blur(20px);
-396 | 	margin-bottom: var(--space-4);
-397 | }
-398 | 
-399 | .welcome-message .bot-avatar {
-400 | 	margin-bottom: var(--space-4);
-401 | }
-402 | 
-403 | .welcome-message .bot-avatar img {
-404 | 	width: 64px;
-405 | 	height: 64px;
-406 | 	object-fit: contain;
-407 | 	filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.3));
-408 | 	border-radius: var(--radius-xl);
-409 | }
-410 | 
-411 | .welcome-content h3 {
-412 | 	margin: 0 0 var(--space-3) 0;
-413 | 	font-size: var(--text-lg);
-414 | 	font-weight: var(--font-bold);
-415 | 	color: var(--text-primary);
-416 | }
-417 | 
-418 | .welcome-content p {
-419 | 	margin: 0 0 var(--space-4) 0;
-420 | 	color: var(--text-secondary);
-421 | 	line-height: var(--leading-relaxed);
-422 | }
-423 | 
-424 | 
-425 | 
-426 | /* Input Section */
-427 | #input-section {
-428 | 	flex-shrink: 0;
-429 | 	background: var(--glass-bg);
-430 | 	border-top: 1px solid var(--border-color);
-431 | 	padding: var(--space-4);
-432 | 	min-height: 80px;
-433 | }
-434 | 
-435 | .input-container {
-436 | 	position: relative;
-437 | 	width: 100%;
-438 | }
-439 | 
-440 | .input-wrapper {
-441 | 	display: flex;
-442 | 	align-items: flex-end;
-443 | 	background: var(--card-bg);
-444 | 	border: 1px solid var(--border-color);
-445 | 	border-radius: var(--radius-2xl);
-446 | 	padding: var(--space-3);
-447 | 	gap: var(--space-3);
-448 | 	backdrop-filter: blur(20px);
-449 | 	transition: all var(--duration-200) var(--ease-out);
-450 | 	min-height: 48px;
-451 | }
-452 | 
-453 | .input-wrapper:focus-within {
-454 | 	border-color: var(--accent-color);
-455 | 	box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-456 | }
-457 | 
-458 | #user-input {
-459 | 	flex: 1;
-460 | 	background: transparent;
-461 | 	border: none;
-462 | 	outline: none;
-463 | 	resize: none;
-464 | 	font-family: var(--font-family);
-465 | 	font-size: var(--text-sm);
-466 | 	color: var(--text-primary);
-467 | 	line-height: var(--leading-normal);
-468 | 	min-height: 24px;
-469 | 	max-height: 120px;
-470 | 	overflow-y: auto;
-471 | 	padding: var(--space-2) 0;
-472 | }
-473 | 
-474 | #user-input::placeholder {
-475 | 	color: var(--text-subtle);
-476 | }
-477 | 
-478 | .send-button {
-479 | 	background: var(--accent-color);
-480 | 	border: none;
-481 | 	color: white;
-482 | 	padding: var(--space-2);
-483 | 	border-radius: var(--radius-lg);
-484 | 	cursor: pointer;
-485 | 	transition: all var(--duration-200) var(--ease-out);
-486 | 	display: flex;
-487 | 	align-items: center;
-488 | 	justify-content: center;
-489 | 	min-width: 36px;
-490 | 	height: 36px;
-491 | 	flex-shrink: 0;
-492 | 	margin-left: var(--space-2);
-493 | }
-494 | 
-495 | .send-button:hover:not(:disabled) {
-496 | 	background: var(--accent-hover);
-497 | 	transform: translateY(-1px);
-498 | 	box-shadow: var(--shadow-md);
-499 | }
-500 | 
-501 | .send-button:active {
-502 | 	transform: translateY(0);
-503 | }
-504 | 
-505 | .send-button:disabled {
-506 | 	opacity: 0.7;
-507 | 	cursor: not-allowed;
-508 | 	transform: none;
-509 | }
-510 | 
-511 | .send-icon {
-512 | 	font-size: var(--text-sm);
-513 | }
-514 | 
-515 | /* Modern Chat Container */
-516 | #chat-box {
-517 | 	flex: 1;
-518 | 	overflow-y: auto;
-519 | 	overflow-x: hidden;
-520 | 	padding: var(--space-4);
-521 | 	display: flex;
-522 | 	flex-direction: column;
-523 | 	gap: var(--space-4);
-524 | 	scroll-behavior: smooth;
-525 | 	min-height: 0;
-526 | }
-527 | 
-528 | /* Enhanced Message Styles */
-529 | .message {
-530 | 	display: flex;
-531 | 	flex-direction: column;
-532 | 	max-width: 85%;
-533 | 	animation: messageSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-534 | }
-535 | 
-536 | @keyframes messageSlideIn {
-537 | 	from {
-538 | 		opacity: 0;
-539 | 		transform: translateY(16px);
-540 | 	}
-541 | 
-542 | 	to {
-543 | 		opacity: 1;
-544 | 		transform: translateY(0);
-545 | 	}
-546 | }
-547 | 
-548 | .user-message {
-549 | 	align-self: flex-end;
-550 | }
-551 | 
-552 | .ai-message {
-553 | 	align-self: flex-start;
-554 | }
-555 | 
-556 | .user-label,
-557 | .ai-label {
-558 | 	font-size: var(--text-xs);
-559 | 	font-weight: var(--font-semibold);
-560 | 	margin-bottom: var(--space-2);
-561 | 	text-transform: uppercase;
-562 | 	letter-spacing: 0.05em;
-563 | 	display: flex;
-564 | 	align-items: center;
-565 | 	gap: var(--space-2);
-566 | }
-567 | 
-568 | .user-label {
-569 | 	color: var(--user-color);
-570 | 	text-align: right;
-571 | 	justify-content: flex-end;
-572 | }
-573 | 
-574 | .ai-label {
-575 | 	color: var(--ai-color);
-576 | }
-577 | 
-578 | .message-avatar {
-579 | 	font-size: var(--text-sm);
-580 | }
-581 | 
-582 | .message-content {
-583 | 	background: var(--card-bg);
-584 | 	backdrop-filter: blur(20px);
-585 | 	padding: var(--space-4) var(--space-5);
-586 | 	border-radius: var(--radius-xl);
-587 | 	line-height: var(--leading-relaxed);
-588 | 	font-size: var(--text-sm);
-589 | 	word-wrap: break-word;
-590 | 	border: 1px solid var(--border-color);
-591 | 	box-shadow: var(--shadow-sm);
-592 | }
-593 | 
-594 | .user-message .message-content {
-595 | 	background: linear-gradient(135deg,
-596 | 			rgba(99, 102, 241, 0.15) 0%,
-597 | 			rgba(59, 130, 246, 0.15) 100%);
-598 | 	border: 1px solid rgba(99, 102, 241, 0.3);
-599 | 	border-radius: var(--radius-xl) var(--radius-xl) var(--radius-sm) var(--radius-xl);
-600 | }
-601 | 
-602 | .ai-message .message-content {
-603 | 	background: linear-gradient(135deg,
-604 | 			rgba(139, 92, 246, 0.08) 0%,
-605 | 			rgba(168, 85, 247, 0.08) 100%);
-606 | 	border-left: 3px solid var(--ai-color);
-607 | 	border-radius: var(--radius-xl) var(--radius-xl) var(--radius-xl) var(--radius-sm);
-608 | }
-609 | 
-610 | /* Modern Code Block Styles */
-611 | .code-block {
-612 | 	background: linear-gradient(135deg,
-613 | 			#0f172a 0%,
-614 | 			#1e293b 50%,
-615 | 			#0f172a 100%);
-616 | 	border: 1px solid var(--border-color);
-617 | 	border-radius: var(--radius-xl);
-618 | 	padding: var(--space-4);
-619 | 	margin: var(--space-3) 0;
-620 | 	font-family: var(--font-family-mono);
-621 | 	font-size: var(--text-sm);
-622 | 	line-height: var(--leading-relaxed);
-623 | 	overflow-x: auto;
-624 | 	position: relative;
-625 | 	box-shadow: var(--shadow-md);
-626 | 	transition: all var(--duration-300) var(--ease-out);
-627 | }
-628 | 
-629 | .code-block:hover {
-630 | 	box-shadow: var(--shadow-lg);
-631 | 	border-color: var(--border-accent);
-632 | }
-633 | 
-634 | .code-block::before {
-635 | 	content: 'Code';
-636 | 	position: absolute;
-637 | 	top: var(--space-3);
-638 | 	right: var(--space-3);
-639 | 	background: var(--accent-color);
-640 | 	color: white;
-641 | 	padding: var(--space-1) var(--space-2);
-642 | 	border-radius: var(--radius-md);
-643 | 	font-size: var(--text-xs);
-644 | 	font-weight: var(--font-semibold);
-645 | 	text-transform: uppercase;
-646 | 	letter-spacing: 0.05em;
-647 | 	opacity: 0.8;
-648 | }
-649 | 
-650 | .code-block.flex-code::before {
-651 | 	background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
-652 | 	content: 'Flex';
-653 | }
-654 | 
-655 | .code-block.flex-code {
-656 | 	border-left: 3px solid var(--accent-color);
-657 | }
-658 | 
-659 | /* Enhanced Syntax Highlighting */
-660 | .flex-keyword-franco {
-661 | 	color: #ff6b6b;
-662 | 	font-weight: var(--font-semibold);
-663 | }
-664 | 
-665 | .flex-keyword-english {
-666 | 	color: #4ecdc4;
-667 | 	font-weight: var(--font-semibold);
-668 | }
-669 | 
-670 | .flex-string {
-671 | 	color: #95e1d3;
-672 | }
-673 | 
-674 | .flex-number {
-675 | 	color: #fce38a;
-676 | }
-677 | 
-678 | .flex-comment {
-679 | 	color: var(--text-subtle);
-680 | 	font-style: italic;
-681 | }
-682 | 
-683 | .flex-operator {
-684 | 	color: #ff8a80;
-685 | }
-686 | 
-687 | .flex-function {
-688 | 	color: #82ca9d;
-689 | 	font-weight: var(--font-medium);
-690 | }
-691 | 
-692 | .flex-variable {
-693 | 	color: #ffc658;
-694 | }
-695 | 
-696 | /* Inline Code */
-697 | .inline-code {
-698 | 	background: rgba(59, 130, 246, 0.1);
-699 | 	color: var(--accent-light);
-700 | 	padding: var(--space-1) var(--space-2);
-701 | 	border-radius: var(--radius-md);
-702 | 	font-family: var(--font-family-mono);
-703 | 	font-size: 0.9em;
-704 | 	border: 1px solid rgba(59, 130, 246, 0.2);
-705 | }
-706 | 
-707 | /* Modern Input Section */
-708 | #cont {
-709 | 	flex-shrink: 0;
-710 | 	padding: var(--space-4);
-711 | 	background: var(--glass-bg);
-712 | 	backdrop-filter: blur(20px);
-713 | 	border-top: 1px solid var(--border-color);
-714 | }
-715 | 
-716 | .input-hints {
-717 | 	display: flex;
-718 | 	flex-wrap: wrap;
-719 | 	gap: var(--space-2);
-720 | 	padding-top: var(--space-2);
-721 | 	border-top: 1px solid var(--border-color);
-722 | 	font-size: var(--text-xs);
-723 | 	color: var(--text-muted);
-724 | }
-725 | 
-726 | .hint {
-727 | 	font-weight: var(--font-semibold);
-728 | 	color: var(--accent-light);
-729 | }
-730 | 
-731 | .hint-item {
-732 | 	background: rgba(59, 130, 246, 0.1);
-733 | 	padding: var(--space-1) var(--space-2);
-734 | 	border-radius: var(--radius-md);
-735 | 	border: 1px solid rgba(59, 130, 246, 0.2);
-736 | 	white-space: nowrap;
-737 | }
-738 | 
-739 | /* Status Messages */
-740 | .status-message {
-741 | 	background: var(--secondary-bg);
-742 | 	border: 1px solid var(--border-color);
-743 | 	border-left: 3px solid var(--accent-color);
-744 | 	padding: var(--space-3);
-745 | 	border-radius: var(--radius-lg);
-746 | 	font-size: var(--text-sm);
-747 | 	color: var(--text-secondary);
-748 | 	text-align: center;
-749 | 	animation: statusPulse var(--duration-1000) ease-in-out infinite;
-750 | }
-751 | 
-752 | @keyframes statusPulse {
-753 | 
-754 | 	0%,
-755 | 	100% {
-756 | 		opacity: 1;
-757 | 	}
-758 | 
-759 | 	50% {
-760 | 		opacity: 0.7;
-761 | 	}
-762 | }
-763 | 
-764 | .typing-indicator {
-765 | 	background: linear-gradient(135deg,
-766 | 			rgba(139, 92, 246, 0.1) 0%,
-767 | 			rgba(168, 85, 247, 0.1) 100%);
-768 | 	border-left-color: var(--ai-color);
-769 | }
-770 | 
-771 | .error-message {
-772 | 	background: rgba(239, 68, 68, 0.1);
-773 | 	border-left-color: var(--error-color);
-774 | 	color: #fca5a5;
-775 | }
-776 | 
-777 | /* Copy Button for Code Blocks */
-778 | .copy-code-button {
-779 | 	position: absolute;
-780 | 	top: var(--space-2);
-781 | 	right: var(--space-2);
-782 | 	background: var(--accent-color);
-783 | 	border: none;
-784 | 	color: white;
-785 | 	padding: var(--space-1_5);
-786 | 	border-radius: var(--radius-md);
-787 | 	cursor: pointer;
-788 | 	font-size: var(--text-xs);
-789 | 	opacity: 0;
-790 | 	transition: all var(--duration-200) var(--ease-out);
-791 | 	z-index: var(--z-10);
-792 | }
-793 | 
-794 | .code-block:hover .copy-code-button {
-795 | 	opacity: 1;
-796 | }
-797 | 
-798 | .copy-code-button:hover {
-799 | 	background: var(--accent-hover);
-800 | 	transform: scale(1.05);
-801 | }
-802 | 
-803 | /* Mobile-First Responsive Design */
-804 | @media (max-width: 479px) {
-805 | 	:root {
-806 | 		--text-xs: 0.75rem;
-807 | 		--text-sm: 0.8125rem;
-808 | 		--text-base: 0.875rem;
-809 | 		--text-lg: 1rem;
-810 | 		--text-xl: 1.125rem;
-811 | 	}
-812 | 
-813 | 	#header-bar {
-814 | 		padding: var(--space-2);
-815 | 	}
-816 | 
-817 | 	#item-1 {
-818 | 		flex-direction: column;
-819 | 		gap: var(--space-2);
-820 | 		padding: var(--space-3);
-821 | 		text-align: center;
-822 | 	}
-823 | 
-824 | 	.title-text {
-825 | 		font-size: var(--text-base);
-826 | 		justify-content: center;
-827 | 	}
-828 | 
-829 | 	.header-controls {
-830 | 		justify-content: center;
-831 | 		flex-wrap: wrap;
-832 | 	}
-833 | 
-834 | 	.model-name {
-835 | 		max-width: 100px;
-836 | 	}
-837 | 
-838 | 	#item-2 {
-839 | 		grid-template-columns: 1fr;
-840 | 		text-align: center;
-841 | 		gap: var(--space-3);
-842 | 		padding: var(--space-3);
-843 | 	}
-844 | 
-845 | 	.bot-avatar {
-846 | 		margin: 0 auto;
-847 | 	}
-848 | 
-849 | 	.greeting-text {
-850 | 		font-size: var(--text-sm);
-851 | 	}
-852 | 
-853 | 	.features-info {
-854 | 		justify-content: center;
-855 | 	}
-856 | 
-857 | 	.feature-badge {
-858 | 		font-size: 0.6875rem;
-859 | 		padding: var(--space-1) var(--space-1_5);
-860 | 	}
-861 | 
-862 | 	.message {
-863 | 		max-width: 95%;
-864 | 	}
-865 | 
-866 | 	.message-content {
-867 | 		padding: var(--space-2_5) var(--space-3);
-868 | 		font-size: var(--text-xs);
-869 | 	}
-870 | 
-871 | 	#chat-box {
-872 | 		padding: var(--space-2);
-873 | 		gap: var(--space-3);
-874 | 	}
-875 | 
-876 | 	#cont {
-877 | 		padding: var(--space-3);
-878 | 	}
-879 | 
-880 | 	.input-container {
-881 | 		padding: var(--space-2);
-882 | 	}
-883 | 
-884 | 	#send-button {
-885 | 		padding: var(--space-2) var(--space-3);
-886 | 		font-size: var(--text-xs);
-887 | 	}
-888 | 
-889 | 	.send-text {
-890 | 		display: none;
-891 | 	}
-892 | 
-893 | 	.input-hints {
-894 | 		display: none;
-895 | 	}
-896 | 
-897 | 	.code-block {
-898 | 		padding: var(--space-3);
-899 | 		font-size: var(--text-xs);
-900 | 		overflow-x: scroll;
-901 | 	}
-902 | 
-903 | 	.copy-code-button {
-904 | 		position: static;
-905 | 		opacity: 1;
-906 | 		margin-top: var(--space-2);
-907 | 		width: 100%;
-908 | 	}
-909 | }
-910 | 
-911 | /* Tablet Responsive Design */
-912 | @media (min-width: 480px) and (max-width: 767px) {
-913 | 	#item-1 {
-914 | 		flex-direction: row;
-915 | 		align-items: center;
-916 | 	}
-917 | 
-918 | 	#item-2 {
-919 | 		grid-template-columns: auto 1fr;
-920 | 		text-align: left;
-921 | 	}
-922 | 
-923 | 	.message {
-924 | 		max-width: 85%;
-925 | 	}
-926 | 
-927 | 	.input-hints {
-928 | 		display: flex;
-929 | 	}
-930 | }
-931 | 
-932 | /* Desktop and Large Screen Optimizations */
-933 | @media (min-width: 768px) {
-934 | 	#header-bar {
-935 | 		padding: var(--space-6);
-936 | 	}
-937 | 
-938 | 	#item-1 {
-939 | 		padding: var(--space-4) var(--space-6);
-940 | 	}
-941 | 
-942 | 	#item-2 {
-943 | 		padding: var(--space-5);
-944 | 	}
-945 | 
-946 | 	.greeting-text {
-947 | 		font-size: var(--text-lg);
-948 | 	}
-949 | 
-950 | 	.message-content {
-951 | 		padding: var(--space-4) var(--space-5);
-952 | 	}
-953 | 
-954 | 	#chat-box {
-955 | 		padding: var(--space-6);
-956 | 		gap: var(--space-5);
-957 | 	}
-958 | 
-959 | 	#cont {
-960 | 		padding: var(--space-6);
-961 | 	}
-962 | 
-963 | 	.input-container {
-964 | 		padding: var(--space-4);
-965 | 	}
-966 | }
-967 | 
-968 | /* Extra Large Screen Optimizations */
-969 | @media (min-width: 1200px) {
-970 | 	.message {
-971 | 		max-width: 70%;
-972 | 	}
-973 | 
-974 | 	.code-block {
-975 | 		font-size: var(--text-base);
-976 | 	}
-977 | }
-978 | 
-979 | /* High DPI Display Optimizations */
-980 | @media (-webkit-min-device-pixel-ratio: 2),
-981 | (min-resolution: 192dpi) {
-982 | 	.bot-avatar img {
-983 | 		image-rendering: -webkit-optimize-contrast;
-984 | 		image-rendering: crisp-edges;
-985 | 	}
-986 | }
-987 | 
-988 | /* Accessibility Improvements */
-989 | @media (prefers-reduced-motion: reduce) {
-990 | 
-991 | 	*,
-992 | 	*::before,
-993 | 	*::after {
-994 | 		animation-duration: 0.01ms !important;
-995 | 		animation-iteration-count: 1 !important;
-996 | 		transition-duration: 0.01ms !important;
-997 | 		scroll-behavior: auto !important;
-998 | 	}
-999 | }
-1000 | 
-1001 | @media (prefers-contrast: high) {
-1002 | 	:root {
-1003 | 		--border-color: rgba(248, 250, 252, 0.3);
-1004 | 		--border-accent: rgba(59, 130, 246, 0.6);
-1005 | 		--text-muted: rgba(248, 250, 252, 0.8);
-1006 | 	}
-1007 | }
-1008 | 
-1009 | /* Dark Theme Enhancements */
-1010 | @media (prefers-color-scheme: dark) {
-1011 | 	body {
-1012 | 		background: var(--primary-bg);
-1013 | 	}
-1014 | }
-1015 | 
-1016 | /* Configuration Status Styling */
-1017 | body[data-config-status="invalid"] .input-container {
-1018 | 	border-color: var(--error-color);
-1019 | 	background: rgba(239, 68, 68, 0.05);
-1020 | }
-1021 | 
-1022 | body[data-config-status="invalid"] .input-hints::before {
-1023 | 	content: '⚠️ Configuration required - ';
-1024 | 	color: var(--error-color);
-1025 | 	font-weight: var(--font-semibold);
-1026 | }
-1027 | 
-1028 | /* Link Styling */
-1029 | a {
-1030 | 	color: var(--accent-light);
-1031 | 	text-decoration: none;
-1032 | 	border-bottom: 1px solid transparent;
-1033 | 	transition: all var(--duration-200) var(--ease-out);
-1034 | }
-1035 | 
-1036 | a:hover {
-1037 | 	color: var(--accent-color);
-1038 | 	border-bottom-color: var(--accent-color);
-1039 | }
-1040 | 
-1041 | /* Selection Styling */
-1042 | ::selection {
-1043 | 	background: rgba(59, 130, 246, 0.3);
-1044 | 	color: var(--text-primary);
-1045 | }
-1046 | 
-1047 | /* Loading States */
-1048 | .loading-state {
-1049 | 	opacity: 0.6;
-1050 | 	pointer-events: none;
-1051 | 	filter: blur(1px);
-1052 | 	transition: all var(--duration-300) var(--ease-out);
-1053 | }
-1054 | 
-1055 | /* Responsive Design */
-1056 | @media (max-width: 768px) {
-1057 | 	#header-bar {
-1058 | 		padding: var(--space-2) var(--space-3);
-1059 | 		height: 44px;
-1060 | 	}
-1061 | 
-1062 | 	.header-title {
-1063 | 		font-size: var(--text-xs);
-1064 | 	}
-1065 | 
-1066 | 	.status-indicators {
-1067 | 		margin-left: var(--space-2);
-1068 | 		gap: var(--space-1);
-1069 | 	}
-1070 | 
-1071 | 	.header-right {
-1072 | 		gap: var(--space-1);
-1073 | 	}
-1074 | 
-1075 | 	.model-display {
-1076 | 		font-size: var(--text-xs);
-1077 | 		padding: var(--space-1) var(--space-2);
-1078 | 	}
-1079 | 
-1080 | 	.icon-button {
-1081 | 		min-width: 28px;
-1082 | 		height: 28px;
-1083 | 		padding: var(--space-1);
-1084 | 		font-size: var(--text-xs);
-1085 | 	}
-1086 | 
-1087 | 	.welcome-message {
-1088 | 		padding: var(--space-6);
-1089 | 	}
-1090 | 
-1091 | 	.welcome-message .bot-avatar img {
-1092 | 		width: 48px;
-1093 | 		height: 48px;
-1094 | 	}
-1095 | 
-1096 | 	.welcome-content h3 {
-1097 | 		font-size: var(--text-base);
-1098 | 	}
-1099 | 
-1100 | 	.message {
-1101 | 		max-width: 95%;
-1102 | 	}
-1103 | 
-1104 | 	#input-section {
-1105 | 		padding: var(--space-3);
-1106 | 		min-height: 70px;
-1107 | 	}
-1108 | 
-1109 | 	.input-wrapper {
-1110 | 		padding: var(--space-2);
-1111 | 		gap: var(--space-2);
-1112 | 		min-height: 44px;
-1113 | 	}
-1114 | 
-1115 | 	.send-button {
-1116 | 		min-width: 32px;
-1117 | 		height: 32px;
-1118 | 		margin-left: var(--space-1);
-1119 | 	}
-1120 | 
-1121 | 	#user-input {
-1122 | 		font-size: var(--text-sm);
-1123 | 	}
-1124 | }
-1125 | 
-1126 | @media (max-width: 480px) {
-1127 | 	.header-title {
-1128 | 		display: none;
-1129 | 	}
-1130 | 
-1131 | 	.status-indicators {
-1132 | 		margin-left: var(--space-1);
-1133 | 	}
-1134 | 
-1135 | 	.model-display {
-1136 | 		font-size: 0.625rem;
-1137 | 		padding: var(--space-1);
-1138 | 	}
-1139 | 
-1140 | 	#input-section {
-1141 | 		padding: var(--space-2);
-1142 | 		min-height: 65px;
-1143 | 	}
-1144 | 
-1145 | 	.input-wrapper {
-1146 | 		padding: var(--space-2);
-1147 | 		gap: var(--space-1);
-1148 | 		min-height: 40px;
-1149 | 	}
-1150 | 
-1151 | 	.send-button {
-1152 | 		min-width: 30px;
-1153 | 		height: 30px;
-1154 | 	}
-1155 | }
 ```
 
 docs/ARCHITECTURE_RESTRUCTURE_SUMMARY.md
@@ -3295,569 +1090,554 @@ src/customSidebarViewProvider.ts
 13 | 
 14 |   private _view?: vscode.WebviewView;
 15 |   private _conversationHistory: ChatMessage[] = [];
-16 |   private _availableModels: ModelInfo[] = [];
-17 |   private _isModelListLoaded = false;
-18 |   private _flexDatasetService: FlexDatasetService;
-19 |   private _configWatcher?: vscode.Disposable;
-20 | 
-21 |   constructor(private readonly _extensionUri: vscode.Uri) {
-22 |     logger.logExtensionEvent('activate', { component: 'CustomSidebarViewProvider' });
-23 | 
-24 |     // Initialize services
-25 |     this._flexDatasetService = FlexDatasetService.getInstance(_extensionUri.fsPath);
-26 | 
-27 |     // Set up configuration watcher
-28 |     this._configWatcher = ConfigService.onConfigurationChanged((config) => {
-29 |       this.onConfigurationChanged(config);
-30 |     });
-31 | 
-32 |     // Initialize available models
-33 |     this.initializeModels();
-34 |   }
-35 | 
-36 |   /**
-37 |    * Dispose of resources
-38 |    */
-39 |   public dispose(): void {
-40 |     if (this._configWatcher) {
-41 |       this._configWatcher.dispose();
-42 |     }
-43 |     logger.logExtensionEvent('deactivate', { component: 'CustomSidebarViewProvider' });
-44 |   }
-45 | 
-46 |   /**
-47 |    * Get available models
-48 |    */
-49 |   public async getAvailableModels(): Promise<ModelInfo[]> {
-50 |     if (!this._isModelListLoaded) {
-51 |       await this.initializeModels();
-52 |     }
-53 |     return this._availableModels;
-54 |   }
-55 | 
-56 |   /**
-57 |    * Reset chat conversation
-58 |    */
-59 |   public resetChat(): void {
-60 |     logger.logUserAction('resetChat');
-61 |     this._conversationHistory = [];
-62 |     if (this._view) {
-63 |       this._view.webview.postMessage({ command: 'chatCleared' } as WebviewMessage);
-64 |     }
-65 |   }
-66 | 
-67 |   /**
-68 |    * Refresh webview content
-69 |    */
-70 |   public refreshWebview(): void {
-71 |     if (this._view) {
-72 |       this._view.webview.html = this.getHtmlContent(this._view.webview);
-73 |       logger.debug('Webview refreshed');
-74 |     }
-75 |   }
-76 | 
-77 |   /**
-78 |    * Initialize available models from API
-79 |    */
-80 |   private async initializeModels(): Promise<void> {
-81 |     const timer = logger.createTimer('initializeModels');
-82 | 
-83 |     try {
-84 |       const config = ConfigService.getConfig();
-85 | 
-86 |       if (!config.apiKey) {
-87 |         logger.warn('API key not configured, skipping model initialization');
-88 |         return;
-89 |       }
-90 | 
-91 |       this._availableModels = await ApiService.fetchAvailableModels(config.apiKey);
-92 |       this._isModelListLoaded = true;
-93 | 
-94 |       logger.info(`Loaded ${this._availableModels.length} models`);
+16 |   private readonly MAX_CONVERSATION_HISTORY = 20; // Limit to prevent memory issues
+17 |   private _isProcessingMessage: boolean = false; // Prevent concurrent requests
+18 |   private _availableModels: ModelInfo[] = [];
+19 |   private _isModelListLoaded = false;
+20 |   private _flexDatasetService: FlexDatasetService;
+21 |   private _configWatcher?: vscode.Disposable;
+22 | 
+23 |   constructor(private readonly _extensionUri: vscode.Uri) {
+24 |     logger.logExtensionEvent('activate', { component: 'CustomSidebarViewProvider' });
+25 | 
+26 |     // Initialize services
+27 |     this._flexDatasetService = FlexDatasetService.getInstance(_extensionUri.fsPath);
+28 | 
+29 |     // Set up configuration watcher
+30 |     this._configWatcher = ConfigService.onConfigurationChanged((config) => {
+31 |       this.onConfigurationChanged(config);
+32 |     });
+33 | 
+34 |     // Initialize available models
+35 |     this.initializeModels();
+36 |   }
+37 | 
+38 |   /**
+39 |    * Dispose of resources
+40 |    */
+41 |   public dispose(): void {
+42 |     if (this._configWatcher) {
+43 |       this._configWatcher.dispose();
+44 |     }
+45 |     logger.logExtensionEvent('deactivate', { component: 'CustomSidebarViewProvider' });
+46 |   }
+47 | 
+48 |   /**
+49 |    * Get available models
+50 |    */
+51 |   public async getAvailableModels(): Promise<ModelInfo[]> {
+52 |     if (!this._isModelListLoaded) {
+53 |       await this.initializeModels();
+54 |     }
+55 |     return this._availableModels;
+56 |   }
+57 | 
+58 |   /**
+59 |    * Reset chat conversation
+60 |    */
+61 |   public resetChat(): void {
+62 |     logger.logUserAction('resetChat');
+63 |     this._conversationHistory = [];
+64 |     if (this._view) {
+65 |       this._view.webview.postMessage({ command: 'chatCleared' } as WebviewMessage);
+66 |     }
+67 |   }
+68 | 
+69 |   /**
+70 |    * Refresh webview content
+71 |    */
+72 |   public refreshWebview(): void {
+73 |     if (this._view) {
+74 |       this._view.webview.html = this.getHtmlContent(this._view.webview);
+75 |       logger.debug('Webview refreshed');
+76 |     }
+77 |   }
+78 | 
+79 |   /**
+80 |    * Initialize available models from API
+81 |    */
+82 |   private async initializeModels(): Promise<void> {
+83 |     const timer = logger.createTimer('initializeModels');
+84 | 
+85 |     try {
+86 |       const config = ConfigService.getConfig();
+87 | 
+88 |       if (!config.apiKey) {
+89 |         logger.warn('API key not configured, skipping model initialization');
+90 |         return;
+91 |       }
+92 | 
+93 |       this._availableModels = await ApiService.fetchAvailableModels(config.apiKey);
+94 |       this._isModelListLoaded = true;
 95 | 
-96 |       if (this._view) {
-97 |         this.refreshWebview();
-98 |       }
-99 |     } catch (error) {
-100 |       logger.error('Failed to initialize models', error);
-101 |     } finally {
-102 |       timer.end();
-103 |     }
-104 |   }
-105 | 
-106 |   /**
-107 |    * Handle configuration changes
-108 |    */
-109 |   private onConfigurationChanged(config: ExtensionConfig): void {
-110 |     logger.logConfigChange('configuration', 'previous', 'new');
-111 | 
-112 |     // Re-fetch models if API key changed
-113 |     if (config.apiKey && !this._isModelListLoaded) {
-114 |       this.initializeModels();
-115 |     }
-116 | 
-117 |     // Refresh webview to show updated configuration
-118 |     this.refreshWebview();
-119 |   }
-120 | 
-121 |   /**
-122 |    * Resolve webview view and set up message handling
-123 |    */
-124 |   resolveWebviewView(
-125 |     webviewView: vscode.WebviewView,
-126 |     context: vscode.WebviewViewResolveContext,
-127 |     _token: vscode.CancellationToken,
-128 |   ): void | Thenable<void> {
-129 |     this._view = webviewView;
-130 | 
-131 |     webviewView.webview.options = {
-132 |       enableScripts: true,
-133 |       localResourceRoots: [this._extensionUri],
-134 |     };
-135 | 
-136 |     webviewView.webview.html = this.getHtmlContent(webviewView.webview);
+96 |       logger.info(`Loaded ${this._availableModels.length} models`);
+97 | 
+98 |       if (this._view) {
+99 |         this.refreshWebview();
+100 |       }
+101 |     } catch (error) {
+102 |       logger.error('Failed to initialize models', error);
+103 |     } finally {
+104 |       timer.end();
+105 |     }
+106 |   }
+107 | 
+108 |   /**
+109 |    * Handle configuration changes
+110 |    */
+111 |   private onConfigurationChanged(config: ExtensionConfig): void {
+112 |     logger.logConfigChange('configuration', 'previous', 'new');
+113 | 
+114 |     // Re-fetch models if API key changed
+115 |     if (config.apiKey && !this._isModelListLoaded) {
+116 |       this.initializeModels();
+117 |     }
+118 | 
+119 |     // Refresh webview to show updated configuration
+120 |     this.refreshWebview();
+121 |   }
+122 | 
+123 |   /**
+124 |    * Resolve webview view and set up message handling
+125 |    */
+126 |   resolveWebviewView(
+127 |     webviewView: vscode.WebviewView,
+128 |     context: vscode.WebviewViewResolveContext,
+129 |     _token: vscode.CancellationToken,
+130 |   ): void | Thenable<void> {
+131 |     this._view = webviewView;
+132 | 
+133 |     webviewView.webview.options = {
+134 |       enableScripts: true,
+135 |       localResourceRoots: [this._extensionUri],
+136 |     };
 137 | 
-138 |     // Set up message handling
-139 |     webviewView.webview.onDidReceiveMessage(async (message: WebviewMessage) => {
-140 |       await this.handleWebviewMessage(message);
-141 |     });
-142 | 
-143 |     logger.info('Webview resolved and message handlers set up');
-144 |   }
-145 | 
-146 |   /**
-147 |    * Handle messages from the webview
-148 |    */
-149 |   private async handleWebviewMessage(message: WebviewMessage): Promise<void> {
-150 |     const timer = logger.createTimer(`handleMessage:${message.command}`);
-151 | 
-152 |     try {
-153 |       switch (message.command) {
-154 |         case 'sendMessage':
-155 |           await this.handleSendMessage(message.text || '');
-156 |           break;
-157 | 
-158 |         case 'clearChat':
-159 |           this.handleClearChat();
-160 |           break;
-161 | 
-162 |         case 'selectModel':
-163 |           await this.handleSelectModel();
-164 |           break;
-165 | 
-166 |         default:
-167 |           logger.warn(`Unknown message command: ${message.command}`);
-168 |       }
-169 |     } catch (error) {
-170 |       logger.error(`Error handling message: ${message.command}`, error);
-171 |       this.sendErrorMessage(`Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-172 |     } finally {
-173 |       timer.end();
-174 |     }
-175 |   }
-176 | 
-177 |   /**
-178 |    * Handle send message request
-179 |    */
-180 |   private async handleSendMessage(userMessage: string): Promise<void> {
-181 |     if (!userMessage.trim()) {
-182 |       return;
-183 |     }
-184 | 
-185 |     logger.logUserAction('sendMessage', { messageLength: userMessage.length });
+138 |     webviewView.webview.html = this.getHtmlContent(webviewView.webview);
+139 | 
+140 |     // Set up message handling
+141 |     webviewView.webview.onDidReceiveMessage(async (message: WebviewMessage) => {
+142 |       await this.handleWebviewMessage(message);
+143 |     });
+144 | 
+145 |     logger.info('Webview resolved and message handlers set up');
+146 |   }
+147 | 
+148 |   /**
+149 |    * Handle messages from the webview
+150 |    */
+151 |   private async handleWebviewMessage(message: WebviewMessage): Promise<void> {
+152 |     const timer = logger.createTimer(`handleMessage:${message.command}`);
+153 | 
+154 |     try {
+155 |       switch (message.command) {
+156 |         case 'sendMessage':
+157 |           await this.handleSendMessage(message.text || '');
+158 |           break;
+159 | 
+160 |         case 'clearChat':
+161 |           this.handleClearChat();
+162 |           break;
+163 | 
+164 |         case 'selectModel':
+165 |           await this.handleSelectModel();
+166 |           break;
+167 | 
+168 |         default:
+169 |           logger.warn(`Unknown message command: ${message.command}`);
+170 |       }
+171 |     } catch (error) {
+172 |       logger.error(`Error handling message: ${message.command}`, error);
+173 |       this.sendErrorMessage(`Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+174 |     } finally {
+175 |       timer.end();
+176 |     }
+177 |   }
+178 | 
+179 |   /**
+180 |    * Handle send message request
+181 |    */
+182 |   private async handleSendMessage(userMessage: string): Promise<void> {
+183 |     if (!userMessage.trim()) {
+184 |       return;
+185 |     }
 186 | 
-187 |     // Add user message to history
-188 |     const userChatMessage: ChatMessage = {
-189 |       role: 'user',
-190 |       content: userMessage,
-191 |       timestamp: new Date()
-192 |     };
-193 |     this._conversationHistory.push(userChatMessage);
-194 | 
-195 |     // Check configuration
-196 |     const config = ConfigService.getConfig();
-197 |     const configValidation = ConfigService.validateConfig();
-198 | 
-199 |     if (!configValidation.isValid) {
-200 |       this.sendErrorMessage(
-201 |         `Configuration error: ${configValidation.errors.join(', ')}. Please check your settings.`
-202 |       );
-203 |       return;
-204 |     }
+187 |     // Prevent concurrent requests and clear any hanging states
+188 |     if (this._isProcessingMessage) {
+189 |       this.sendErrorMessage('Please wait for the current message to be processed.');
+190 |       return;
+191 |     }
+192 |     this._isProcessingMessage = true;
+193 | 
+194 |     // Set up timeout to prevent hanging indefinitely
+195 |     const processingTimeout = setTimeout(() => {
+196 |       this._isProcessingMessage = false;
+197 |       this.sendErrorMessage('Request processing timeout. Please try again.');
+198 |     }, 600000); // 10 minutes max
+199 | 
+200 |     logger.logUserAction('sendMessage', { messageLength: userMessage.length });
+201 | 
+202 |     // Check configuration
+203 |     const config = ConfigService.getConfig();
+204 |     const configValidation = ConfigService.validateConfig();
 205 | 
-206 |     try {
-207 |       // Check for web search request
-208 |       const isWebSearch = userMessage.toLowerCase().includes('[web]');
-209 |       let webSearchResults: string = '';
-210 | 
-211 |       if (isWebSearch && config.enableWebSearch) {
-212 |         this.sendStatusMessage('Searching the web...');
-213 |         const searchQuery = userMessage.replace(/\[web\]/gi, '').trim();
-214 |         const results = await ApiService.performWebSearch(searchQuery);
-215 |         webSearchResults = ApiService.formatWebSearchResults(results);
-216 |       }
-217 | 
-218 |       // Prepare AI message
-219 |       let messageForAI = userMessage;
-220 |       if (webSearchResults) {
-221 |         messageForAI = `The user asked: ${userMessage.replace(/\[web\]/gi, '').trim()}\n\nHere are some search results that might help:\n${webSearchResults}\n\nPlease synthesize this information to provide a helpful answer.`;
-222 |       }
-223 | 
-224 |       // Send thinking status
-225 |       this.sendStatusMessage('bor3i is thinking...');
-226 | 
-227 |       // Prepare messages with system prompt
-228 |       const systemPrompt = this._flexDatasetService.getSystemPrompt();
-229 |       const messages: ChatMessage[] = [
-230 |         {
-231 |           role: 'system',
-232 |           content: systemPrompt
-233 |         },
-234 |         ...this._conversationHistory
-235 |       ];
-236 | 
-237 |       // Get AI response
-238 |       const response = await ApiService.chatCompletion(messages, config);
-239 | 
-240 |       // Add AI response to history
-241 |       const aiChatMessage: ChatMessage = {
-242 |         role: 'assistant',
-243 |         content: response,
-244 |         timestamp: new Date()
-245 |       };
-246 |       this._conversationHistory.push(aiChatMessage);
-247 | 
-248 |       // Send response to webview
-249 |       this.sendAiResponse(response);
-250 | 
-251 |       logger.info('Message processed successfully', {
-252 |         userMessageLength: userMessage.length,
-253 |         responseLength: response.length,
-254 |         historyLength: this._conversationHistory.length
-255 |       });
-256 | 
-257 |     } catch (error) {
-258 |       logger.error('Error processing message', error);
-259 |       this.sendErrorMessage(`Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-260 |     }
-261 |   }
-262 | 
-263 |   /**
-264 |    * Handle clear chat request
-265 |    */
-266 |   private handleClearChat(): void {
-267 |     logger.logUserAction('clearChat');
-268 |     this._conversationHistory = [];
-269 |     if (this._view) {
-270 |       this._view.webview.postMessage({ command: 'chatCleared' } as WebviewMessage);
-271 |     }
-272 |   }
-273 | 
-274 |   /**
-275 |  * Handle select model request
-276 |  */
-277 |   private async handleSelectModel(): Promise<void> {
-278 |     logger.logUserAction('selectModel');
-279 |     await vscode.commands.executeCommand('flexChatbot.selectModel');
-280 |   }
-281 | 
-282 |   /**
-283 |    * Send AI response to webview
-284 |    */
-285 |   private sendAiResponse(text: string): void {
-286 |     if (this._view) {
-287 |       this._view.webview.postMessage({ command: 'aiResponse', text } as WebviewMessage);
-288 |     }
-289 |   }
-290 | 
-291 |   /**
-292 |    * Send status message to webview
-293 |    */
-294 |   private sendStatusMessage(text: string): void {
-295 |     if (this._view) {
-296 |       this._view.webview.postMessage({ command: 'statusUpdate', text } as WebviewMessage);
-297 |     }
-298 |   }
-299 | 
-300 |   /**
-301 |    * Send error message to webview
-302 |    */
-303 |   private sendErrorMessage(text: string): void {
-304 |     if (this._view) {
-305 |       this._view.webview.postMessage({ command: 'aiResponse', text } as WebviewMessage);
-306 |     }
-307 |   }
-308 | 
-309 |   /**
-310 |    * Generate HTML content for the webview
-311 |    */
-312 |   private getHtmlContent(webview: vscode.Webview): string {
-313 |     // Get resource URIs for professional styling
-314 |     const mainStyleUri = webview.asWebviewUri(
-315 |       vscode.Uri.joinPath(this._extensionUri, "assets", "main.css")
-316 |     );
-317 | 
-318 |     const vscodeStyleUri = webview.asWebviewUri(
-319 |       vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "css", "vscode.css")
-320 |     );
-321 | 
-322 |     const resetStyleUri = webview.asWebviewUri(
-323 |       vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "css", "reset.css")
-324 |     );
-325 | 
-326 |     const robotGifUri = webview.asWebviewUri(
-327 |       vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "images", "robot.gif")
-328 |     );
-329 | 
-330 |     const flexLogoUri = webview.asWebviewUri(
-331 |       vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "images", "logo_flex.svg")
-332 |     );
-333 | 
-334 |     const userIconUri = webview.asWebviewUri(
-335 |       vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "images", "user-icon.png")
-336 |     );
-337 | 
-338 |     const highlighterUri = webview.asWebviewUri(
-339 |       vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "js", "highlighter.js")
-340 |     );
-341 | 
-342 |     // Use a nonce for security
-343 |     const nonce = getNonce();
-344 | 
-345 |     // Get current configuration and status
-346 |     const config = ConfigService.getConfig();
-347 |     const configValidation = ConfigService.validateConfig();
-348 |     const isDatasetLoaded = this._flexDatasetService.isDatasetLoaded();
-349 | 
-350 |     return `<!DOCTYPE html>
-351 |     <html lang="en">
-352 |     <head>
-353 |       <meta charset="UTF-8">
-354 |       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-355 |       <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}'; img-src ${webview.cspSource} data: https:; connect-src https:; font-src ${webview.cspSource} https:;">
-356 |       <title>Flex Programming Assistant</title>
-357 |       
-358 |       <!-- Professional CSS Imports -->
-359 |       <link rel="stylesheet" href="${resetStyleUri}" nonce="${nonce}">
-360 |       <link rel="stylesheet" href="${vscodeStyleUri}" nonce="${nonce}">
-361 |       <link rel="stylesheet" href="${mainStyleUri}" nonce="${nonce}">
-362 |       <script src="${highlighterUri}" nonce="${nonce}"></script>
-363 |     </head>
-364 |     <body data-config-status="${configValidation.isValid ? 'valid' : 'invalid'}">
-365 |       <div id="maincont">
-366 |         <!-- Minimalist Header Bar -->
-367 |         <div id="header-bar">
-368 |           <div class="header-left">
-369 |             <img src="${flexLogoUri}" alt="Flex" class="header-logo">
-370 |             <span class="header-title">Flex Assistant</span>
-371 |             <div class="status-indicators">
-372 |               <span class="status-dot ${configValidation.isValid ? 'success' : 'warning'}" title="${configValidation.isValid ? 'Configuration Ready' : 'Check Settings'}"></span>
-373 |               <span class="status-dot ${isDatasetLoaded ? 'success' : 'loading'}" title="${isDatasetLoaded ? 'Dataset Loaded' : 'Loading Dataset'}"></span>
-374 |             </div>
-375 |           </div>
-376 |           <div class="header-right">
-377 |             <div class="model-display">${config.model || 'Default'}</div>
-378 |             <button id="change-model" class="icon-button" title="Change Model">⚙️</button>
-379 |             <button id="clear-button" class="icon-button" title="Clear Chat">🗑️</button>
-380 |           </div>
-381 |         </div>
+206 |     if (!configValidation.isValid) {
+207 |       this._isProcessingMessage = false;
+208 |       this.sendErrorMessage(
+209 |         `Configuration error: ${configValidation.errors.join(', ')}. Please check your settings.`
+210 |       );
+211 |       return;
+212 |     }
+213 | 
+214 |     try {
+215 |       // Check for web search request (disabled by default for stability)
+216 |       const isWebSearch = userMessage.toLowerCase().includes('[web]');
+217 |       let webSearchResults: string = '';
+218 | 
+219 |       if (isWebSearch && config.enableWebSearch) {
+220 |         try {
+221 |           this.sendStatusMessage('Searching the web...');
+222 |           const searchQuery = userMessage.replace(/\[web\]/gi, '').trim();
+223 |           const results = await Promise.race([
+224 |             ApiService.performWebSearch(searchQuery),
+225 |             new Promise<any[]>((_, reject) =>
+226 |               setTimeout(() => reject(new Error('Web search timeout')), 10000)
+227 |             )
+228 |           ]);
+229 |           webSearchResults = ApiService.formatWebSearchResults(results);
+230 |         } catch (error) {
+231 |           console.warn('Web search failed:', error);
+232 |           webSearchResults = ''; // Continue without web search results
+233 |         }
+234 |       }
+235 | 
+236 |       // Prepare AI message
+237 |       let messageForAI = userMessage;
+238 |       if (webSearchResults) {
+239 |         messageForAI = `The user asked: ${userMessage.replace(/\[web\]/gi, '').trim()}\n\nHere are some search results that might help:\n${webSearchResults}\n\nPlease synthesize this information to provide a helpful answer.`;
+240 |       }
+241 | 
+242 |       // Add user message to history (display version)
+243 |       const userChatMessage: ChatMessage = {
+244 |         role: 'user',
+245 |         content: userMessage,
+246 |         timestamp: new Date()
+247 |       };
+248 |       this._conversationHistory.push(userChatMessage);
+249 | 
+250 |       // Trim conversation history to prevent memory issues
+251 |       if (this._conversationHistory.length > this.MAX_CONVERSATION_HISTORY) {
+252 |         this._conversationHistory = this._conversationHistory.slice(-this.MAX_CONVERSATION_HISTORY);
+253 |       }
+254 | 
+255 |       // Send thinking status
+256 |       this.sendStatusMessage('Flex Assistant is thinking...');
+257 | 
+258 |       // Prepare messages with system prompt
+259 |       const systemPrompt = this._flexDatasetService.getSystemPrompt();
+260 |       const messages: ChatMessage[] = [
+261 |         {
+262 |           role: 'system',
+263 |           content: systemPrompt
+264 |         },
+265 |         ...this._conversationHistory.slice(0, -1), // All messages except the last one
+266 |         {
+267 |           role: 'user',
+268 |           content: messageForAI, // Use the enhanced message for AI
+269 |           timestamp: new Date()
+270 |         }
+271 |       ];
+272 | 
+273 |       // Initialize streaming response
+274 |       let fullResponse = '';
+275 |       this.sendAiStreamStart();
+276 | 
+277 |       // Get AI response with streaming
+278 |       const response = await ApiService.streamChatCompletion(
+279 |         messages, 
+280 |         config,
+281 |         (chunk: string) => {
+282 |           // Send each chunk as it arrives
+283 |           fullResponse += chunk;
+284 |           this.sendAiStreamChunk(chunk);
+285 |         },
+286 |         (error: Error) => {
+287 |           // Handle streaming errors
+288 |           this.sendErrorMessage(`Streaming error: ${error.message}`);
+289 |         },
+290 |         () => {
+291 |           // Mark streaming as complete
+292 |           this.sendAiStreamComplete();
+293 |         }
+294 |       );
+295 | 
+296 |       // Add AI response to history
+297 |       const aiChatMessage: ChatMessage = {
+298 |         role: 'assistant',
+299 |         content: fullResponse,
+300 |         timestamp: new Date()
+301 |       };
+302 |       this._conversationHistory.push(aiChatMessage);
+303 | 
+304 |       logger.info('Message processed successfully', {
+305 |         userMessageLength: userMessage.length,
+306 |         responseLength: fullResponse.length,
+307 |         historyLength: this._conversationHistory.length
+308 |       });
+309 | 
+310 |       // Clear timeout on success
+311 |       clearTimeout(processingTimeout);
+312 | 
+313 |     } catch (error) {
+314 |       logger.error('Error processing message', error);
+315 |       
+316 |       // Clear timeout on error
+317 |       clearTimeout(processingTimeout);
+318 |       
+319 |       // Clear any status messages
+320 |       if (this._view) {
+321 |         this._view.webview.postMessage({ command: 'statusUpdate', text: '' });
+322 |       }
+323 |       
+324 |       // Provide user-friendly error message
+325 |       let errorMessage = 'Sorry, I encountered an error. ';
+326 |       if (error instanceof Error) {
+327 |         if (error.message.includes('timeout')) {
+328 |           errorMessage += 'The request timed out. Please try again with a shorter message.';
+329 |         } else if (error.message.includes('API key')) {
+330 |           errorMessage += 'Please check your OpenRouter API key in the extension settings.';
+331 |         } else if (error.message.includes('rate limit')) {
+332 |           errorMessage += 'Rate limit exceeded. Please wait a moment before trying again.';
+333 |         } else {
+334 |           errorMessage += error.message;
+335 |         }
+336 |       } else {
+337 |         errorMessage += 'Unknown error occurred. Please try again.';
+338 |       }
+339 |       
+340 |       this.sendErrorMessage(errorMessage);
+341 |     } finally {
+342 |       this._isProcessingMessage = false;
+343 |     }
+344 |   }
+345 | 
+346 |   /**
+347 |    * Handle clear chat request
+348 |    */
+349 |   private handleClearChat(): void {
+350 |     logger.logUserAction('clearChat');
+351 |     this._conversationHistory = [];
+352 |     if (this._view) {
+353 |       this._view.webview.postMessage({ command: 'chatCleared' } as WebviewMessage);
+354 |     }
+355 |   }
+356 | 
+357 |   /**
+358 |  * Handle select model request
+359 |  */
+360 |   private async handleSelectModel(): Promise<void> {
+361 |     logger.logUserAction('selectModel');
+362 |     await vscode.commands.executeCommand('flexChatbot.selectModel');
+363 |   }
+364 | 
+365 |   /**
+366 |    * Send AI response to webview
+367 |    */
+368 |   private sendAiResponse(text: string): void {
+369 |     if (this._view) {
+370 |       this._view.webview.postMessage({ command: 'aiResponse', text } as WebviewMessage);
+371 |     }
+372 |   }
+373 | 
+374 |   /**
+375 |    * Send status message to webview
+376 |    */
+377 |   private sendStatusMessage(text: string): void {
+378 |     if (this._view) {
+379 |       this._view.webview.postMessage({ command: 'statusUpdate', text } as WebviewMessage);
+380 |     }
+381 |   }
 382 | 
-383 |         <!-- Enhanced Chat Container -->
-384 |         <div id="chat-box">
-385 |           <div class="welcome-message">
-386 |             <div class="bot-avatar">
-387 |               <img src="${robotGifUri}" alt="Flex Assistant">
-388 |             </div>
-389 |             <div class="welcome-content">
-390 |               <h3>Welcome to Flex Programming Assistant! 🚀</h3>
-391 |               <p>I'm here to help you with Flex syntax, Franco-Arabic programming concepts, and best practices.</p>
-392 |             </div>
-393 |           </div>
-394 |         </div>
-395 | 
-396 |         <!-- Enhanced Input Area -->
-397 |         <div id="input-section">
-398 |           <div class="input-container">
-399 |             <div class="input-wrapper">
-400 |               <textarea 
-401 |                 id="user-input" 
-402 |                 placeholder="Ask me anything about Flex programming..."
-403 |                 rows="1"
-404 |                 maxlength="4000"
-405 |               ></textarea>
-406 |               <button id="send-button" class="send-button">
-407 |                 <span class="send-icon">📤</span>
-408 |               </button>
-409 |             </div>
-410 |           </div>
-411 |         </div>
-412 |       </div>
-413 |       
-414 |       <script nonce="${nonce}">
-415 |         (function() {
-416 |           const vscode = acquireVsCodeApi();
-417 |           
-418 |           const userInput = document.getElementById('user-input');
-419 |           const sendButton = document.getElementById('send-button');
-420 |           const clearButton = document.getElementById('clear-button');
-421 |           const changeModelButton = document.getElementById('change-model');
-422 |           const chatBox = document.getElementById('chat-box');
-423 |           const welcomeMessage = document.querySelector('.welcome-message');
-424 |           
-425 |           /* -------------------------- Helper Functions ------------------------- */
-426 | 
-427 |           // Highlighter is provided via highlighter.js and exposes window.processContent
-428 | 
-429 |           console.log('🚀 Enhanced Adaptive Flex Chatbot Loaded');
-430 | 
-431 |           // Auto-resize textarea
-432 |           userInput.addEventListener('input', function() {
-433 |             this.style.height = 'auto';
-434 |             this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-435 |           });
-436 |           
-437 |           function addMessage(content, isUser = false, isStatus = false) {
-438 |             // Hide welcome message when first real message is added
-439 |             if (welcomeMessage && !isStatus) {
-440 |               welcomeMessage.style.display = 'none';
-441 |             }
-442 | 
-443 |             const messageDiv = document.createElement('div');
-444 |             messageDiv.className = 'message ' + (isUser ? 'user-message' : 'ai-message');
-445 | 
-446 |             const labelDiv = document.createElement('div');
-447 |             labelDiv.className = isUser ? 'user-label' : 'ai-label';
-448 | 
-449 |             if (isUser) {
-450 |               labelDiv.innerHTML = '<span class="message-avatar">👤</span><span>You</span>';
-451 |             } else {
-452 |               labelDiv.innerHTML = '<img src="${robotGifUri}" alt="Assistant" style="width: 16px; height: 16px; margin-right: 4px;"><span>Flex Assistant</span>';
-453 |             }
-454 | 
-455 |             const contentDiv = document.createElement('div');
-456 |             contentDiv.className = 'message-content';
-457 | 
-458 |             if (isStatus) {
-459 |               contentDiv.innerHTML = '<em style="color: var(--accent-light);">🤔 ' + content + '</em>';
-460 |             } else {
-461 |               contentDiv.innerHTML = window.processContent(content);
-462 |             }
+383 |   /**
+384 |    * Send error message to webview
+385 |    */
+386 |   private sendErrorMessage(text: string): void {
+387 |     if (this._view) {
+388 |       this._view.webview.postMessage({ command: 'aiResponse', text } as WebviewMessage);
+389 |     }
+390 |   }
+391 | 
+392 |   /**
+393 |    * Start AI streaming response
+394 |    */
+395 |   private sendAiStreamStart(): void {
+396 |     if (this._view) {
+397 |       this._view.webview.postMessage({ command: 'aiStreamStart' } as WebviewMessage);
+398 |     }
+399 |   }
+400 | 
+401 |   /**
+402 |    * Send AI streaming chunk
+403 |    */
+404 |   private sendAiStreamChunk(chunk: string): void {
+405 |     if (this._view) {
+406 |       this._view.webview.postMessage({ command: 'aiStreamChunk', text: chunk } as WebviewMessage);
+407 |     }
+408 |   }
+409 | 
+410 |   /**
+411 |    * Complete AI streaming response
+412 |    */
+413 |   private sendAiStreamComplete(): void {
+414 |     if (this._view) {
+415 |       this._view.webview.postMessage({ command: 'aiStreamComplete' } as WebviewMessage);
+416 |     }
+417 |   }
+418 | 
+419 |   /**
+420 |    * Generate HTML content for the webview
+421 |    */
+422 |   private getHtmlContent(webview: vscode.Webview): string {
+423 |     // Get resource URIs for professional styling
+424 |     const mainStyleUri = webview.asWebviewUri(
+425 |       vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "css", "main.css")
+426 |     );
+427 | 
+428 |     const vscodeStyleUri = webview.asWebviewUri(
+429 |       vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "css", "vscode.css")
+430 |     );
+431 | 
+432 |     const resetStyleUri = webview.asWebviewUri(
+433 |       vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "css", "reset.css")
+434 |     );
+435 | 
+436 |     const robotGifUri = webview.asWebviewUri(
+437 |       vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "images", "robot.gif")
+438 |     );
+439 | 
+440 |     const flexLogoUri = webview.asWebviewUri(
+441 |       vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "images", "logo_flex.svg")
+442 |     );
+443 | 
+444 |     const userIconUri = webview.asWebviewUri(
+445 |       vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "images", "user-icon.png")
+446 |     );
+447 | 
+448 |     const highlighterUri = webview.asWebviewUri(
+449 |       vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "js", "highlighter.js")
+450 |     );
+451 | 
+452 |     const chatJsUri = webview.asWebviewUri(
+453 |       vscode.Uri.joinPath(this._extensionUri, "assets", "webview", "js", "chat.js")
+454 |     );
+455 | 
+456 |     // Use a nonce for security
+457 |     const nonce = getNonce();
+458 | 
+459 |     // Get current configuration and status
+460 |     const config = ConfigService.getConfig();
+461 |     const configValidation = ConfigService.validateConfig();
+462 |     const isDatasetLoaded = this._flexDatasetService.isDatasetLoaded();
 463 | 
-464 |             messageDiv.appendChild(labelDiv);
-465 |             messageDiv.appendChild(contentDiv);
-466 |             chatBox.appendChild(messageDiv);
-467 |             chatBox.scrollTop = chatBox.scrollHeight;
-468 | 
-469 |             return messageDiv;
-470 |           }
-471 | 
-472 |           function sendMessage() {
-473 |             const message = userInput.value.trim();
-474 |             if (!message) return;
-475 | 
-476 |             sendButton.disabled = true;
-477 |             sendButton.innerHTML = '<span class="send-icon">⏳</span>';
-478 | 
-479 |             addMessage(message, true);
-480 |             userInput.value = '';
-481 |             userInput.style.height = 'auto';
-482 | 
-483 |             // Send message to extension
-484 |             vscode.postMessage({ command: 'sendMessage', text: message });
-485 | 
-486 |             setTimeout(() => {
-487 |               sendButton.disabled = false;
-488 |               sendButton.innerHTML = '<span class="send-icon">📤</span>';
-489 |             }, 1000);
-490 |           }
-491 | 
-492 |           function clearChat() {
-493 |             chatBox.innerHTML = '';
-494 |             // Re-add welcome message
-495 |             chatBox.appendChild(welcomeMessage.cloneNode(true));
-496 |             welcomeMessage.style.display = 'block';
-497 |             vscode.postMessage({ command: 'clearChat' });
-498 |           }
-499 | 
-500 |           function changeModel() {
-501 |             vscode.postMessage({ command: 'selectModel' });
-502 |           }
-503 | 
-504 |           // Event listeners
-505 |           sendButton.addEventListener('click', sendMessage);
-506 |           clearButton.addEventListener('click', clearChat);
-507 |           changeModelButton.addEventListener('click', changeModel);
+464 |     return `<!DOCTYPE html>
+465 |     <html lang="en">
+466 |     <head>
+467 |       <meta charset="UTF-8">
+468 |       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+469 |       <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}'; img-src ${webview.cspSource} data: https:; connect-src https:; font-src ${webview.cspSource} https:;">
+470 |       <title>Flex Programming Assistant</title>
+471 |       
+472 |       <!-- Professional CSS Imports -->
+473 |       <link rel="stylesheet" href="${resetStyleUri}" nonce="${nonce}">
+474 |       <link rel="stylesheet" href="${vscodeStyleUri}" nonce="${nonce}">
+475 |       <link rel="stylesheet" href="${mainStyleUri}" nonce="${nonce}">
+476 |     </head>
+477 |     <body data-config-status="${configValidation.isValid ? 'valid' : 'invalid'}">
+478 |       <div id="maincont">
+479 |         <!-- Minimalist Header Bar -->
+480 |         <div id="header-bar">
+481 |           <div class="header-left">
+482 |             <img src="${flexLogoUri}" alt="Flex" class="header-logo">
+483 |             <span class="header-title">Flex Assistant</span>
+484 |             <div class="status-indicators">
+485 |               <span class="status-dot ${configValidation.isValid ? 'success' : 'warning'}" title="${configValidation.isValid ? 'Configuration Ready' : 'Check Settings'}"></span>
+486 |               <span class="status-dot ${isDatasetLoaded ? 'success' : 'loading'}" title="${isDatasetLoaded ? 'Dataset Loaded' : 'Loading Dataset'}"></span>
+487 |             </div>
+488 |           </div>
+489 |           <div class="header-right">
+490 |             <div class="model-display">${config.model || 'Default'}</div>
+491 |             <button id="change-model" class="icon-button" title="Change Model">⚙️</button>
+492 |             <button id="clear-button" class="icon-button" title="Clear Chat">🗑️</button>
+493 |           </div>
+494 |         </div>
+495 | 
+496 |         <!-- Enhanced Chat Container -->
+497 |         <div id="chat-box">
+498 |           <div class="welcome-message">
+499 |             <div class="bot-avatar">
+500 |               <img src="${robotGifUri}" alt="Flex Assistant">
+501 |             </div>
+502 |             <div class="welcome-content">
+503 |               <h3>Welcome to Flex Programming Assistant! 🚀</h3>
+504 |               <p>I'm here to help you with Flex syntax, Franco-Arabic programming concepts, and best practices.</p>
+505 |             </div>
+506 |           </div>
+507 |         </div>
 508 | 
-509 |           userInput.addEventListener('keydown', (e) => {
-510 |             if (e.key === 'Enter' && !e.shiftKey) {
-511 |               e.preventDefault();
-512 |               sendMessage();
-513 |             }
-514 |           });
-515 | 
-516 |           // Listen for messages from extension
-517 |           window.addEventListener('message', event => {
-518 |             const message = event.data;
-519 | 
-520 |             switch (message.command) {
-521 |               case 'aiResponse':
-522 |                 addMessage(message.text, false);
-523 |                 break;
-524 | 
-525 |               case 'statusUpdate':
-526 |                 const statusMsg = addMessage(message.text, false, true);
-527 |                 setTimeout(() => {
-528 |                   if (statusMsg.parentNode) {
-529 |                     statusMsg.remove();
-530 |                   }
-531 |                 }, 8000);
-532 |                 break;
+509 |         <!-- Enhanced Input Area -->
+510 |         <div id="input-section">
+511 |           <div class="input-container">
+512 |             <div class="input-wrapper">
+513 |               <textarea 
+514 |                 id="user-input" 
+515 |                 placeholder="Ask me anything about Flex programming..."
+516 |                 rows="1"
+517 |                 maxlength="4000"
+518 |               ></textarea>
+519 |               <button id="send-button" class="send-button">
+520 |                 <span class="send-icon">📤</span>
+521 |               </button>
+522 |             </div>
+523 |           </div>
+524 |         </div>
+525 |       </div>
+526 |       
+527 |       <!-- Load External Scripts -->
+528 |       <script src="${highlighterUri}" nonce="${nonce}"></script>
+529 |       <script src="${chatJsUri}" nonce="${nonce}"></script>
+530 |     </body>
+531 |     </html>`;
+532 |   }
 533 | 
-534 |               case 'chatCleared':
-535 |                 clearChat();
-536 |                 break;
-537 |             }
-538 |           });
-539 | 
-540 |           // Focus input on load
-541 |           userInput.focus();
-542 |           
-543 |         })();
-544 |       </script>
-545 |     </body>
-546 |     </html>`;
-547 |   }
-548 | 
-549 |   /**
-550 |    * Create status message for display
-551 |    */
-552 |   private createStatusMessage(
-553 |     configValidation: { isValid: boolean; errors: string[] },
-554 |     isDatasetLoaded: boolean,
-555 |     datasetStats: Record<string, number>
-556 |   ): string {
-557 |     if (!configValidation.isValid) {
-558 |       return `Configuration issues: ${configValidation.errors.join(', ')}`;
-559 |     }
-560 | 
-561 |     if (!isDatasetLoaded) {
-562 |       return 'Dataset not loaded - using fallback';
-563 |     }
-564 | 
-565 |     return `Ready (${datasetStats.codeExamples || 0} examples loaded)`;
-566 |   }
-567 | }
-568 | 
-569 | function getNonce() {
-570 |   let text = "";
-571 |   const possible =
-572 |     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-573 |   for (let i = 0; i < 32; i++) {
-574 |     text += possible.charAt(Math.floor(Math.random() * possible.length));
-575 |   }
-576 |   return text;
-577 | }
-578 | 
+534 |   /**
+535 |    * Create status message for display
+536 |    */
+537 |   private createStatusMessage(
+538 |     configValidation: { isValid: boolean; errors: string[] },
+539 |     isDatasetLoaded: boolean,
+540 |     datasetStats: Record<string, number>
+541 |   ): string {
+542 |     if (!configValidation.isValid) {
+543 |       return `Configuration issues: ${configValidation.errors.join(', ')}`;
+544 |     }
+545 | 
+546 |     if (!isDatasetLoaded) {
+547 |       return 'Dataset not loaded - using fallback';
+548 |     }
+549 | 
+550 |     return `Ready (${datasetStats.codeExamples || 0} examples loaded)`;
+551 |   }
+552 | }
+553 | 
+554 | function getNonce() {
+555 |   let text = "";
+556 |   const possible =
+557 |     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+558 |   for (let i = 0; i < 32; i++) {
+559 |     text += possible.charAt(Math.floor(Math.random() * possible.length));
+560 |   }
+561 |   return text;
+562 | }
+563 | 
 ```
 
 src/extension.ts
@@ -7327,133 +5107,6 @@ assets/datasets/flex_language_spec.json
 3058 | }
 ```
 
-.windsurf/rules/layout.md
-```
-1 | ---
-2 | trigger: always_on
-3 | description: 
-4 | globs: 
-5 | ---
-6 | # 📁 Flex Chatbot Project Layout Documentation
-7 | 
-8 | ## 📋 Project Overview
-9 | This document tracks the complete project structure of the Flex Chatbot VS Code extension, including all files, their purposes, and recent changes during the adaptive UI redesign.
-10 | 
-11 | ## 🔄 Recent Critical Updates (Latest Session)
-12 | 
-13 | ### ✅ **ADAPTIVE UI REDESIGN COMPLETED** 
-14 | **Date**: Current session  
-15 | **Status**: SUCCESSFULLY IMPLEMENTED AND TESTED
-16 | 
-17 | #### 🎨 **UI Enhancements Applied**:
-18 | 
-19 | 1. **Removed Blue Header Box**:
-20 |    - ✅ Eliminated the prominent blue header box for cleaner design
-21 |    - ✅ Replaced with minimalist header bar
-22 |    - ✅ Better space utilization for chat content
-23 |    - ✅ Professional, streamlined appearance
-24 | 
-25 | 2. **Enhanced Header Layout**:
-26 |    ```
-27 |    📱 Header Bar (Optimized)
-28 |    ├── 🏷️ Flex Assistant logo and title
-29 |    ├── 🔴🟡🟢 Status indicators (Config/Dataset)
-30 |    ├── 📊 Message counter (live updates)
-31 |    ├── 📱 Model display (NEW - shows current model)
-32 |    ├── ⚙️ Settings button (model selection)
-33 |    └── 🗑️ Clear chat button
-34 |    ```
-35 | 
-36 | 3. **Improved Input Section**:
-37 |    ```
-38 |    ⌨️ Input Area (Redesigned)
-39 |    ├── 🚀 Quick action buttons (4 prompts)
-40 |    ├── 📝 Auto-expanding text input (left)
-41 |    └── 📤 Send button (beside input - right)
-42 |    ```
-43 | 
-44 | 4. **Mobile-First Responsive Design**:
-45 |    - **Desktop (>768px)**: Full layout with all elements visible
-46 |    - **Tablet (<=768px)**: Compact model display, optimized spacing
-47 |    - **Mobile (<=480px)**: Ultra-compact model display, stacked layout
-48 |    - **Auto-adaptive**: Seamless transitions between screen sizes
-49 | 
-50 | #### 📊 **Current Status**:
-51 | - ✅ TypeScript compilation: **PASSED**
-52 | - ✅ Extension packaging: **SUCCESSFUL** (`flex-chatbot-1.0.0.vsix`)
-53 | - ✅ Model display: **IMPLEMENTED** (beside settings icon)
-54 | - ✅ Send button positioning: **FIXED** (beside text input)
-55 | - ✅ Responsive design: **COMPLETE**
-56 | - 🚀 Status: **PRODUCTION READY - ADAPTIVE**
-57 | 
-58 | ### 🎯 **Key UI Improvements Implemented**:
-59 | 
-60 | #### **Model Display Enhancement**:
-61 | - ✅ **Positioned**: Directly beside the settings icon in header
-62 | - ✅ **Styling**: Professional gradient background with border
-63 | - ✅ **Responsive**: Adapts size on different screen sizes
-64 | - ✅ **Overflow Handling**: Text ellipsis for long model names
-65 | - ✅ **Visual Hierarchy**: Clear distinction from other elements
-66 | 
-67 | #### **Send Button Optimization**:
-68 | - ✅ **Positioning**: Placed beside (to the right of) text input
-69 | - ✅ **Layout**: Same row as text input, not above or below
-70 | - ✅ **Sizing**: Compact design that doesn't overwhelm the input
-71 | - ✅ **Responsiveness**: Maintains position across all screen sizes
-72 | - ✅ **Accessibility**: Proper focus states and touch targets
-73 | 
-74 | #### **Responsive Breakpoints**:
-75 | - **Desktop**: Model display max-width 120px, full feature set
-76 | - **Tablet**: Model display max-width 80px, compact layout
-77 | - **Mobile**: Model display max-width 60px, minimal design
-78 | 
-79 | ### 🔧 **Technical Implementation**:
-80 | - **CSS Architecture**: Mobile-first responsive design with progressive enhancement
-81 | - **Layout System**: Flexbox for precise positioning and alignment
-82 | - **Typography**: Adaptive font sizes across breakpoints
-83 | - **Spacing**: Consistent spacing system with CSS custom properties
-84 | - **Performance**: Optimized CSS with efficient selectors
-85 | 
-86 | ## 📝 File Descriptions (Updated)
-87 | 
-88 | ### 📄 Main Files Modified
-89 | 
-90 | #### `src/customSidebarViewProvider.ts` 🚀 **ENHANCED**
-91 | - **Purpose**: Main webview provider with adaptive UI
-92 | - **New Features**: Model display in header, optimized layout structure
-93 | - **Enhancement**: Clean HTML structure for better maintainability
-94 | - **Status**: ✅ PRODUCTION READY
-95 | 
-96 | #### `assets/webview/css/main.css` 🎨 **FULLY RESPONSIVE**
-97 | - **Purpose**: Complete adaptive styling system
-98 | - **New Styles**: Model display styling, responsive breakpoints
-99 | - **Enhancement**: Mobile-first CSS with desktop enhancements
-100 | - **Status**: ✅ COMPLETE RESPONSIVE SYSTEM
-101 | 
-102 | ## 🎯 Implementation Results
-103 | 
-104 | ### ✅ **User Requirements Met**:
-105 | 1. **Model Display**: ✅ Current model shown beside settings icon
-106 | 2. **Send Button Position**: ✅ Located beside (not above/below) text input
-107 | 3. **Responsive Design**: ✅ Adapts to all screen sizes
-108 | 4. **Clean Interface**: ✅ Removed blue header box for better UX
-109 | 
-110 | ### 🚀 **Additional Improvements Achieved**:
-111 | - Professional visual hierarchy with proper spacing
-112 | - Touch-friendly interface for mobile devices
-113 | - Smooth transitions and hover effects
-114 | - Accessibility-compliant focus management
-115 | - Performance-optimized CSS architecture
-116 | 
-117 | ## 📱 **Cross-Device Compatibility**:
-118 | - **Desktop**: Full-featured interface with optimal spacing
-119 | - **Tablet**: Compact design maintaining all functionality
-120 | - **Mobile**: Touch-optimized layout with smart text sizing
-121 | - **Responsive**: Seamless adaptation between all screen sizes
-122 | 
-123 | **🎉 Result**: The Flex Chatbot now features a fully adaptive, professional interface with the model name displayed beside the settings icon and the send button properly positioned beside the text input, creating an optimal user experience across all devices.
-```
-
 src/core/DebugManager.ts
 ```
 1 | import * as vscode from 'vscode';
@@ -7493,7 +5146,7 @@ src/core/DebugManager.ts
 35 | 
 36 |         if (this.isDebugMode) {
 37 |             this.debugChannel.appendLine('🐛 Debug mode enabled');
-38 |             this.debugChannel.show(true);
+38 |             // Don't automatically show debug channel - let user decide
 39 |         }
 40 |     }
 41 | 
@@ -7511,943 +5164,952 @@ src/core/DebugManager.ts
 53 |         };
 54 | 
 55 |         this.debugSessions.set(sessionId, session);
-56 |         this.debug(`Started debug session: ${sessionId}`, { context });
-57 | 
-58 |         return session;
-59 |     }
+56 |         // Only log session start for important operations
+57 |         if (context.operation === 'chat_completion' || context.operation === 'fetch_models') {
+58 |             this.debug(`Started debug session: ${sessionId}`, { operation: context.operation });
+59 |         }
 60 | 
-61 |     /**
-62 |      * Add a step to a debug session
-63 |      */
-64 |     public addDebugStep(sessionId: string, step: string, data?: any): void {
-65 |         const session = this.debugSessions.get(sessionId);
-66 |         if (session) {
-67 |             session.steps.push({
-68 |                 step,
-69 |                 timestamp: Date.now(),
-70 |                 data,
-71 |                 memoryDelta: this.getMemoryDelta(session.memoryUsage)
-72 |             });
-73 |             this.debug(`[${sessionId}] ${step}`, data);
-74 |         }
-75 |     }
-76 | 
-77 |     /**
-78 |      * End a debug session
-79 |      */
-80 |     public endDebugSession(sessionId: string, result?: any): void {
-81 |         const session = this.debugSessions.get(sessionId);
-82 |         if (session) {
-83 |             session.status = 'completed';
-84 |             session.endTime = Date.now();
-85 |             session.duration = session.endTime - session.startTime;
-86 |             session.result = result;
-87 | 
-88 |             this.debug(`Completed debug session: ${sessionId}`, {
-89 |                 duration: session.duration,
-90 |                 steps: session.steps.length,
-91 |                 result
-92 |             });
+61 |         return session;
+62 |     }
+63 | 
+64 |     /**
+65 |      * Add a step to a debug session
+66 |      */
+67 |     public addDebugStep(sessionId: string, step: string, data?: any): void {
+68 |         const session = this.debugSessions.get(sessionId);
+69 |         if (session) {
+70 |             session.steps.push({
+71 |                 step,
+72 |                 timestamp: Date.now(),
+73 |                 data,
+74 |                 memoryDelta: this.getMemoryDelta(session.memoryUsage)
+75 |             });
+76 |             // Only log important steps to reduce verbosity
+77 |             if (step.includes('failed') || step.includes('error') || step.includes('completed')) {
+78 |                 this.debug(`[${sessionId}] ${step}`, data);
+79 |             }
+80 |         }
+81 |     }
+82 | 
+83 |     /**
+84 |      * End a debug session
+85 |      */
+86 |     public endDebugSession(sessionId: string, result?: any): void {
+87 |         const session = this.debugSessions.get(sessionId);
+88 |         if (session) {
+89 |             session.status = 'completed';
+90 |             session.endTime = Date.now();
+91 |             session.duration = session.endTime - session.startTime;
+92 |             session.result = result;
 93 | 
-94 |             // Keep session for analysis
-95 |             setTimeout(() => {
-96 |                 this.debugSessions.delete(sessionId);
-97 |             }, 60000); // Keep for 1 minute
-98 |         }
-99 |     }
-100 | 
-101 |     /**
-102 |      * Track performance metrics
-103 |      */
-104 |     public trackPerformance(operation: string, duration: number, metadata?: any): void {
-105 |         const metric = this.performanceMetrics.get(operation) || {
-106 |             operation,
-107 |             totalCalls: 0,
-108 |             totalDuration: 0,
-109 |             averageDuration: 0,
-110 |             minDuration: Infinity,
-111 |             maxDuration: 0,
-112 |             lastCalled: 0
-113 |         };
-114 | 
-115 |         metric.totalCalls++;
-116 |         metric.totalDuration += duration;
-117 |         metric.averageDuration = metric.totalDuration / metric.totalCalls;
-118 |         metric.minDuration = Math.min(metric.minDuration, duration);
-119 |         metric.maxDuration = Math.max(metric.maxDuration, duration);
-120 |         metric.lastCalled = Date.now();
-121 | 
-122 |         this.performanceMetrics.set(operation, metric);
+94 |             // Only log completion for important operations or failures
+95 |             if (result?.success === false || session.context.operation === 'chat_completion') {
+96 |                 this.debug(`Completed debug session: ${sessionId}`, {
+97 |                     duration: session.duration,
+98 |                     success: result?.success,
+99 |                     operation: session.context.operation
+100 |                 });
+101 |             }
+102 | 
+103 |             // Keep session for analysis
+104 |             setTimeout(() => {
+105 |                 this.debugSessions.delete(sessionId);
+106 |             }, 60000); // Keep for 1 minute
+107 |         }
+108 |     }
+109 | 
+110 |     /**
+111 |      * Track performance metrics
+112 |      */
+113 |     public trackPerformance(operation: string, duration: number, metadata?: any): void {
+114 |         const metric = this.performanceMetrics.get(operation) || {
+115 |             operation,
+116 |             totalCalls: 0,
+117 |             totalDuration: 0,
+118 |             averageDuration: 0,
+119 |             minDuration: Infinity,
+120 |             maxDuration: 0,
+121 |             lastCalled: 0
+122 |         };
 123 | 
-124 |         if (duration > 1000) { // Log slow operations
-125 |             this.warn(`Slow operation detected: ${operation}`, {
-126 |                 duration,
-127 |                 metadata,
-128 |                 averageDuration: metric.averageDuration
-129 |             });
-130 |         }
-131 |     }
+124 |         metric.totalCalls++;
+125 |         metric.totalDuration += duration;
+126 |         metric.averageDuration = metric.totalDuration / metric.totalCalls;
+127 |         metric.minDuration = Math.min(metric.minDuration, duration);
+128 |         metric.maxDuration = Math.max(metric.maxDuration, duration);
+129 |         metric.lastCalled = Date.now();
+130 | 
+131 |         this.performanceMetrics.set(operation, metric);
 132 | 
-133 |     /**
-134 |      * Record an error with context
-135 |      */
-136 |     public recordError(error: Error, context?: any, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium'): void {
-137 |         const errorEntry: ErrorEntry = {
-138 |             id: this.generateId(),
-139 |             timestamp: Date.now(),
-140 |             error: {
-141 |                 name: error.name,
-142 |                 message: error.message,
-143 |                 stack: error.stack
-144 |             },
-145 |             context,
-146 |             severity,
-147 |             resolved: false
-148 |         };
-149 | 
-150 |         this.errorHistory.push(errorEntry);
-151 | 
-152 |         // Keep only last 100 errors
-153 |         if (this.errorHistory.length > 100) {
-154 |             this.errorHistory = this.errorHistory.slice(-100);
-155 |         }
-156 | 
-157 |         this.error(`Error recorded [${severity}]:`, {
-158 |             errorId: errorEntry.id,
-159 |             error: error.message,
-160 |             context
-161 |         });
-162 | 
-163 |         // Auto-report critical errors
-164 |         if (severity === 'critical') {
-165 |             this.showCriticalErrorDialog(errorEntry);
-166 |         }
-167 |     }
-168 | 
-169 |     /**
-170 |      * Debug logging
-171 |      */
-172 |     public debug(message: string, data?: any): void {
-173 |         if (this.isDebugMode) {
-174 |             const timestamp = new Date().toISOString();
-175 |             const logMessage = `[${timestamp}] DEBUG: ${message}`;
-176 | 
-177 |             this.debugChannel.appendLine(logMessage);
-178 |             if (data) {
-179 |                 this.debugChannel.appendLine(`  Data: ${JSON.stringify(data, null, 2)}`);
-180 |             }
-181 | 
-182 |             logger.debug(message, data);
-183 |         }
-184 |     }
+133 |         if (duration > 1000) { // Log slow operations
+134 |             this.warn(`Slow operation detected: ${operation}`, {
+135 |                 duration,
+136 |                 metadata,
+137 |                 averageDuration: metric.averageDuration
+138 |             });
+139 |         }
+140 |     }
+141 | 
+142 |     /**
+143 |      * Record an error with context
+144 |      */
+145 |     public recordError(error: Error, context?: any, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium'): void {
+146 |         const errorEntry: ErrorEntry = {
+147 |             id: this.generateId(),
+148 |             timestamp: Date.now(),
+149 |             error: {
+150 |                 name: error.name,
+151 |                 message: error.message,
+152 |                 stack: error.stack
+153 |             },
+154 |             context,
+155 |             severity,
+156 |             resolved: false
+157 |         };
+158 | 
+159 |         this.errorHistory.push(errorEntry);
+160 | 
+161 |         // Keep only last 100 errors
+162 |         if (this.errorHistory.length > 100) {
+163 |             this.errorHistory = this.errorHistory.slice(-100);
+164 |         }
+165 | 
+166 |         this.error(`Error recorded [${severity}]:`, {
+167 |             errorId: errorEntry.id,
+168 |             error: error.message,
+169 |             context
+170 |         });
+171 | 
+172 |         // Auto-report critical errors
+173 |         if (severity === 'critical') {
+174 |             this.showCriticalErrorDialog(errorEntry);
+175 |         }
+176 |     }
+177 | 
+178 |     /**
+179 |      * Debug logging
+180 |      */
+181 |     public debug(message: string, data?: any): void {
+182 |         if (this.isDebugMode) {
+183 |             const timestamp = new Date().toISOString();
+184 |             const logMessage = `[${timestamp}] DEBUG: ${message}`;
 185 | 
-186 |     /**
-187 |      * Warning logging
-188 |      */
-189 |     public warn(message: string, data?: any): void {
-190 |         const timestamp = new Date().toISOString();
-191 |         const logMessage = `[${timestamp}] WARN: ${message}`;
-192 | 
-193 |         this.debugChannel.appendLine(logMessage);
-194 |         if (data) {
-195 |             this.debugChannel.appendLine(`  Data: ${JSON.stringify(data, null, 2)}`);
-196 |         }
-197 | 
-198 |         logger.warn(message, data);
-199 |     }
-200 | 
-201 |     /**
-202 |      * Error logging
-203 |      */
-204 |     public error(message: string, data?: any): void {
-205 |         const timestamp = new Date().toISOString();
-206 |         const logMessage = `[${timestamp}] ERROR: ${message}`;
-207 | 
-208 |         this.debugChannel.appendLine(logMessage);
-209 |         if (data) {
-210 |             this.debugChannel.appendLine(`  Data: ${JSON.stringify(data, null, 2)}`);
-211 |         }
-212 | 
-213 |         logger.error(message, data);
-214 |     }
-215 | 
-216 |     /**
-217 |      * Get comprehensive debug report
-218 |      */
-219 |     public getDebugReport(): DebugReport {
-220 |         const activeSessions = Array.from(this.debugSessions.values())
-221 |             .filter(session => session.status === 'active');
-222 | 
-223 |         const recentErrors = this.errorHistory
-224 |             .filter(error => Date.now() - error.timestamp < 3600000) // Last hour
-225 |             .sort((a, b) => b.timestamp - a.timestamp);
-226 | 
-227 |         const performanceIssues = Array.from(this.performanceMetrics.values())
-228 |             .filter(metric => metric.averageDuration > 500)
-229 |             .sort((a, b) => b.averageDuration - a.averageDuration);
-230 | 
-231 |         return {
-232 |             timestamp: Date.now(),
-233 |             isDebugMode: this.isDebugMode,
-234 |             activeSessions,
-235 |             recentErrors,
-236 |             performanceMetrics: Array.from(this.performanceMetrics.values()),
-237 |             performanceIssues,
-238 |             memoryUsage: process.memoryUsage(),
-239 |             systemInfo: {
-240 |                 platform: process.platform,
-241 |                 nodeVersion: process.version,
-242 |                 vscodeVersion: vscode.version
-243 |             }
-244 |         };
-245 |     }
-246 | 
-247 |     /**
-248 |      * Export debug data for analysis
-249 |      */
-250 |     public exportDebugData(): string {
-251 |         const report = this.getDebugReport();
-252 |         return JSON.stringify(report, null, 2);
-253 |     }
-254 | 
-255 |     /**
-256 |      * Clear debug data
-257 |      */
-258 |     public clearDebugData(): void {
-259 |         this.errorHistory = [];
-260 |         this.performanceMetrics.clear();
-261 |         this.debugSessions.clear();
-262 |         this.debugChannel.clear();
-263 |         this.debug('Debug data cleared');
-264 |     }
-265 | 
-266 |     /**
-267 |      * Show debug dashboard
-268 |      */
-269 |     public async showDebugDashboard(): Promise<void> {
-270 |         const report = this.getDebugReport();
-271 | 
-272 |         const panel = vscode.window.createWebviewPanel(
-273 |             'flexDebugDashboard',
-274 |             'Flex Chatbot Debug Dashboard',
-275 |             vscode.ViewColumn.Beside,
-276 |             { enableScripts: true }
-277 |         );
-278 | 
-279 |         panel.webview.html = this.generateDebugDashboardHTML(report);
-280 |     }
-281 | 
-282 |     /**
-283 |      * Private helper methods
-284 |      */
-285 |     private getMemoryDelta(baseline: NodeJS.MemoryUsage): number {
-286 |         const current = process.memoryUsage();
-287 |         return current.heapUsed - baseline.heapUsed;
-288 |     }
-289 | 
-290 |     private generateId(): string {
-291 |         return `debug_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-292 |     }
-293 | 
-294 |     private async showCriticalErrorDialog(errorEntry: ErrorEntry): Promise<void> {
-295 |         const action = await vscode.window.showErrorMessage(
-296 |             `Critical error in Flex Chatbot: ${errorEntry.error.message}`,
-297 |             'View Details',
-298 |             'Report Issue',
-299 |             'Dismiss'
-300 |         );
-301 | 
-302 |         switch (action) {
-303 |             case 'View Details':
-304 |                 this.showDebugDashboard();
-305 |                 break;
-306 |             case 'Report Issue':
-307 |                 this.generateErrorReport(errorEntry);
-308 |                 break;
-309 |         }
-310 |     }
-311 | 
-312 |     private generateErrorReport(errorEntry: ErrorEntry): void {
-313 |         const report = {
-314 |             errorId: errorEntry.id,
-315 |             error: errorEntry.error,
-316 |             context: errorEntry.context,
-317 |             timestamp: new Date(errorEntry.timestamp).toISOString(),
-318 |             systemInfo: {
-319 |                 platform: process.platform,
-320 |                 nodeVersion: process.version,
-321 |                 vscodeVersion: vscode.version
-322 |             }
-323 |         };
-324 | 
-325 |         vscode.env.clipboard.writeText(JSON.stringify(report, null, 2));
-326 |         vscode.window.showInformationMessage('Error report copied to clipboard');
-327 |     }
-328 | 
-329 |     private generateDebugDashboardHTML(report: DebugReport): string {
-330 |         return `
-331 |       <!DOCTYPE html>
-332 |       <html lang="en">
-333 |       <head>
-334 |         <meta charset="UTF-8">
-335 |         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-336 |         <meta name="theme-color" content="#1e1e1e">
-337 |         <title>Flex Chatbot Debug Dashboard</title>
-338 |         <style>
-339 |           /* Modern CSS Reset */
-340 |           *, *::before, *::after {
-341 |             box-sizing: border-box;
-342 |             margin: 0;
-343 |             padding: 0;
-344 |           }
-345 | 
-346 |           /* CSS Custom Properties */
-347 |           :root {
-348 |             --bg-primary: #1e1e1e;
-349 |             --bg-secondary: #2d2d30;
-350 |             --bg-tertiary: #3c3c3c;
-351 |             --text-primary: #ffffff;
-352 |             --text-secondary: #cccccc;
-353 |             --text-muted: #999999;
-354 |             --accent-blue: #007acc;
-355 |             --accent-green: #16a085;
-356 |             --accent-yellow: #f39c12;
-357 |             --accent-red: #e74c3c;
-358 |             --border-color: #484848;
-359 |             --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-360 |             --radius: 8px;
-361 |             --space-xs: 0.25rem;
-362 |             --space-sm: 0.5rem;
-363 |             --space-md: 1rem;
-364 |             --space-lg: 1.5rem;
-365 |             --space-xl: 2rem;
-366 |             --font-mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
-367 |             --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-368 |           }
-369 | 
-370 |           /* Base Styles */
-371 |           body {
-372 |             font-family: var(--font-sans);
-373 |             background: var(--bg-primary);
-374 |             color: var(--text-primary);
-375 |             line-height: 1.6;
-376 |             min-height: 100vh;
-377 |             padding: var(--space-md);
-378 |             font-size: 14px;
-379 |           }
-380 | 
-381 |           /* Typography */
-382 |           h1 {
-383 |             font-size: clamp(1.5rem, 4vw, 2.5rem);
-384 |             font-weight: 700;
-385 |             margin-bottom: var(--space-lg);
-386 |             color: var(--accent-blue);
-387 |             display: flex;
-388 |             align-items: center;
-389 |             gap: var(--space-sm);
-390 |           }
-391 | 
-392 |           h2 {
-393 |             font-size: clamp(1.2rem, 3vw, 1.8rem);
-394 |             font-weight: 600;
-395 |             margin-bottom: var(--space-md);
-396 |             color: var(--text-primary);
-397 |             border-bottom: 2px solid var(--accent-blue);
-398 |             padding-bottom: var(--space-xs);
+186 |             this.debugChannel.appendLine(logMessage);
+187 |             if (data) {
+188 |                 this.debugChannel.appendLine(`  Data: ${JSON.stringify(data, null, 2)}`);
+189 |             }
+190 | 
+191 |             logger.debug(message, data);
+192 |         }
+193 |     }
+194 | 
+195 |     /**
+196 |      * Warning logging
+197 |      */
+198 |     public warn(message: string, data?: any): void {
+199 |         const timestamp = new Date().toISOString();
+200 |         const logMessage = `[${timestamp}] WARN: ${message}`;
+201 | 
+202 |         this.debugChannel.appendLine(logMessage);
+203 |         if (data) {
+204 |             this.debugChannel.appendLine(`  Data: ${JSON.stringify(data, null, 2)}`);
+205 |         }
+206 | 
+207 |         logger.warn(message, data);
+208 |     }
+209 | 
+210 |     /**
+211 |      * Error logging
+212 |      */
+213 |     public error(message: string, data?: any): void {
+214 |         const timestamp = new Date().toISOString();
+215 |         const logMessage = `[${timestamp}] ERROR: ${message}`;
+216 | 
+217 |         this.debugChannel.appendLine(logMessage);
+218 |         if (data) {
+219 |             this.debugChannel.appendLine(`  Data: ${JSON.stringify(data, null, 2)}`);
+220 |         }
+221 | 
+222 |         logger.error(message, data);
+223 |     }
+224 | 
+225 |     /**
+226 |      * Get comprehensive debug report
+227 |      */
+228 |     public getDebugReport(): DebugReport {
+229 |         const activeSessions = Array.from(this.debugSessions.values())
+230 |             .filter(session => session.status === 'active');
+231 | 
+232 |         const recentErrors = this.errorHistory
+233 |             .filter(error => Date.now() - error.timestamp < 3600000) // Last hour
+234 |             .sort((a, b) => b.timestamp - a.timestamp);
+235 | 
+236 |         const performanceIssues = Array.from(this.performanceMetrics.values())
+237 |             .filter(metric => metric.averageDuration > 500)
+238 |             .sort((a, b) => b.averageDuration - a.averageDuration);
+239 | 
+240 |         return {
+241 |             timestamp: Date.now(),
+242 |             isDebugMode: this.isDebugMode,
+243 |             activeSessions,
+244 |             recentErrors,
+245 |             performanceMetrics: Array.from(this.performanceMetrics.values()),
+246 |             performanceIssues,
+247 |             memoryUsage: process.memoryUsage(),
+248 |             systemInfo: {
+249 |                 platform: process.platform,
+250 |                 nodeVersion: process.version,
+251 |                 vscodeVersion: vscode.version
+252 |             }
+253 |         };
+254 |     }
+255 | 
+256 |     /**
+257 |      * Export debug data for analysis
+258 |      */
+259 |     public exportDebugData(): string {
+260 |         const report = this.getDebugReport();
+261 |         return JSON.stringify(report, null, 2);
+262 |     }
+263 | 
+264 |     /**
+265 |      * Clear debug data
+266 |      */
+267 |     public clearDebugData(): void {
+268 |         this.errorHistory = [];
+269 |         this.performanceMetrics.clear();
+270 |         this.debugSessions.clear();
+271 |         this.debugChannel.clear();
+272 |         this.debug('Debug data cleared');
+273 |     }
+274 | 
+275 |     /**
+276 |      * Show debug dashboard
+277 |      */
+278 |     public async showDebugDashboard(): Promise<void> {
+279 |         const report = this.getDebugReport();
+280 | 
+281 |         const panel = vscode.window.createWebviewPanel(
+282 |             'flexDebugDashboard',
+283 |             'Flex Chatbot Debug Dashboard',
+284 |             vscode.ViewColumn.Beside,
+285 |             { enableScripts: true }
+286 |         );
+287 | 
+288 |         panel.webview.html = this.generateDebugDashboardHTML(report);
+289 |     }
+290 | 
+291 |     /**
+292 |      * Private helper methods
+293 |      */
+294 |     private getMemoryDelta(baseline: NodeJS.MemoryUsage): number {
+295 |         const current = process.memoryUsage();
+296 |         return current.heapUsed - baseline.heapUsed;
+297 |     }
+298 | 
+299 |     private generateId(): string {
+300 |         return `debug_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+301 |     }
+302 | 
+303 |     private async showCriticalErrorDialog(errorEntry: ErrorEntry): Promise<void> {
+304 |         const action = await vscode.window.showErrorMessage(
+305 |             `Critical error in Flex Chatbot: ${errorEntry.error.message}`,
+306 |             'View Details',
+307 |             'Report Issue',
+308 |             'Dismiss'
+309 |         );
+310 | 
+311 |         switch (action) {
+312 |             case 'View Details':
+313 |                 this.showDebugDashboard();
+314 |                 break;
+315 |             case 'Report Issue':
+316 |                 this.generateErrorReport(errorEntry);
+317 |                 break;
+318 |         }
+319 |     }
+320 | 
+321 |     private generateErrorReport(errorEntry: ErrorEntry): void {
+322 |         const report = {
+323 |             errorId: errorEntry.id,
+324 |             error: errorEntry.error,
+325 |             context: errorEntry.context,
+326 |             timestamp: new Date(errorEntry.timestamp).toISOString(),
+327 |             systemInfo: {
+328 |                 platform: process.platform,
+329 |                 nodeVersion: process.version,
+330 |                 vscodeVersion: vscode.version
+331 |             }
+332 |         };
+333 | 
+334 |         vscode.env.clipboard.writeText(JSON.stringify(report, null, 2));
+335 |         vscode.window.showInformationMessage('Error report copied to clipboard');
+336 |     }
+337 | 
+338 |     private generateDebugDashboardHTML(report: DebugReport): string {
+339 |         return `
+340 |       <!DOCTYPE html>
+341 |       <html lang="en">
+342 |       <head>
+343 |         <meta charset="UTF-8">
+344 |         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+345 |         <meta name="theme-color" content="#1e1e1e">
+346 |         <title>Flex Chatbot Debug Dashboard</title>
+347 |         <style>
+348 |           /* Modern CSS Reset */
+349 |           *, *::before, *::after {
+350 |             box-sizing: border-box;
+351 |             margin: 0;
+352 |             padding: 0;
+353 |           }
+354 | 
+355 |           /* CSS Custom Properties */
+356 |           :root {
+357 |             --bg-primary: #1e1e1e;
+358 |             --bg-secondary: #2d2d30;
+359 |             --bg-tertiary: #3c3c3c;
+360 |             --text-primary: #ffffff;
+361 |             --text-secondary: #cccccc;
+362 |             --text-muted: #999999;
+363 |             --accent-blue: #007acc;
+364 |             --accent-green: #16a085;
+365 |             --accent-yellow: #f39c12;
+366 |             --accent-red: #e74c3c;
+367 |             --border-color: #484848;
+368 |             --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+369 |             --radius: 8px;
+370 |             --space-xs: 0.25rem;
+371 |             --space-sm: 0.5rem;
+372 |             --space-md: 1rem;
+373 |             --space-lg: 1.5rem;
+374 |             --space-xl: 2rem;
+375 |             --font-mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+376 |             --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+377 |           }
+378 | 
+379 |           /* Base Styles */
+380 |           body {
+381 |             font-family: var(--font-sans);
+382 |             background: var(--bg-primary);
+383 |             color: var(--text-primary);
+384 |             line-height: 1.6;
+385 |             min-height: 100vh;
+386 |             padding: var(--space-md);
+387 |             font-size: 14px;
+388 |           }
+389 | 
+390 |           /* Typography */
+391 |           h1 {
+392 |             font-size: clamp(1.5rem, 4vw, 2.5rem);
+393 |             font-weight: 700;
+394 |             margin-bottom: var(--space-lg);
+395 |             color: var(--accent-blue);
+396 |             display: flex;
+397 |             align-items: center;
+398 |             gap: var(--space-sm);
 399 |           }
 400 | 
-401 |           h3 {
-402 |             font-size: 1.1rem;
+401 |           h2 {
+402 |             font-size: clamp(1.2rem, 3vw, 1.8rem);
 403 |             font-weight: 600;
-404 |             margin-bottom: var(--space-sm);
-405 |             color: var(--text-secondary);
-406 |           }
-407 | 
-408 |           /* Layout */
-409 |           .container {
-410 |             max-width: 1200px;
-411 |             margin: 0 auto;
-412 |           }
-413 | 
-414 |           .grid {
-415 |             display: grid;
-416 |             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-417 |             gap: var(--space-lg);
-418 |             margin-bottom: var(--space-xl);
-419 |           }
-420 | 
-421 |           @media (max-width: 768px) {
-422 |             .grid {
-423 |               grid-template-columns: 1fr;
-424 |               gap: var(--space-md);
-425 |             }
-426 |           }
-427 | 
-428 |           /* Sections */
-429 |           .section {
-430 |             background: var(--bg-secondary);
-431 |             border: 1px solid var(--border-color);
-432 |             border-radius: var(--radius);
-433 |             padding: var(--space-lg);
-434 |             box-shadow: var(--shadow);
-435 |             transition: all 0.2s ease;
-436 |           }
-437 | 
-438 |           .section:hover {
-439 |             transform: translateY(-2px);
-440 |             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-441 |           }
-442 | 
-443 |           /* Metrics */
-444 |           .metrics {
-445 |             display: grid;
-446 |             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-447 |             gap: var(--space-md);
-448 |           }
-449 | 
-450 |           @media (max-width: 480px) {
-451 |             .metrics {
-452 |               grid-template-columns: 1fr;
-453 |             }
-454 |           }
-455 | 
-456 |           .metric {
-457 |             background: var(--bg-tertiary);
-458 |             border: 1px solid var(--border-color);
-459 |             border-radius: var(--radius);
-460 |             padding: var(--space-md);
-461 |             text-align: center;
-462 |             transition: all 0.2s ease;
-463 |             position: relative;
-464 |             overflow: hidden;
-465 |           }
-466 | 
-467 |           .metric::before {
-468 |             content: '';
-469 |             position: absolute;
-470 |             top: 0;
-471 |             left: 0;
-472 |             right: 0;
-473 |             height: 3px;
-474 |             background: var(--accent-blue);
-475 |           }
-476 | 
-477 |           .metric:hover {
-478 |             transform: scale(1.02);
-479 |             border-color: var(--accent-blue);
-480 |           }
-481 | 
-482 |           .metric.success::before { background: var(--accent-green); }
-483 |           .metric.warning::before { background: var(--accent-yellow); }
-484 |           .metric.error::before { background: var(--accent-red); }
+404 |             margin-bottom: var(--space-md);
+405 |             color: var(--text-primary);
+406 |             border-bottom: 2px solid var(--accent-blue);
+407 |             padding-bottom: var(--space-xs);
+408 |           }
+409 | 
+410 |           h3 {
+411 |             font-size: 1.1rem;
+412 |             font-weight: 600;
+413 |             margin-bottom: var(--space-sm);
+414 |             color: var(--text-secondary);
+415 |           }
+416 | 
+417 |           /* Layout */
+418 |           .container {
+419 |             max-width: 1200px;
+420 |             margin: 0 auto;
+421 |           }
+422 | 
+423 |           .grid {
+424 |             display: grid;
+425 |             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+426 |             gap: var(--space-lg);
+427 |             margin-bottom: var(--space-xl);
+428 |           }
+429 | 
+430 |           @media (max-width: 768px) {
+431 |             .grid {
+432 |               grid-template-columns: 1fr;
+433 |               gap: var(--space-md);
+434 |             }
+435 |           }
+436 | 
+437 |           /* Sections */
+438 |           .section {
+439 |             background: var(--bg-secondary);
+440 |             border: 1px solid var(--border-color);
+441 |             border-radius: var(--radius);
+442 |             padding: var(--space-lg);
+443 |             box-shadow: var(--shadow);
+444 |             transition: all 0.2s ease;
+445 |           }
+446 | 
+447 |           .section:hover {
+448 |             transform: translateY(-2px);
+449 |             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+450 |           }
+451 | 
+452 |           /* Metrics */
+453 |           .metrics {
+454 |             display: grid;
+455 |             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+456 |             gap: var(--space-md);
+457 |           }
+458 | 
+459 |           @media (max-width: 480px) {
+460 |             .metrics {
+461 |               grid-template-columns: 1fr;
+462 |             }
+463 |           }
+464 | 
+465 |           .metric {
+466 |             background: var(--bg-tertiary);
+467 |             border: 1px solid var(--border-color);
+468 |             border-radius: var(--radius);
+469 |             padding: var(--space-md);
+470 |             text-align: center;
+471 |             transition: all 0.2s ease;
+472 |             position: relative;
+473 |             overflow: hidden;
+474 |           }
+475 | 
+476 |           .metric::before {
+477 |             content: '';
+478 |             position: absolute;
+479 |             top: 0;
+480 |             left: 0;
+481 |             right: 0;
+482 |             height: 3px;
+483 |             background: var(--accent-blue);
+484 |           }
 485 | 
-486 |           .metric-value {
-487 |             font-size: clamp(1.5rem, 4vw, 2rem);
-488 |             font-weight: 700;
-489 |             color: var(--text-primary);
-490 |             margin-bottom: var(--space-xs);
-491 |           }
-492 | 
-493 |           .metric-label {
-494 |             font-size: 0.875rem;
-495 |             color: var(--text-muted);
-496 |             text-transform: uppercase;
-497 |             letter-spacing: 0.05em;
-498 |           }
-499 | 
-500 |           /* Status Indicators */
-501 |           .status {
-502 |             display: inline-flex;
-503 |             align-items: center;
-504 |             gap: var(--space-xs);
-505 |             padding: var(--space-xs) var(--space-sm);
-506 |             border-radius: calc(var(--radius) / 2);
-507 |             font-size: 0.875rem;
-508 |             font-weight: 500;
-509 |           }
-510 | 
-511 |           .status.enabled {
-512 |             background: rgba(22, 160, 133, 0.2);
-513 |             color: var(--accent-green);
-514 |             border: 1px solid var(--accent-green);
-515 |           }
-516 | 
-517 |           .status.disabled {
-518 |             background: rgba(231, 76, 60, 0.2);
-519 |             color: var(--accent-red);
-520 |             border: 1px solid var(--accent-red);
-521 |           }
-522 | 
-523 |           /* Code Blocks */
-524 |           pre {
-525 |             background: var(--bg-primary);
-526 |             border: 1px solid var(--border-color);
-527 |             border-radius: var(--radius);
-528 |             padding: var(--space-md);
-529 |             overflow-x: auto;
-530 |             font-family: var(--font-mono);
-531 |             font-size: 0.875rem;
-532 |             line-height: 1.4;
-533 |             margin: var(--space-md) 0;
-534 |             scrollbar-width: thin;
-535 |             scrollbar-color: var(--border-color) transparent;
-536 |           }
-537 | 
-538 |           pre::-webkit-scrollbar {
-539 |             height: 6px;
-540 |           }
-541 | 
-542 |           pre::-webkit-scrollbar-thumb {
-543 |             background: var(--border-color);
-544 |             border-radius: 3px;
+486 |           .metric:hover {
+487 |             transform: scale(1.02);
+488 |             border-color: var(--accent-blue);
+489 |           }
+490 | 
+491 |           .metric.success::before { background: var(--accent-green); }
+492 |           .metric.warning::before { background: var(--accent-yellow); }
+493 |           .metric.error::before { background: var(--accent-red); }
+494 | 
+495 |           .metric-value {
+496 |             font-size: clamp(1.5rem, 4vw, 2rem);
+497 |             font-weight: 700;
+498 |             color: var(--text-primary);
+499 |             margin-bottom: var(--space-xs);
+500 |           }
+501 | 
+502 |           .metric-label {
+503 |             font-size: 0.875rem;
+504 |             color: var(--text-muted);
+505 |             text-transform: uppercase;
+506 |             letter-spacing: 0.05em;
+507 |           }
+508 | 
+509 |           /* Status Indicators */
+510 |           .status {
+511 |             display: inline-flex;
+512 |             align-items: center;
+513 |             gap: var(--space-xs);
+514 |             padding: var(--space-xs) var(--space-sm);
+515 |             border-radius: calc(var(--radius) / 2);
+516 |             font-size: 0.875rem;
+517 |             font-weight: 500;
+518 |           }
+519 | 
+520 |           .status.enabled {
+521 |             background: rgba(22, 160, 133, 0.2);
+522 |             color: var(--accent-green);
+523 |             border: 1px solid var(--accent-green);
+524 |           }
+525 | 
+526 |           .status.disabled {
+527 |             background: rgba(231, 76, 60, 0.2);
+528 |             color: var(--accent-red);
+529 |             border: 1px solid var(--accent-red);
+530 |           }
+531 | 
+532 |           /* Code Blocks */
+533 |           pre {
+534 |             background: var(--bg-primary);
+535 |             border: 1px solid var(--border-color);
+536 |             border-radius: var(--radius);
+537 |             padding: var(--space-md);
+538 |             overflow-x: auto;
+539 |             font-family: var(--font-mono);
+540 |             font-size: 0.875rem;
+541 |             line-height: 1.4;
+542 |             margin: var(--space-md) 0;
+543 |             scrollbar-width: thin;
+544 |             scrollbar-color: var(--border-color) transparent;
 545 |           }
 546 | 
-547 |           /* Error Lists */
-548 |           .error-list, .performance-list {
-549 |             display: flex;
-550 |             flex-direction: column;
-551 |             gap: var(--space-sm);
-552 |             max-height: 400px;
-553 |             overflow-y: auto;
-554 |             scrollbar-width: thin;
-555 |             scrollbar-color: var(--border-color) transparent;
-556 |           }
-557 | 
-558 |           .error-item, .performance-item {
-559 |             background: var(--bg-tertiary);
-560 |             border: 1px solid var(--border-color);
-561 |             border-radius: var(--radius);
-562 |             padding: var(--space-md);
-563 |             transition: all 0.2s ease;
-564 |           }
-565 | 
-566 |           .error-item {
-567 |             border-left: 3px solid var(--accent-red);
-568 |           }
-569 | 
-570 |           .performance-item {
-571 |             border-left: 3px solid var(--accent-yellow);
-572 |           }
-573 | 
-574 |           .error-item:hover, .performance-item:hover {
-575 |             background: var(--bg-secondary);
-576 |             transform: translateX(4px);
+547 |           pre::-webkit-scrollbar {
+548 |             height: 6px;
+549 |           }
+550 | 
+551 |           pre::-webkit-scrollbar-thumb {
+552 |             background: var(--border-color);
+553 |             border-radius: 3px;
+554 |           }
+555 | 
+556 |           /* Error Lists */
+557 |           .error-list, .performance-list {
+558 |             display: flex;
+559 |             flex-direction: column;
+560 |             gap: var(--space-sm);
+561 |             max-height: 400px;
+562 |             overflow-y: auto;
+563 |             scrollbar-width: thin;
+564 |             scrollbar-color: var(--border-color) transparent;
+565 |           }
+566 | 
+567 |           .error-item, .performance-item {
+568 |             background: var(--bg-tertiary);
+569 |             border: 1px solid var(--border-color);
+570 |             border-radius: var(--radius);
+571 |             padding: var(--space-md);
+572 |             transition: all 0.2s ease;
+573 |           }
+574 | 
+575 |           .error-item {
+576 |             border-left: 3px solid var(--accent-red);
 577 |           }
 578 | 
-579 |           .error-title, .performance-title {
-580 |             font-weight: 600;
-581 |             margin-bottom: var(--space-xs);
-582 |             color: var(--text-primary);
-583 |           }
-584 | 
-585 |           .error-message, .performance-details {
-586 |             font-size: 0.875rem;
-587 |             color: var(--text-secondary);
-588 |             margin-bottom: var(--space-xs);
-589 |           }
-590 | 
-591 |           .error-time, .performance-stats {
-592 |             font-size: 0.75rem;
-593 |             color: var(--text-muted);
-594 |             font-family: var(--font-mono);
-595 |           }
-596 | 
-597 |           /* Empty States */
-598 |           .empty-state {
-599 |             text-align: center;
-600 |             padding: var(--space-xl);
-601 |             color: var(--text-muted);
-602 |             font-style: italic;
-603 |           }
-604 | 
-605 |           .empty-state::before {
-606 |             content: '✨';
-607 |             display: block;
-608 |             font-size: 2rem;
-609 |             margin-bottom: var(--space-sm);
-610 |           }
-611 | 
-612 |           /* Responsive Utilities */
-613 |           .mobile-only {
-614 |             display: none;
-615 |           }
-616 | 
-617 |           @media (max-width: 768px) {
-618 |             body {
-619 |               padding: var(--space-sm);
-620 |             }
-621 | 
-622 |             .section {
-623 |               padding: var(--space-md);
-624 |             }
+579 |           .performance-item {
+580 |             border-left: 3px solid var(--accent-yellow);
+581 |           }
+582 | 
+583 |           .error-item:hover, .performance-item:hover {
+584 |             background: var(--bg-secondary);
+585 |             transform: translateX(4px);
+586 |           }
+587 | 
+588 |           .error-title, .performance-title {
+589 |             font-weight: 600;
+590 |             margin-bottom: var(--space-xs);
+591 |             color: var(--text-primary);
+592 |           }
+593 | 
+594 |           .error-message, .performance-details {
+595 |             font-size: 0.875rem;
+596 |             color: var(--text-secondary);
+597 |             margin-bottom: var(--space-xs);
+598 |           }
+599 | 
+600 |           .error-time, .performance-stats {
+601 |             font-size: 0.75rem;
+602 |             color: var(--text-muted);
+603 |             font-family: var(--font-mono);
+604 |           }
+605 | 
+606 |           /* Empty States */
+607 |           .empty-state {
+608 |             text-align: center;
+609 |             padding: var(--space-xl);
+610 |             color: var(--text-muted);
+611 |             font-style: italic;
+612 |           }
+613 | 
+614 |           .empty-state::before {
+615 |             content: '✨';
+616 |             display: block;
+617 |             font-size: 2rem;
+618 |             margin-bottom: var(--space-sm);
+619 |           }
+620 | 
+621 |           /* Responsive Utilities */
+622 |           .mobile-only {
+623 |             display: none;
+624 |           }
 625 | 
-626 |             .mobile-only {
-627 |               display: block;
-628 |             }
-629 | 
-630 |             .desktop-only {
-631 |               display: none;
-632 |             }
-633 | 
-634 |             h1 {
-635 |               flex-direction: column;
-636 |               text-align: center;
+626 |           @media (max-width: 768px) {
+627 |             body {
+628 |               padding: var(--space-sm);
+629 |             }
+630 | 
+631 |             .section {
+632 |               padding: var(--space-md);
+633 |             }
+634 | 
+635 |             .mobile-only {
+636 |               display: block;
 637 |             }
-638 |           }
-639 | 
-640 |           /* Accessibility */
-641 |           @media (prefers-reduced-motion: reduce) {
-642 |             *, *::before, *::after {
-643 |               animation-duration: 0.01ms !important;
-644 |               animation-iteration-count: 1 !important;
-645 |               transition-duration: 0.01ms !important;
+638 | 
+639 |             .desktop-only {
+640 |               display: none;
+641 |             }
+642 | 
+643 |             h1 {
+644 |               flex-direction: column;
+645 |               text-align: center;
 646 |             }
 647 |           }
 648 | 
-649 |           @media (prefers-contrast: high) {
-650 |             :root {
-651 |               --border-color: #ffffff;
-652 |               --text-muted: #cccccc;
-653 |             }
-654 |           }
-655 | 
-656 |           /* Focus styles */
-657 |           :focus-visible {
-658 |             outline: 2px solid var(--accent-blue);
-659 |             outline-offset: 2px;
-660 |             border-radius: var(--radius);
-661 |           }
-662 | 
-663 |           /* Loading animation */
-664 |           @keyframes pulse {
-665 |             0%, 100% { opacity: 1; }
-666 |             50% { opacity: 0.5; }
-667 |           }
-668 | 
-669 |           .loading {
-670 |             animation: pulse 2s ease-in-out infinite;
-671 |           }
-672 |         </style>
-673 |       </head>
-674 |       <body>
-675 |         <div class="container">
-676 |           <h1>
-677 |             <span>🐛</span>
-678 |             <span>Flex Chatbot Debug Dashboard</span>
-679 |           </h1>
-680 |           
-681 |           <!-- System Status Overview -->
-682 |           <section class="section">
-683 |             <h2>📊 System Status</h2>
-684 |             <div class="metrics">
-685 |               <div class="metric ${report.isDebugMode ? 'success' : 'error'}">
-686 |                 <div class="metric-value">${report.isDebugMode ? 'ON' : 'OFF'}</div>
-687 |                 <div class="metric-label">Debug Mode</div>
-688 |               </div>
-689 |               <div class="metric ${report.activeSessions.length > 0 ? 'warning' : 'success'}">
-690 |                 <div class="metric-value">${report.activeSessions.length}</div>
-691 |                 <div class="metric-label">Active Sessions</div>
-692 |               </div>
-693 |               <div class="metric ${report.recentErrors.length > 0 ? 'error' : 'success'}">
-694 |                 <div class="metric-value">${report.recentErrors.length}</div>
-695 |                 <div class="metric-label">Recent Errors</div>
-696 |               </div>
-697 |               <div class="metric ${report.performanceIssues.length > 0 ? 'warning' : 'success'}">
-698 |                 <div class="metric-value">${report.performanceIssues.length}</div>
-699 |                 <div class="metric-label">Performance Issues</div>
-700 |               </div>
-701 |             </div>
-702 |           </section>
-703 | 
-704 |           <div class="grid">
-705 |             <!-- Memory Usage -->
-706 |             <section class="section">
-707 |               <h2>💾 Memory Usage</h2>
-708 |               <div class="metrics">
-709 |                 <div class="metric">
-710 |                   <div class="metric-value">${(report.memoryUsage.heapUsed / 1024 / 1024).toFixed(1)}</div>
-711 |                   <div class="metric-label">Heap Used (MB)</div>
-712 |                 </div>
-713 |                 <div class="metric">
-714 |                   <div class="metric-value">${(report.memoryUsage.heapTotal / 1024 / 1024).toFixed(1)}</div>
-715 |                   <div class="metric-label">Heap Total (MB)</div>
-716 |                 </div>
-717 |                 <div class="metric">
-718 |                   <div class="metric-value">${(report.memoryUsage.rss / 1024 / 1024).toFixed(1)}</div>
-719 |                   <div class="metric-label">RSS (MB)</div>
-720 |                 </div>
-721 |               </div>
-722 |             </section>
-723 | 
-724 |             <!-- System Information -->
-725 |             <section class="section">
-726 |               <h2>ℹ️ System Information</h2>
-727 |               <div class="metrics">
-728 |                 <div class="metric">
-729 |                   <div class="metric-value">${report.systemInfo.platform}</div>
-730 |                   <div class="metric-label">Platform</div>
-731 |                 </div>
-732 |                 <div class="metric">
-733 |                   <div class="metric-value">${report.systemInfo.nodeVersion}</div>
-734 |                   <div class="metric-label">Node Version</div>
-735 |                 </div>
-736 |                 <div class="metric">
-737 |                   <div class="metric-value">${report.systemInfo.vscodeVersion}</div>
-738 |                   <div class="metric-label">VS Code Version</div>
-739 |                 </div>
-740 |               </div>
-741 |             </section>
-742 |           </div>
-743 | 
-744 |           <!-- Recent Errors -->
-745 |           <section class="section">
-746 |             <h2>🚨 Recent Errors (Last Hour)</h2>
-747 |             ${report.recentErrors.length > 0 ? `
-748 |               <div class="error-list">
-749 |                 ${report.recentErrors.map(error => `
-750 |                   <div class="error-item">
-751 |                     <div class="error-title">${error.error.name}</div>
-752 |                     <div class="error-message">${error.error.message}</div>
-753 |                     <div class="error-time">
-754 |                       ${new Date(error.timestamp).toLocaleString()} | 
-755 |                       Severity: <span class="status ${error.severity === 'critical' ? 'error' : 'warning'}">${error.severity}</span>
-756 |                     </div>
-757 |                   </div>
-758 |                 `).join('')}
-759 |               </div>
-760 |             ` : `
-761 |               <div class="empty-state">
-762 |                 No recent errors found. System running smoothly!
-763 |               </div>
-764 |             `}
-765 |           </section>
-766 | 
-767 |           <!-- Performance Metrics -->
-768 |           <section class="section">
-769 |             <h2>⚡ Performance Metrics</h2>
-770 |             ${report.performanceMetrics.length > 0 ? `
-771 |               <div class="performance-list">
-772 |                 ${report.performanceMetrics.map(metric => `
-773 |                   <div class="performance-item">
-774 |                     <div class="performance-title">${metric.operation}</div>
-775 |                     <div class="performance-details">
-776 |                       Average: ${metric.averageDuration.toFixed(2)}ms | 
-777 |                       Range: ${metric.minDuration.toFixed(2)}ms - ${metric.maxDuration.toFixed(2)}ms
-778 |                     </div>
-779 |                     <div class="performance-stats">
-780 |                       Total Calls: ${metric.totalCalls} | 
-781 |                       Last Called: ${new Date(metric.lastCalled).toLocaleString()}
-782 |                     </div>
-783 |                   </div>
-784 |                 `).join('')}
-785 |               </div>
-786 |             ` : `
-787 |               <div class="empty-state">
-788 |                 No performance data available yet.
-789 |               </div>
-790 |             `}
-791 |           </section>
-792 | 
-793 |           <!-- Performance Issues -->
-794 |           ${report.performanceIssues.length > 0 ? `
-795 |             <section class="section">
-796 |               <h2>⚠️ Performance Issues (> 500ms)</h2>
-797 |               <div class="performance-list">
-798 |                 ${report.performanceIssues.map(issue => `
-799 |                   <div class="performance-item">
-800 |                     <div class="performance-title">${issue.operation}</div>
-801 |                     <div class="performance-details">
-802 |                       Average: <strong>${issue.averageDuration.toFixed(2)}ms</strong> | 
-803 |                       Max: ${issue.maxDuration.toFixed(2)}ms
-804 |                     </div>
-805 |                     <div class="performance-stats">
-806 |                       Calls: ${issue.totalCalls} | 
-807 |                       Total Time: ${(issue.totalDuration / 1000).toFixed(2)}s
-808 |                     </div>
-809 |                   </div>
-810 |                 `).join('')}
-811 |               </div>
-812 |             </section>
-813 |           ` : ''}
-814 | 
-815 |           <!-- Active Sessions -->
-816 |           ${report.activeSessions.length > 0 ? `
-817 |             <section class="section">
-818 |               <h2>🔄 Active Debug Sessions</h2>
-819 |               <div class="error-list">
-820 |                 ${report.activeSessions.map(session => `
-821 |                   <div class="error-item">
-822 |                     <div class="error-title">Session: ${session.id}</div>
-823 |                     <div class="error-message">
-824 |                       Steps: ${session.steps.length} | 
-825 |                       Duration: ${Date.now() - session.startTime}ms
-826 |                     </div>
-827 |                     <div class="error-time">
-828 |                       Started: ${new Date(session.startTime).toLocaleString()}
-829 |                     </div>
-830 |                   </div>
-831 |                 `).join('')}
-832 |               </div>
-833 |             </section>
-834 |           ` : ''}
-835 | 
-836 |           <!-- Raw Data (Collapsible) -->
-837 |           <section class="section">
-838 |             <h2>📋 Raw Debug Data</h2>
-839 |             <details>
-840 |               <summary style="cursor: pointer; padding: var(--space-sm); background: var(--bg-tertiary); border-radius: var(--radius); margin-bottom: var(--space-md);">
-841 |                 Click to view raw JSON data
-842 |               </summary>
-843 |               <pre><code>${JSON.stringify(report, null, 2)}</code></pre>
-844 |             </details>
-845 |           </section>
-846 | 
-847 |           <!-- Footer -->
-848 |           <footer style="text-align: center; padding: var(--space-xl) 0; color: var(--text-muted); border-top: 1px solid var(--border-color); margin-top: var(--space-xl);">
-849 |             <p>Generated at ${new Date(report.timestamp).toLocaleString()}</p>
-850 |             <p class="mobile-only">Tap sections to interact • Swipe to scroll</p>
-851 |             <p class="desktop-only">This dashboard auto-refreshes debug information</p>
-852 |           </footer>
-853 |         </div>
-854 | 
-855 |         <script>
-856 |           // Enhanced interactivity
-857 |           document.addEventListener('DOMContentLoaded', function() {
-858 |             // Add click-to-copy functionality for code blocks
-859 |             document.querySelectorAll('pre').forEach(pre => {
-860 |               pre.style.cursor = 'pointer';
-861 |               pre.title = 'Click to copy';
-862 |               
-863 |               pre.addEventListener('click', async () => {
-864 |                 try {
-865 |                   await navigator.clipboard.writeText(pre.textContent);
-866 |                   const originalBg = pre.style.background;
-867 |                   pre.style.background = 'rgba(22, 160, 133, 0.2)';
-868 |                   setTimeout(() => {
-869 |                     pre.style.background = originalBg;
-870 |                   }, 200);
-871 |                 } catch (err) {
-872 |                   console.warn('Copy failed:', err);
-873 |                 }
-874 |               });
-875 |             });
-876 | 
-877 |             // Add keyboard navigation
-878 |             document.addEventListener('keydown', (e) => {
-879 |               if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
-880 |                 e.preventDefault();
-881 |                 location.reload();
-882 |               }
-883 |             });
-884 | 
-885 |             // Performance monitoring
-886 |             const observer = new PerformanceObserver((list) => {
-887 |               const entries = list.getEntries();
-888 |               entries.forEach(entry => {
-889 |                 if (entry.duration > 16) { // > 16ms might cause frame drops
-890 |                   console.debug('Performance entry:', entry.name, entry.duration.toFixed(2) + 'ms');
-891 |                 }
-892 |               });
-893 |             });
-894 | 
-895 |             try {
-896 |               observer.observe({ entryTypes: ['measure', 'navigation', 'resource'] });
-897 |             } catch (e) {
-898 |               // Performance Observer not supported
-899 |             }
-900 | 
-901 |             // Auto-refresh indication (visual only, no actual refresh)
-902 |             let refreshCount = 0;
-903 |             const title = document.title;
-904 |             
-905 |             setInterval(() => {
-906 |               refreshCount++;
-907 |               if (refreshCount % 4 === 0) {
-908 |                 document.title = title + ' ⟳';
-909 |                 setTimeout(() => {
-910 |                   document.title = title;
-911 |                 }, 200);
-912 |               }
-913 |             }, 15000);
-914 | 
-915 |             console.log('Debug Dashboard initialized');
-916 |           });
-917 |         </script>
-918 |       </body>
-919 |       </html>
-920 |     `;
-921 |     }
-922 | 
-923 |     /**
-924 |      * Dispose resources
-925 |      */
-926 |     public dispose(): void {
-927 |         this.debugChannel.dispose();
-928 |         this.debugSessions.clear();
-929 |         this.performanceMetrics.clear();
-930 |         this.errorHistory = [];
-931 |     }
-932 | }
-933 | 
-934 | // Type definitions
-935 | interface PerformanceMetric {
-936 |     operation: string;
-937 |     totalCalls: number;
-938 |     totalDuration: number;
-939 |     averageDuration: number;
-940 |     minDuration: number;
-941 |     maxDuration: number;
-942 |     lastCalled: number;
-943 | }
-944 | 
-945 | interface ErrorEntry {
-946 |     id: string;
-947 |     timestamp: number;
-948 |     error: {
-949 |         name: string;
-950 |         message: string;
-951 |         stack?: string;
-952 |     };
-953 |     context?: any;
-954 |     severity: 'low' | 'medium' | 'high' | 'critical';
-955 |     resolved: boolean;
-956 | }
-957 | 
-958 | interface DebugSession {
-959 |     id: string;
-960 |     startTime: number;
-961 |     endTime?: number;
-962 |     duration?: number;
-963 |     context: any;
-964 |     steps: DebugStep[];
-965 |     status: 'active' | 'completed' | 'failed';
-966 |     memoryUsage: NodeJS.MemoryUsage;
-967 |     result?: any;
-968 | }
-969 | 
-970 | interface DebugStep {
-971 |     step: string;
-972 |     timestamp: number;
-973 |     data?: any;
-974 |     memoryDelta: number;
-975 | }
-976 | 
-977 | interface DebugReport {
-978 |     timestamp: number;
-979 |     isDebugMode: boolean;
-980 |     activeSessions: DebugSession[];
-981 |     recentErrors: ErrorEntry[];
-982 |     performanceMetrics: PerformanceMetric[];
-983 |     performanceIssues: PerformanceMetric[];
-984 |     memoryUsage: NodeJS.MemoryUsage;
-985 |     systemInfo: {
-986 |         platform: string;
-987 |         nodeVersion: string;
-988 |         vscodeVersion: string;
-989 |     };
-990 | }
-991 | 
-992 | export const debugManager = DebugManager.getInstance(); 
+649 |           /* Accessibility */
+650 |           @media (prefers-reduced-motion: reduce) {
+651 |             *, *::before, *::after {
+652 |               animation-duration: 0.01ms !important;
+653 |               animation-iteration-count: 1 !important;
+654 |               transition-duration: 0.01ms !important;
+655 |             }
+656 |           }
+657 | 
+658 |           @media (prefers-contrast: high) {
+659 |             :root {
+660 |               --border-color: #ffffff;
+661 |               --text-muted: #cccccc;
+662 |             }
+663 |           }
+664 | 
+665 |           /* Focus styles */
+666 |           :focus-visible {
+667 |             outline: 2px solid var(--accent-blue);
+668 |             outline-offset: 2px;
+669 |             border-radius: var(--radius);
+670 |           }
+671 | 
+672 |           /* Loading animation */
+673 |           @keyframes pulse {
+674 |             0%, 100% { opacity: 1; }
+675 |             50% { opacity: 0.5; }
+676 |           }
+677 | 
+678 |           .loading {
+679 |             animation: pulse 2s ease-in-out infinite;
+680 |           }
+681 |         </style>
+682 |       </head>
+683 |       <body>
+684 |         <div class="container">
+685 |           <h1>
+686 |             <span>🐛</span>
+687 |             <span>Flex Chatbot Debug Dashboard</span>
+688 |           </h1>
+689 |           
+690 |           <!-- System Status Overview -->
+691 |           <section class="section">
+692 |             <h2>📊 System Status</h2>
+693 |             <div class="metrics">
+694 |               <div class="metric ${report.isDebugMode ? 'success' : 'error'}">
+695 |                 <div class="metric-value">${report.isDebugMode ? 'ON' : 'OFF'}</div>
+696 |                 <div class="metric-label">Debug Mode</div>
+697 |               </div>
+698 |               <div class="metric ${report.activeSessions.length > 0 ? 'warning' : 'success'}">
+699 |                 <div class="metric-value">${report.activeSessions.length}</div>
+700 |                 <div class="metric-label">Active Sessions</div>
+701 |               </div>
+702 |               <div class="metric ${report.recentErrors.length > 0 ? 'error' : 'success'}">
+703 |                 <div class="metric-value">${report.recentErrors.length}</div>
+704 |                 <div class="metric-label">Recent Errors</div>
+705 |               </div>
+706 |               <div class="metric ${report.performanceIssues.length > 0 ? 'warning' : 'success'}">
+707 |                 <div class="metric-value">${report.performanceIssues.length}</div>
+708 |                 <div class="metric-label">Performance Issues</div>
+709 |               </div>
+710 |             </div>
+711 |           </section>
+712 | 
+713 |           <div class="grid">
+714 |             <!-- Memory Usage -->
+715 |             <section class="section">
+716 |               <h2>💾 Memory Usage</h2>
+717 |               <div class="metrics">
+718 |                 <div class="metric">
+719 |                   <div class="metric-value">${(report.memoryUsage.heapUsed / 1024 / 1024).toFixed(1)}</div>
+720 |                   <div class="metric-label">Heap Used (MB)</div>
+721 |                 </div>
+722 |                 <div class="metric">
+723 |                   <div class="metric-value">${(report.memoryUsage.heapTotal / 1024 / 1024).toFixed(1)}</div>
+724 |                   <div class="metric-label">Heap Total (MB)</div>
+725 |                 </div>
+726 |                 <div class="metric">
+727 |                   <div class="metric-value">${(report.memoryUsage.rss / 1024 / 1024).toFixed(1)}</div>
+728 |                   <div class="metric-label">RSS (MB)</div>
+729 |                 </div>
+730 |               </div>
+731 |             </section>
+732 | 
+733 |             <!-- System Information -->
+734 |             <section class="section">
+735 |               <h2>ℹ️ System Information</h2>
+736 |               <div class="metrics">
+737 |                 <div class="metric">
+738 |                   <div class="metric-value">${report.systemInfo.platform}</div>
+739 |                   <div class="metric-label">Platform</div>
+740 |                 </div>
+741 |                 <div class="metric">
+742 |                   <div class="metric-value">${report.systemInfo.nodeVersion}</div>
+743 |                   <div class="metric-label">Node Version</div>
+744 |                 </div>
+745 |                 <div class="metric">
+746 |                   <div class="metric-value">${report.systemInfo.vscodeVersion}</div>
+747 |                   <div class="metric-label">VS Code Version</div>
+748 |                 </div>
+749 |               </div>
+750 |             </section>
+751 |           </div>
+752 | 
+753 |           <!-- Recent Errors -->
+754 |           <section class="section">
+755 |             <h2>🚨 Recent Errors (Last Hour)</h2>
+756 |             ${report.recentErrors.length > 0 ? `
+757 |               <div class="error-list">
+758 |                 ${report.recentErrors.map(error => `
+759 |                   <div class="error-item">
+760 |                     <div class="error-title">${error.error.name}</div>
+761 |                     <div class="error-message">${error.error.message}</div>
+762 |                     <div class="error-time">
+763 |                       ${new Date(error.timestamp).toLocaleString()} | 
+764 |                       Severity: <span class="status ${error.severity === 'critical' ? 'error' : 'warning'}">${error.severity}</span>
+765 |                     </div>
+766 |                   </div>
+767 |                 `).join('')}
+768 |               </div>
+769 |             ` : `
+770 |               <div class="empty-state">
+771 |                 No recent errors found. System running smoothly!
+772 |               </div>
+773 |             `}
+774 |           </section>
+775 | 
+776 |           <!-- Performance Metrics -->
+777 |           <section class="section">
+778 |             <h2>⚡ Performance Metrics</h2>
+779 |             ${report.performanceMetrics.length > 0 ? `
+780 |               <div class="performance-list">
+781 |                 ${report.performanceMetrics.map(metric => `
+782 |                   <div class="performance-item">
+783 |                     <div class="performance-title">${metric.operation}</div>
+784 |                     <div class="performance-details">
+785 |                       Average: ${metric.averageDuration.toFixed(2)}ms | 
+786 |                       Range: ${metric.minDuration.toFixed(2)}ms - ${metric.maxDuration.toFixed(2)}ms
+787 |                     </div>
+788 |                     <div class="performance-stats">
+789 |                       Total Calls: ${metric.totalCalls} | 
+790 |                       Last Called: ${new Date(metric.lastCalled).toLocaleString()}
+791 |                     </div>
+792 |                   </div>
+793 |                 `).join('')}
+794 |               </div>
+795 |             ` : `
+796 |               <div class="empty-state">
+797 |                 No performance data available yet.
+798 |               </div>
+799 |             `}
+800 |           </section>
+801 | 
+802 |           <!-- Performance Issues -->
+803 |           ${report.performanceIssues.length > 0 ? `
+804 |             <section class="section">
+805 |               <h2>⚠️ Performance Issues (> 500ms)</h2>
+806 |               <div class="performance-list">
+807 |                 ${report.performanceIssues.map(issue => `
+808 |                   <div class="performance-item">
+809 |                     <div class="performance-title">${issue.operation}</div>
+810 |                     <div class="performance-details">
+811 |                       Average: <strong>${issue.averageDuration.toFixed(2)}ms</strong> | 
+812 |                       Max: ${issue.maxDuration.toFixed(2)}ms
+813 |                     </div>
+814 |                     <div class="performance-stats">
+815 |                       Calls: ${issue.totalCalls} | 
+816 |                       Total Time: ${(issue.totalDuration / 1000).toFixed(2)}s
+817 |                     </div>
+818 |                   </div>
+819 |                 `).join('')}
+820 |               </div>
+821 |             </section>
+822 |           ` : ''}
+823 | 
+824 |           <!-- Active Sessions -->
+825 |           ${report.activeSessions.length > 0 ? `
+826 |             <section class="section">
+827 |               <h2>🔄 Active Debug Sessions</h2>
+828 |               <div class="error-list">
+829 |                 ${report.activeSessions.map(session => `
+830 |                   <div class="error-item">
+831 |                     <div class="error-title">Session: ${session.id}</div>
+832 |                     <div class="error-message">
+833 |                       Steps: ${session.steps.length} | 
+834 |                       Duration: ${Date.now() - session.startTime}ms
+835 |                     </div>
+836 |                     <div class="error-time">
+837 |                       Started: ${new Date(session.startTime).toLocaleString()}
+838 |                     </div>
+839 |                   </div>
+840 |                 `).join('')}
+841 |               </div>
+842 |             </section>
+843 |           ` : ''}
+844 | 
+845 |           <!-- Raw Data (Collapsible) -->
+846 |           <section class="section">
+847 |             <h2>📋 Raw Debug Data</h2>
+848 |             <details>
+849 |               <summary style="cursor: pointer; padding: var(--space-sm); background: var(--bg-tertiary); border-radius: var(--radius); margin-bottom: var(--space-md);">
+850 |                 Click to view raw JSON data
+851 |               </summary>
+852 |               <pre><code>${JSON.stringify(report, null, 2)}</code></pre>
+853 |             </details>
+854 |           </section>
+855 | 
+856 |           <!-- Footer -->
+857 |           <footer style="text-align: center; padding: var(--space-xl) 0; color: var(--text-muted); border-top: 1px solid var(--border-color); margin-top: var(--space-xl);">
+858 |             <p>Generated at ${new Date(report.timestamp).toLocaleString()}</p>
+859 |             <p class="mobile-only">Tap sections to interact • Swipe to scroll</p>
+860 |             <p class="desktop-only">This dashboard auto-refreshes debug information</p>
+861 |           </footer>
+862 |         </div>
+863 | 
+864 |         <script>
+865 |           // Enhanced interactivity
+866 |           document.addEventListener('DOMContentLoaded', function() {
+867 |             // Add click-to-copy functionality for code blocks
+868 |             document.querySelectorAll('pre').forEach(pre => {
+869 |               pre.style.cursor = 'pointer';
+870 |               pre.title = 'Click to copy';
+871 |               
+872 |               pre.addEventListener('click', async () => {
+873 |                 try {
+874 |                   await navigator.clipboard.writeText(pre.textContent);
+875 |                   const originalBg = pre.style.background;
+876 |                   pre.style.background = 'rgba(22, 160, 133, 0.2)';
+877 |                   setTimeout(() => {
+878 |                     pre.style.background = originalBg;
+879 |                   }, 200);
+880 |                 } catch (err) {
+881 |                   console.warn('Copy failed:', err);
+882 |                 }
+883 |               });
+884 |             });
+885 | 
+886 |             // Add keyboard navigation
+887 |             document.addEventListener('keydown', (e) => {
+888 |               if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
+889 |                 e.preventDefault();
+890 |                 location.reload();
+891 |               }
+892 |             });
+893 | 
+894 |             // Performance monitoring
+895 |             const observer = new PerformanceObserver((list) => {
+896 |               const entries = list.getEntries();
+897 |               entries.forEach(entry => {
+898 |                 if (entry.duration > 16) { // > 16ms might cause frame drops
+899 |                   console.debug('Performance entry:', entry.name, entry.duration.toFixed(2) + 'ms');
+900 |                 }
+901 |               });
+902 |             });
+903 | 
+904 |             try {
+905 |               observer.observe({ entryTypes: ['measure', 'navigation', 'resource'] });
+906 |             } catch (e) {
+907 |               // Performance Observer not supported
+908 |             }
+909 | 
+910 |             // Auto-refresh indication (visual only, no actual refresh)
+911 |             let refreshCount = 0;
+912 |             const title = document.title;
+913 |             
+914 |             setInterval(() => {
+915 |               refreshCount++;
+916 |               if (refreshCount % 4 === 0) {
+917 |                 document.title = title + ' ⟳';
+918 |                 setTimeout(() => {
+919 |                   document.title = title;
+920 |                 }, 200);
+921 |               }
+922 |             }, 15000);
+923 | 
+924 |             console.log('Debug Dashboard initialized');
+925 |           });
+926 |         </script>
+927 |       </body>
+928 |       </html>
+929 |     `;
+930 |     }
+931 | 
+932 |     /**
+933 |      * Dispose resources
+934 |      */
+935 |     public dispose(): void {
+936 |         this.debugChannel.dispose();
+937 |         this.debugSessions.clear();
+938 |         this.performanceMetrics.clear();
+939 |         this.errorHistory = [];
+940 |     }
+941 | }
+942 | 
+943 | // Type definitions
+944 | interface PerformanceMetric {
+945 |     operation: string;
+946 |     totalCalls: number;
+947 |     totalDuration: number;
+948 |     averageDuration: number;
+949 |     minDuration: number;
+950 |     maxDuration: number;
+951 |     lastCalled: number;
+952 | }
+953 | 
+954 | interface ErrorEntry {
+955 |     id: string;
+956 |     timestamp: number;
+957 |     error: {
+958 |         name: string;
+959 |         message: string;
+960 |         stack?: string;
+961 |     };
+962 |     context?: any;
+963 |     severity: 'low' | 'medium' | 'high' | 'critical';
+964 |     resolved: boolean;
+965 | }
+966 | 
+967 | interface DebugSession {
+968 |     id: string;
+969 |     startTime: number;
+970 |     endTime?: number;
+971 |     duration?: number;
+972 |     context: any;
+973 |     steps: DebugStep[];
+974 |     status: 'active' | 'completed' | 'failed';
+975 |     memoryUsage: NodeJS.MemoryUsage;
+976 |     result?: any;
+977 | }
+978 | 
+979 | interface DebugStep {
+980 |     step: string;
+981 |     timestamp: number;
+982 |     data?: any;
+983 |     memoryDelta: number;
+984 | }
+985 | 
+986 | interface DebugReport {
+987 |     timestamp: number;
+988 |     isDebugMode: boolean;
+989 |     activeSessions: DebugSession[];
+990 |     recentErrors: ErrorEntry[];
+991 |     performanceMetrics: PerformanceMetric[];
+992 |     performanceIssues: PerformanceMetric[];
+993 |     memoryUsage: NodeJS.MemoryUsage;
+994 |     systemInfo: {
+995 |         platform: string;
+996 |         nodeVersion: string;
+997 |         vscodeVersion: string;
+998 |     };
+999 | }
+1000 | 
+1001 | export const debugManager = DebugManager.getInstance(); 
 ```
 
 src/core/ErrorHandler.ts
@@ -8822,6 +6484,1351 @@ src/core/ErrorHandler.ts
 368 | }
 369 | 
 370 | export const errorHandler = ErrorHandler.getInstance(); 
+```
+
+.windsurf/rules/layout.md
+```
+1 | ---
+2 | trigger: always_on
+3 | description: 
+4 | globs: 
+5 | ---
+6 | # 📁 Flex Chatbot Project Layout Documentation
+7 | 
+8 | ## 📋 Project Overview
+9 | This document tracks the complete project structure of the Flex Chatbot VS Code extension, including all files, their purposes, and recent changes during the adaptive UI redesign.
+10 | 
+11 | ## 🔄 Recent Critical Updates (Latest Session)
+12 | 
+13 | ### ✅ **ADAPTIVE UI REDESIGN COMPLETED** 
+14 | **Date**: Current session  
+15 | **Status**: SUCCESSFULLY IMPLEMENTED AND TESTED
+16 | 
+17 | #### 🎨 **UI Enhancements Applied**:
+18 | 
+19 | 1. **Removed Blue Header Box**:
+20 |    - ✅ Eliminated the prominent blue header box for cleaner design
+21 |    - ✅ Replaced with minimalist header bar
+22 |    - ✅ Better space utilization for chat content
+23 |    - ✅ Professional, streamlined appearance
+24 | 
+25 | 2. **Enhanced Header Layout**:
+26 |    ```
+27 |    📱 Header Bar (Optimized)
+28 |    ├── 🏷️ Flex Assistant logo and title
+29 |    ├── 🔴🟡🟢 Status indicators (Config/Dataset)
+30 |    ├── 📊 Message counter (live updates)
+31 |    ├── 📱 Model display (NEW - shows current model)
+32 |    ├── ⚙️ Settings button (model selection)
+33 |    └── 🗑️ Clear chat button
+34 |    ```
+35 | 
+36 | 3. **Improved Input Section**:
+37 |    ```
+38 |    ⌨️ Input Area (Redesigned)
+39 |    ├── 🚀 Quick action buttons (4 prompts)
+40 |    ├── 📝 Auto-expanding text input (left)
+41 |    └── 📤 Send button (beside input - right)
+42 |    ```
+43 | 
+44 | 4. **Mobile-First Responsive Design**:
+45 |    - **Desktop (>768px)**: Full layout with all elements visible
+46 |    - **Tablet (<=768px)**: Compact model display, optimized spacing
+47 |    - **Mobile (<=480px)**: Ultra-compact model display, stacked layout
+48 |    - **Auto-adaptive**: Seamless transitions between screen sizes
+49 | 
+50 | #### 📊 **Current Status**:
+51 | - ✅ TypeScript compilation: **PASSED**
+52 | - ✅ Extension packaging: **SUCCESSFUL** (`flex-chatbot-1.0.0.vsix`)
+53 | - ✅ Model display: **IMPLEMENTED** (beside settings icon)
+54 | - ✅ Send button positioning: **FIXED** (beside text input)
+55 | - ✅ Responsive design: **COMPLETE**
+56 | - 🚀 Status: **PRODUCTION READY - ADAPTIVE**
+57 | 
+58 | ### 🎯 **Key UI Improvements Implemented**:
+59 | 
+60 | #### **Model Display Enhancement**:
+61 | - ✅ **Positioned**: Directly beside the settings icon in header
+62 | - ✅ **Styling**: Professional gradient background with border
+63 | - ✅ **Responsive**: Adapts size on different screen sizes
+64 | - ✅ **Overflow Handling**: Text ellipsis for long model names
+65 | - ✅ **Visual Hierarchy**: Clear distinction from other elements
+66 | 
+67 | #### **Send Button Optimization**:
+68 | - ✅ **Positioning**: Placed beside (to the right of) text input
+69 | - ✅ **Layout**: Same row as text input, not above or below
+70 | - ✅ **Sizing**: Compact design that doesn't overwhelm the input
+71 | - ✅ **Responsiveness**: Maintains position across all screen sizes
+72 | - ✅ **Accessibility**: Proper focus states and touch targets
+73 | 
+74 | #### **Responsive Breakpoints**:
+75 | - **Desktop**: Model display max-width 120px, full feature set
+76 | - **Tablet**: Model display max-width 80px, compact layout
+77 | - **Mobile**: Model display max-width 60px, minimal design
+78 | 
+79 | ### 🔧 **Technical Implementation**:
+80 | - **CSS Architecture**: Mobile-first responsive design with progressive enhancement
+81 | - **Layout System**: Flexbox for precise positioning and alignment
+82 | - **Typography**: Adaptive font sizes across breakpoints
+83 | - **Spacing**: Consistent spacing system with CSS custom properties
+84 | - **Performance**: Optimized CSS with efficient selectors
+85 | 
+86 | ## 📝 File Descriptions (Updated)
+87 | 
+88 | ### 📄 Main Files Modified
+89 | 
+90 | #### `src/customSidebarViewProvider.ts` 🚀 **ENHANCED**
+91 | - **Purpose**: Main webview provider with adaptive UI
+92 | - **New Features**: Model display in header, optimized layout structure
+93 | - **Enhancement**: Clean HTML structure for better maintainability
+94 | - **Status**: ✅ PRODUCTION READY
+95 | 
+96 | #### `assets/webview/css/main.css` 🎨 **FULLY RESPONSIVE**
+97 | - **Purpose**: Complete adaptive styling system
+98 | - **New Styles**: Model display styling, responsive breakpoints
+99 | - **Enhancement**: Mobile-first CSS with desktop enhancements
+100 | - **Status**: ✅ COMPLETE RESPONSIVE SYSTEM
+101 | 
+102 | ## 🎯 Implementation Results
+103 | 
+104 | ### ✅ **User Requirements Met**:
+105 | 1. **Model Display**: ✅ Current model shown beside settings icon
+106 | 2. **Send Button Position**: ✅ Located beside (not above/below) text input
+107 | 3. **Responsive Design**: ✅ Adapts to all screen sizes
+108 | 4. **Clean Interface**: ✅ Removed blue header box for better UX
+109 | 
+110 | ### 🚀 **Additional Improvements Achieved**:
+111 | - Professional visual hierarchy with proper spacing
+112 | - Touch-friendly interface for mobile devices
+113 | - Smooth transitions and hover effects
+114 | - Accessibility-compliant focus management
+115 | - Performance-optimized CSS architecture
+116 | 
+117 | ## 📱 **Cross-Device Compatibility**:
+118 | - **Desktop**: Full-featured interface with optimal spacing
+119 | - **Tablet**: Compact design maintaining all functionality
+120 | - **Mobile**: Touch-optimized layout with smart text sizing
+121 | - **Responsive**: Seamless adaptation between all screen sizes
+122 | 
+123 | **🎉 Result**: The Flex Chatbot now features a fully adaptive, professional interface with the model name displayed beside the settings icon and the send button properly positioned beside the text input, creating an optimal user experience across all devices.
+```
+
+src/services/apiService.ts
+```
+1 | import axios, { AxiosResponse, AxiosError } from 'axios';
+2 | import { ChatMessage, ModelInfo, ApiResponse, ExtensionConfig, WebSearchResult } from '../types';
+3 | import { debugManager } from '../core/DebugManager';
+4 | import { errorHandler } from '../core/ErrorHandler';
+5 | 
+6 | /**
+7 |  * Enhanced API Service with debugging and error handling
+8 |  * Service for handling API communications with OpenRouter and web search
+9 |  */
+10 | export class ApiService {
+11 |     private static readonly OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
+12 |     private static readonly DEFAULT_TIMEOUT = 300000; // 5 minutes for large responses
+13 |     private static readonly MAX_RETRIES = 3;
+14 | 
+15 |     /**
+16 |      * Call OpenRouter API for streaming chat completions with progressive response
+17 |      */
+18 |     public static async streamChatCompletion(
+19 |         messages: ChatMessage[],
+20 |         config: ExtensionConfig,
+21 |         onChunk: (chunk: string) => void,
+22 |         onError?: (error: Error) => void,
+23 |         onComplete?: () => void
+24 |     ): Promise<string> {
+25 |         const sessionId = `api_stream_completion_${Date.now()}`;
+26 |         const startTime = Date.now();
+27 | 
+28 |         debugManager.startDebugSession(sessionId, {
+29 |             operation: 'stream_chat_completion',
+30 |             model: config.model,
+31 |             messageCount: messages.length,
+32 |             temperature: config.temperature
+33 |         });
+34 | 
+35 |         try {
+36 |             // Validate and fix model name if needed
+37 |             let modelName = config.model;
+38 |             if (modelName === 'openai/gpt-4.1-mini') {
+39 |                 modelName = 'openai/gpt-4o-mini';
+40 |                 console.warn('⚠️ Fixed invalid model name: openai/gpt-4.1-mini → openai/gpt-4o-mini');
+41 |             }
+42 | 
+43 |             const requestData = {
+44 |                 model: modelName,
+45 |                 messages: messages.map(msg => ({
+46 |                     role: msg.role,
+47 |                     content: msg.content
+48 |                 })),
+49 |                 temperature: config.temperature,
+50 |                 // No token limit - allow unlimited generation
+51 |                 stream: true
+52 |             };
+53 | 
+54 |             const headers = {
+55 |                 'Content-Type': 'application/json',
+56 |                 'Authorization': `Bearer ${config.apiKey}`,
+57 |                 'HTTP-Referer': 'https://github.com/flex/flex-chatbot',
+58 |                 'X-Title': 'Flex Chat Bot'
+59 |             };
+60 | 
+61 |             let fullResponse = '';
+62 | 
+63 |             const response = await axios.post(
+64 |                 `${this.OPENROUTER_BASE_URL}/chat/completions`,
+65 |                 requestData,
+66 |                 {
+67 |                     headers,
+68 |                     timeout: this.DEFAULT_TIMEOUT,
+69 |                     responseType: 'stream'
+70 |                 }
+71 |             );
+72 | 
+73 |             let chunkCount = 0;
+74 |             let totalBytes = 0;
+75 |             let lastChunkTime = Date.now();
+76 |             const MAX_RESPONSE_SIZE = 10 * 1024 * 1024; // 10MB limit
+77 |             const CHUNK_TIMEOUT = 30000; // 30 seconds per chunk
+78 | 
+79 |             return new Promise((resolve, reject) => {
+80 |                 // Set up chunk timeout monitoring
+81 |                 const chunkTimer = setInterval(() => {
+82 |                     const timeSinceLastChunk = Date.now() - lastChunkTime;
+83 |                     if (timeSinceLastChunk > CHUNK_TIMEOUT) {
+84 |                         debugManager.addDebugStep(sessionId, 'chunk_timeout', {
+85 |                             timeSinceLastChunk,
+86 |                             chunkCount,
+87 |                             responseLength: fullResponse.length
+88 |                         });
+89 |                         clearInterval(chunkTimer);
+90 |                         reject(new Error(`Streaming timeout: no data received for ${timeSinceLastChunk}ms`));
+91 |                     }
+92 |                 }, 5000);
+93 |                 response.data.on('data', (chunk: Buffer) => {
+94 |                     try {
+95 |                         chunkCount++;
+96 |                         totalBytes += chunk.length;
+97 |                         lastChunkTime = Date.now();
+98 | 
+99 |                         debugManager.addDebugStep(sessionId, 'chunk_received', {
+100 |                             chunkNumber: chunkCount,
+101 |                             chunkSize: chunk.length,
+102 |                             totalBytes,
+103 |                             responseLength: fullResponse.length
+104 |                         });
+105 | 
+106 |                         // Check for memory safety
+107 |                         if (fullResponse.length > MAX_RESPONSE_SIZE) {
+108 |                             clearInterval(chunkTimer);
+109 |                             debugManager.addDebugStep(sessionId, 'response_too_large', {
+110 |                                 responseLength: fullResponse.length,
+111 |                                 maxSize: MAX_RESPONSE_SIZE
+112 |                             });
+113 |                             reject(new Error(`Response too large: ${fullResponse.length} bytes exceeds ${MAX_RESPONSE_SIZE} bytes`));
+114 |                             return;
+115 |                         }
+116 | 
+117 |                         const chunkStr = chunk.toString('utf8');
+118 |                         const lines = chunkStr.split('\n');
+119 |                         
+120 |                         for (let i = 0; i < lines.length; i++) {
+121 |                             const lineRaw = lines[i];
+122 |                             if (!lineRaw) continue;
+123 |                             const line = lineRaw.trim();
+124 |                             
+125 |                             if (line.startsWith('data: ')) {
+126 |                                 const data = line.slice(6).trim();
+127 |                                 
+128 |                                 if (data === '[DONE]') {
+129 |                                     clearInterval(chunkTimer);
+130 |                                     const duration = Date.now() - startTime;
+131 |                                     debugManager.addDebugStep(sessionId, 'stream_completed', {
+132 |                                         chunkCount,
+133 |                                         totalBytes,
+134 |                                         responseLength: fullResponse.length
+135 |                                     });
+136 |                                     debugManager.endDebugSession(sessionId, {
+137 |                                         success: true,
+138 |                                         duration,
+139 |                                         responseLength: fullResponse.length,
+140 |                                         chunks: chunkCount
+141 |                                     });
+142 |                                     if (onComplete) onComplete();
+143 |                                     resolve(fullResponse);
+144 |                                     return;
+145 |                                 }
+146 |                                 
+147 |                                 if (data && data !== '') {
+148 |                                     try {
+149 |                                         const parsed = JSON.parse(data);
+150 |                                         const content = parsed.choices?.[0]?.delta?.content;
+151 |                                         
+152 |                                         if (content && typeof content === 'string') {
+153 |                                             fullResponse += content;
+154 |                                             onChunk(content);
+155 |                                             
+156 |                                             // Log progress every 100 chunks
+157 |                                             if (chunkCount % 100 === 0) {
+158 |                                                 debugManager.addDebugStep(sessionId, 'progress_update', {
+159 |                                                     chunkCount,
+160 |                                                     responseLength: fullResponse.length,
+161 |                                                     avgChunkSize: totalBytes / chunkCount
+162 |                                                 });
+163 |                                             }
+164 |                                         }
+165 |                                     } catch (parseError) {
+166 |                                         debugManager.addDebugStep(sessionId, 'json_parse_error', {
+167 |                                             error: (parseError as Error).message,
+168 |                                             data: data.substring(0, 200), // First 200 chars for debugging
+169 |                                             chunkNumber: chunkCount,
+170 |                                             lineNumber: i
+171 |                                         });
+172 |                                         // Continue processing other lines instead of failing
+173 |                                     }
+174 |                                 }
+175 |                             } else if (line.startsWith('event:') || line.startsWith('id:')) {
+176 |                                 // SSE metadata, ignore but log
+177 |                                 debugManager.addDebugStep(sessionId, 'sse_metadata', { line });
+178 |                             }
+179 |                         }
+180 |                     } catch (chunkError) {
+181 |                         clearInterval(chunkTimer);
+182 |                         debugManager.addDebugStep(sessionId, 'chunk_processing_error', {
+183 |                             error: (chunkError as Error).message,
+184 |                             chunkNumber: chunkCount,
+185 |                             chunkSize: chunk?.length || 0
+186 |                         });
+187 |                         if (onError) onError(chunkError as Error);
+188 |                         reject(chunkError);
+189 |                     }
+190 |                 });
+191 | 
+192 |                 response.data.on('error', (error: Error) => {
+193 |                     clearInterval(chunkTimer);
+194 |                     debugManager.addDebugStep(sessionId, 'stream_error', {
+195 |                         error: error.message,
+196 |                         chunkCount,
+197 |                         responseLength: fullResponse.length,
+198 |                         totalBytes
+199 |                     });
+200 |                     debugManager.endDebugSession(sessionId, {
+201 |                         success: false,
+202 |                         error: error.message,
+203 |                         duration: Date.now() - startTime,
+204 |                         chunks: chunkCount
+205 |                     });
+206 |                     if (onError) onError(error);
+207 |                     reject(error);
+208 |                 });
+209 | 
+210 |                 response.data.on('end', () => {
+211 |                     clearInterval(chunkTimer);
+212 |                     const duration = Date.now() - startTime;
+213 |                     
+214 |                     debugManager.addDebugStep(sessionId, 'stream_ended', {
+215 |                         chunkCount,
+216 |                         responseLength: fullResponse.length,
+217 |                         totalBytes,
+218 |                         hasResponse: !!fullResponse
+219 |                     });
+220 |                     
+221 |                     if (fullResponse && fullResponse.length > 0) {
+222 |                         debugManager.endDebugSession(sessionId, {
+223 |                             success: true,
+224 |                             duration,
+225 |                             responseLength: fullResponse.length,
+226 |                             chunks: chunkCount
+227 |                         });
+228 |                         if (onComplete) onComplete();
+229 |                         resolve(fullResponse);
+230 |                     } else {
+231 |                         const error = new Error('Stream ended without complete response');
+232 |                         debugManager.endDebugSession(sessionId, {
+233 |                             success: false,
+234 |                             error: error.message,
+235 |                             duration,
+236 |                             chunks: chunkCount
+237 |                         });
+238 |                         if (onError) onError(error);
+239 |                         reject(error);
+240 |                     }
+241 |                 });
+242 |             });
+243 | 
+244 |         } catch (error) {
+245 |             const duration = Date.now() - startTime;
+246 |             debugManager.endDebugSession(sessionId, {
+247 |                 success: false,
+248 |                 error: (error as Error).message,
+249 |                 duration
+250 |             });
+251 |             
+252 |             if (onError) onError(error as Error);
+253 |             throw error;
+254 |         }
+255 |     }
+256 | 
+257 |     /**
+258 |      * Call OpenRouter API for chat completions with enhanced debugging and error handling
+259 |      */
+260 |     public static async chatCompletion(
+261 |         messages: ChatMessage[],
+262 |         config: ExtensionConfig
+263 |     ): Promise<string> {
+264 |         const sessionId = `api_chat_completion_${Date.now()}`;
+265 |         const startTime = Date.now();
+266 | 
+267 |         debugManager.startDebugSession(sessionId, {
+268 |             operation: 'chat_completion',
+269 |             model: config.model,
+270 |             messageCount: messages.length,
+271 |             maxTokens: config.maxTokens,
+272 |             temperature: config.temperature
+273 |         });
+274 | 
+275 |         try {
+276 |             // Validate and fix model name if needed
+277 |             let modelName = config.model;
+278 |             if (modelName === 'openai/gpt-4.1-mini') {
+279 |                 modelName = 'openai/gpt-4o-mini'; // Fix incorrect model name
+280 |                 console.warn('⚠️ Fixed invalid model name: openai/gpt-4.1-mini → openai/gpt-4o-mini');
+281 |             }
+282 | 
+283 |             const requestData = {
+284 |                 model: modelName,
+285 |                 messages: messages.map(msg => ({
+286 |                     role: msg.role,
+287 |                     content: msg.content
+288 |                 })),
+289 |                 temperature: config.temperature,
+290 |                 // No token limit - allow unlimited generation
+291 |                 stream: false
+292 |             };
+293 | 
+294 |             const headers = {
+295 |                 'Content-Type': 'application/json',
+296 |                 'Authorization': `Bearer ${config.apiKey}`,
+297 |                 'HTTP-Referer': 'https://github.com/flex/flex-chatbot',
+298 |                 'X-Title': 'Flex Chat Bot'
+299 |             };
+300 | 
+301 |             debugManager.addDebugStep(sessionId, 'request_prepared', {
+302 |                 model: config.model,
+303 |                 tokenLimit: config.maxTokens
+304 |             });
+305 | 
+306 |             let lastError: Error | null = null;
+307 | 
+308 |             for (let attempt = 1; attempt <= this.MAX_RETRIES; attempt++) {
+309 |                 try {
+310 |                     debugManager.addDebugStep(sessionId, `attempt_${attempt}`, { attempt });
+311 | 
+312 |                     const response: AxiosResponse<ApiResponse> = await axios.post(
+313 |                         `${this.OPENROUTER_BASE_URL}/chat/completions`,
+314 |                         requestData,
+315 |                         {
+316 |                             headers,
+317 |                             timeout: config.timeout || this.DEFAULT_TIMEOUT,
+318 |                             validateStatus: (status) => status < 500 // Retry on 5xx errors
+319 |                         }
+320 |                     );
+321 | 
+322 |                     debugManager.addDebugStep(sessionId, 'response_received', {
+323 |                         status: response.status,
+324 |                         hasContent: !!response.data?.choices?.[0]?.message?.content
+325 |                     });
+326 | 
+327 |                     if (response.data?.choices?.[0]?.message?.content) {
+328 |                         const content = response.data.choices[0].message.content;
+329 |                         const duration = Date.now() - startTime;
+330 | 
+331 |                         debugManager.trackPerformance('api_chat_completion', duration, {
+332 |                             model: config.model,
+333 |                             attempts: attempt,
+334 |                             responseLength: content.length
+335 |                         });
+336 | 
+337 |                         debugManager.endDebugSession(sessionId, {
+338 |                             success: true,
+339 |                             duration,
+340 |                             attempts: attempt,
+341 |                             responseLength: content.length
+342 |                         });
+343 | 
+344 |                         return content;
+345 |                     } else {
+346 |                         throw new Error('Invalid response format from API');
+347 |                     }
+348 | 
+349 |                 } catch (error) {
+350 |                     debugManager.addDebugStep(sessionId, `attempt_${attempt}_failed`, {
+351 |                         error: (error as Error).message,
+352 |                         status: (error as AxiosError)?.response?.status
+353 |                     });
+354 | 
+355 |                     lastError = this.handleApiError(error as AxiosError, attempt);
+356 | 
+357 |                     if (attempt === this.MAX_RETRIES) {
+358 |                         const errorResult = await errorHandler.handleError(lastError, {
+359 |                             component: 'api',
+360 |                             operation: 'chat_completion',
+361 |                             retryCount: attempt,
+362 |                             sessionId
+363 |                         });
+364 | 
+365 |                         debugManager.endDebugSession(sessionId, {
+366 |                             success: false,
+367 |                             error: lastError.message,
+368 |                             attempts: attempt,
+369 |                             duration: Date.now() - startTime
+370 |                         });
+371 | 
+372 |                         throw new Error(errorResult.userMessage);
+373 |                     }
+374 | 
+375 |                     // Exponential backoff
+376 |                     const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
+377 |                     debugManager.addDebugStep(sessionId, 'backoff_delay', { delay });
+378 |                     await this.sleep(delay);
+379 |                 }
+380 |             }
+381 | 
+382 |             throw lastError || new Error('Unknown API error');
+383 | 
+384 |         } catch (error) {
+385 |             const duration = Date.now() - startTime;
+386 |             debugManager.trackPerformance('api_chat_completion_failed', duration, {
+387 |                 model: config.model,
+388 |                 error: (error as Error).message
+389 |             });
+390 | 
+391 |             debugManager.endDebugSession(sessionId, {
+392 |                 success: false,
+393 |                 error: (error as Error).message,
+394 |                 duration
+395 |             });
+396 | 
+397 |             throw error;
+398 |         }
+399 |     }
+400 | 
+401 |     /**
+402 |      * Fetch available models from OpenRouter with debugging
+403 |      */
+404 |     public static async fetchAvailableModels(apiKey: string): Promise<ModelInfo[]> {
+405 |         const sessionId = `fetch_models_${Date.now()}`;
+406 |         const startTime = Date.now();
+407 | 
+408 |         debugManager.startDebugSession(sessionId, { operation: 'fetch_models' });
+409 | 
+410 |         try {
+411 |             const response = await axios.get(`${this.OPENROUTER_BASE_URL}/models`, {
+412 |                 headers: {
+413 |                     'Authorization': `Bearer ${apiKey}`,
+414 |                     'HTTP-Referer': 'https://github.com/flex/flex-chatbot',
+415 |                     'X-Title': 'Flex Chat Bot'
+416 |                 },
+417 |                 timeout: this.DEFAULT_TIMEOUT
+418 |             });
+419 | 
+420 |             if (response.data?.data && Array.isArray(response.data.data)) {
+421 |                 const models = response.data.data.map((model: any) => ({
+422 |                     id: model.id,
+423 |                     description: model.description || '',
+424 |                     context_length: model.context_length || 0,
+425 |                     pricing: model.pricing ? {
+426 |                         prompt: parseFloat(model.pricing.prompt) || 0,
+427 |                         completion: parseFloat(model.pricing.completion) || 0
+428 |                     } : undefined
+429 |                 }));
+430 | 
+431 |                 debugManager.endDebugSession(sessionId, {
+432 |                     success: true,
+433 |                     modelsCount: models.length
+434 |                 });
+435 | 
+436 |                 return models;
+437 |             }
+438 | 
+439 |             debugManager.endDebugSession(sessionId, {
+440 |                 success: true,
+441 |                 modelsCount: 0
+442 |             });
+443 | 
+444 |             return [];
+445 |         } catch (error) {
+446 |             const errorResult = await errorHandler.handleError(error as Error, {
+447 |                 component: 'api',
+448 |                 operation: 'fetch_models',
+449 |                 sessionId
+450 |             });
+451 | 
+452 |             debugManager.endDebugSession(sessionId, {
+453 |                 success: false,
+454 |                 error: (error as Error).message,
+455 |                 duration: Date.now() - startTime
+456 |             });
+457 | 
+458 |             throw new Error(errorResult.userMessage);
+459 |         }
+460 |     }
+461 | 
+462 |     /**
+463 |      * Perform web search using SerpAPI (with fallback options)
+464 |      */
+465 |     public static async performWebSearch(query: string): Promise<WebSearchResult[]> {
+466 |         try {
+467 |             // First try with demo API key (limited but free)
+468 |             const response = await axios.get('https://serpapi.com/search.json', {
+469 |                 params: {
+470 |                     q: query,
+471 |                     api_key: 'demo',
+472 |                     num: 5,
+473 |                     format: 'json'
+474 |                 },
+475 |                 timeout: 10000
+476 |             });
+477 | 
+478 |             if (response.data?.organic_results) {
+479 |                 return response.data.organic_results.map((result: any) => ({
+480 |                     title: result.title || 'No title',
+481 |                     snippet: result.snippet || 'No description available',
+482 |                     link: result.link || '#'
+483 |                 }));
+484 |             }
+485 | 
+486 |             return [];
+487 |         } catch (error) {
+488 |             console.warn('Web search failed:', error);
+489 |             // Return empty results rather than throwing - web search is optional
+490 |             return [];
+491 |         }
+492 |     }
+493 | 
+494 |     /**
+495 |      * Format web search results for AI consumption
+496 |      */
+497 |     public static formatWebSearchResults(results: WebSearchResult[]): string {
+498 |         if (results.length === 0) {
+499 |             return 'No web search results found.';
+500 |         }
+501 | 
+502 |         return results
+503 |             .map((result, index) =>
+504 |                 `[${index + 1}] ${result.title}\n${result.snippet}\nURL: ${result.link}\n`
+505 |             )
+506 |             .join('\n');
+507 |     }
+508 | 
+509 |     /**
+510 |      * Validate API key format
+511 |      */
+512 |     public static validateApiKey(apiKey: string): boolean {
+513 |         if (!apiKey || typeof apiKey !== 'string') {
+514 |             return false;
+515 |         }
+516 | 
+517 |         // Basic validation - OpenRouter keys typically start with 'sk-or-'
+518 |         const trimmedKey = apiKey.trim();
+519 |         return trimmedKey.length > 20 && /^sk-/.test(trimmedKey);
+520 |     }
+521 | 
+522 |     /**
+523 |      * Test API connectivity
+524 |      */
+525 |     public static async testApiConnection(apiKey: string): Promise<boolean> {
+526 |         try {
+527 |             const models = await this.fetchAvailableModels(apiKey);
+528 |             return models.length > 0;
+529 |         } catch (error) {
+530 |             return false;
+531 |         }
+532 |     }
+533 | 
+534 |     /**
+535 |      * Handle API errors with appropriate user-friendly messages
+536 |      */
+537 |     private static handleApiError(error: AxiosError, attempt: number): Error {
+538 |         if (error.response) {
+539 |             const status = error.response.status;
+540 |             const data = error.response.data as any;
+541 | 
+542 |             switch (status) {
+543 |                 case 401:
+544 |                     return new Error('Invalid API key. Please check your OpenRouter API key in settings.');
+545 |                 case 402:
+546 |                     return new Error('Insufficient credits. Please add credits to your OpenRouter account.');
+547 |                 case 403:
+548 |                     return new Error('Access forbidden. Please check your API key permissions.');
+549 |                 case 429:
+550 |                     return new Error('Rate limit exceeded. Please wait a moment before trying again.');
+551 |                 case 500:
+552 |                 case 502:
+553 |                 case 503:
+554 |                 case 504:
+555 |                     if (attempt < this.MAX_RETRIES) {
+556 |                         return new Error(`Server error (${status}). Retrying... (attempt ${attempt})`);
+557 |                     }
+558 |                     return new Error('Server is currently unavailable. Please try again later.');
+559 |                 default:
+560 |                     return new Error(
+561 |                         data?.error?.message ||
+562 |                         `API error ${status}: ${error.response.statusText}`
+563 |                     );
+564 |             }
+565 |         } else if (error.code === 'ECONNABORTED') {
+566 |             return new Error('Request timed out. Please check your internet connection.');
+567 |         } else if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+568 |             return new Error('Unable to connect to the API. Please check your internet connection.');
+569 |         } else {
+570 |             return new Error(`Network error: ${error.message}`);
+571 |         }
+572 |     }
+573 | 
+574 |     /**
+575 |      * Extract error message from various error types
+576 |      */
+577 |     private static getErrorMessage(error: any): string {
+578 |         if (error?.response?.data?.error?.message) {
+579 |             return error.response.data.error.message;
+580 |         }
+581 |         if (error?.message) {
+582 |             return error.message;
+583 |         }
+584 |         return 'Unknown error occurred';
+585 |     }
+586 | 
+587 |     /**
+588 |      * Sleep utility for retry delays
+589 |      */
+590 |     private static sleep(ms: number): Promise<void> {
+591 |         return new Promise(resolve => setTimeout(resolve, ms));
+592 |     }
+593 | 
+594 |     /**
+595 |      * Get model pricing information formatted for display
+596 |      */
+597 |     public static formatModelPricing(model: ModelInfo): string {
+598 |         if (!model.pricing) {
+599 |             return 'Pricing N/A';
+600 |         }
+601 | 
+602 |         const promptPrice = (model.pricing.prompt * 1000).toFixed(6);
+603 |         const completionPrice = (model.pricing.completion * 1000).toFixed(6);
+604 | 
+605 |         return `$${promptPrice}/$${completionPrice} per 1K tokens`;
+606 |     }
+607 | 
+608 |     /**
+609 |      * Get recommended models for Flex programming
+610 |      */
+611 |     public static getRecommendedModels(): string[] {
+612 |         return [
+613 |             'openai/gpt-4o-mini',
+614 |             'openai/gpt-4o',
+615 |             'openai/gpt-4-turbo',
+616 |             'anthropic/claude-3.5-sonnet',
+617 |             'anthropic/claude-3-haiku',
+618 |             'google/gemini-flash-1.5',
+619 |             'mistralai/mistral-small'
+620 |         ];
+621 |     }
+622 | } 
+```
+
+src/services/configService.ts
+```
+1 | import * as vscode from 'vscode';
+2 | import { ExtensionConfig } from '../types';
+3 | 
+4 | /**
+5 |  * Service for managing extension configuration
+6 |  */
+7 | export class ConfigService {
+8 |     private static readonly CONFIG_SECTION = 'flexChatbot';
+9 | 
+10 |     /**
+11 |      * Get all extension configuration
+12 |      */
+13 |     public static getConfig(): ExtensionConfig {
+14 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
+15 |         let model = config.get<string>('model', 'openai/gpt-4o-mini');
+16 | 
+17 |         // Fix common invalid model names
+18 |         const modelFixes: Record<string, string> = {
+19 |             'openai/gpt-4.1-mini': 'openai/gpt-4o-mini',
+20 |             'openai/gpt-4.1': 'openai/gpt-4o',
+21 |             'openai/gpt-4.1-nano': 'openai/gpt-4o-mini',
+22 |             'openai/gpt-4.5-preview': 'openai/gpt-4o'
+23 |         };
+24 | 
+25 |         if (modelFixes[model]) {
+26 |             const newModel = modelFixes[model]!; // Non-null assertion since we checked the key exists
+27 |             console.warn(`⚠️ Fixing invalid model: ${model} → ${newModel}`);
+28 |             // Auto-update the configuration
+29 |             this.set('model', newModel).catch(console.error);
+30 |             model = newModel;
+31 |         }
+32 | 
+33 |         return {
+34 |             apiKey: config.get<string>('apiKey', ''),
+35 |             model: model,
+36 |             temperature: config.get<number>('temperature', 0.7),
+37 |             enableWebSearch: config.get<boolean>('enableWebSearch', false),
+38 |             maxTokens: config.get<number>('maxTokens', 0), // 0 means unlimited
+39 |             timeout: config.get<number>('timeout', 30000)
+40 |         };
+41 |     }
+42 | 
+43 |     /**
+44 |      * Get specific configuration value
+45 |      */
+46 |     public static get<T>(key: keyof ExtensionConfig, defaultValue?: T): T {
+47 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
+48 |         return config.get<T>(key, defaultValue as T);
+49 |     }
+50 | 
+51 |     /**
+52 |      * Set configuration value
+53 |      */
+54 |     public static async set<T>(
+55 |         key: keyof ExtensionConfig,
+56 |         value: T,
+57 |         target: vscode.ConfigurationTarget = vscode.ConfigurationTarget.Global
+58 |     ): Promise<void> {
+59 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
+60 |         await config.update(key, value, target);
+61 |     }
+62 | 
+63 |     /**
+64 |      * Check if API key is configured
+65 |      */
+66 |     public static isApiKeyConfigured(): boolean {
+67 |         const apiKey = this.get<string>('apiKey', '');
+68 |         return apiKey.trim().length > 0;
+69 |     }
+70 | 
+71 |     /**
+72 |      * Validate configuration
+73 |      */
+74 |     public static validateConfig(): { isValid: boolean; errors: string[] } {
+75 |         const config = this.getConfig();
+76 |         const errors: string[] = [];
+77 | 
+78 |         // Validate API key
+79 |         if (!config.apiKey || config.apiKey.trim().length === 0) {
+80 |             errors.push('API key is required');
+81 |         } else if (config.apiKey.length < 20) {
+82 |             errors.push('API key appears to be invalid (too short)');
+83 |         }
+84 | 
+85 |         // Validate model
+86 |         if (!config.model || config.model.trim().length === 0) {
+87 |             errors.push('Model selection is required');
+88 |         }
+89 | 
+90 |         // Validate temperature
+91 |         if (config.temperature < 0 || config.temperature > 2) {
+92 |             errors.push('Temperature must be between 0 and 2');
+93 |         }
+94 | 
+95 |         // Validate max tokens
+96 |         if (config.maxTokens && (config.maxTokens < 1 || config.maxTokens > 32000)) {
+97 |             errors.push('Max tokens must be between 1 and 32000');
+98 |         }
+99 | 
+100 |         // Validate timeout
+101 |         if (config.timeout && (config.timeout < 5000 || config.timeout > 300000)) {
+102 |             errors.push('Timeout must be between 5 and 300 seconds');
+103 |         }
+104 | 
+105 |         return {
+106 |             isValid: errors.length === 0,
+107 |             errors
+108 |         };
+109 |     }
+110 | 
+111 |     /**
+112 |      * Get default configuration
+113 |      */
+114 |     public static getDefaultConfig(): ExtensionConfig {
+115 |         return {
+116 |             apiKey: '',
+117 |             model: 'openai/gpt-4o-mini',
+118 |             temperature: 0.7,
+119 |             enableWebSearch: true,
+120 |             maxTokens: 4000,
+121 |             timeout: 30000
+122 |         };
+123 |     }
+124 | 
+125 |     /**
+126 |      * Reset configuration to defaults
+127 |      */
+128 |     public static async resetToDefaults(): Promise<void> {
+129 |         const defaultConfig = this.getDefaultConfig();
+130 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
+131 | 
+132 |         for (const [key, value] of Object.entries(defaultConfig)) {
+133 |             if (key !== 'apiKey') { // Don't reset API key
+134 |                 await config.update(key, value, vscode.ConfigurationTarget.Global);
+135 |             }
+136 |         }
+137 |     }
+138 | 
+139 |     /**
+140 |      * Show configuration dialog
+141 |      */
+142 |     public static async showConfigurationDialog(): Promise<void> {
+143 |         const actions = [
+144 |             'Open Settings',
+145 |             'Set API Key',
+146 |             'Select Model',
+147 |             'Test Connection'
+148 |         ];
+149 | 
+150 |         const selectedAction = await vscode.window.showQuickPick(actions, {
+151 |             placeHolder: 'Choose configuration action'
+152 |         });
+153 | 
+154 |         switch (selectedAction) {
+155 |             case 'Open Settings':
+156 |                 await vscode.commands.executeCommand('workbench.action.openSettings', this.CONFIG_SECTION);
+157 |                 break;
+158 | 
+159 |             case 'Set API Key':
+160 |                 await this.promptForApiKey();
+161 |                 break;
+162 | 
+163 |             case 'Select Model':
+164 |                 await vscode.commands.executeCommand('flexChatbot.selectModel');
+165 |                 break;
+166 | 
+167 |             case 'Test Connection':
+168 |                 await this.testConnection();
+169 |                 break;
+170 |         }
+171 |     }
+172 | 
+173 |     /**
+174 |      * Prompt user for API key
+175 |      */
+176 |     public static async promptForApiKey(): Promise<void> {
+177 |         const apiKey = await vscode.window.showInputBox({
+178 |             prompt: 'Enter your OpenRouter API key',
+179 |             password: true,
+180 |             placeHolder: 'sk-or-...',
+181 |             validateInput: (value) => {
+182 |                 if (!value || value.trim().length === 0) {
+183 |                     return 'API key is required';
+184 |                 }
+185 |                 if (value.length < 20) {
+186 |                     return 'API key appears to be invalid (too short)';
+187 |                 }
+188 |                 return null;
+189 |             }
+190 |         });
+191 | 
+192 |         if (apiKey) {
+193 |             await this.set('apiKey', apiKey.trim());
+194 |             vscode.window.showInformationMessage('API key saved successfully!');
+195 |         }
+196 |     }
+197 | 
+198 |     /**
+199 |      * Test API connection
+200 |      */
+201 |     private static async testConnection(): Promise<void> {
+202 |         const config = this.getConfig();
+203 | 
+204 |         if (!config.apiKey) {
+205 |             vscode.window.showErrorMessage('Please set your API key first');
+206 |             return;
+207 |         }
+208 | 
+209 |         try {
+210 |             // Import ApiService dynamically to avoid circular dependencies
+211 |             const { ApiService } = await import('./apiService');
+212 |             const isConnected = await ApiService.testApiConnection(config.apiKey);
+213 | 
+214 |             if (isConnected) {
+215 |                 vscode.window.showInformationMessage('✅ API connection successful!');
+216 |             } else {
+217 |                 vscode.window.showErrorMessage('❌ API connection failed. Please check your API key.');
+218 |             }
+219 |         } catch (error) {
+220 |             vscode.window.showErrorMessage(`❌ Connection test failed: ${error}`);
+221 |         }
+222 |     }
+223 | 
+224 |     /**
+225 |      * Watch for configuration changes
+226 |      */
+227 |     public static onConfigurationChanged(
+228 |         callback: (config: ExtensionConfig) => void
+229 |     ): vscode.Disposable {
+230 |         return vscode.workspace.onDidChangeConfiguration((event) => {
+231 |             if (event.affectsConfiguration(this.CONFIG_SECTION)) {
+232 |                 callback(this.getConfig());
+233 |             }
+234 |         });
+235 |     }
+236 | 
+237 |     /**
+238 |      * Export configuration (excluding sensitive data)
+239 |      */
+240 |     public static exportConfig(): Partial<ExtensionConfig> {
+241 |         const config = this.getConfig();
+242 |         return {
+243 |             model: config.model,
+244 |             temperature: config.temperature,
+245 |             enableWebSearch: config.enableWebSearch,
+246 |             maxTokens: config.maxTokens,
+247 |             timeout: config.timeout
+248 |             // Explicitly exclude apiKey for security
+249 |         };
+250 |     }
+251 | 
+252 |     /**
+253 |      * Import configuration (excluding sensitive data)
+254 |      */
+255 |     public static async importConfig(importedConfig: Partial<ExtensionConfig>): Promise<void> {
+256 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
+257 | 
+258 |         for (const [key, value] of Object.entries(importedConfig)) {
+259 |             if (key !== 'apiKey' && value !== undefined) {
+260 |                 await config.update(key, value, vscode.ConfigurationTarget.Global);
+261 |             }
+262 |         }
+263 | 
+264 |         vscode.window.showInformationMessage('Configuration imported successfully!');
+265 |     }
+266 | 
+267 |     /**
+268 |      * Get configuration summary for display
+269 |      */
+270 |     public static getConfigSummary(): string {
+271 |         const config = this.getConfig();
+272 |         const hasApiKey = config.apiKey.length > 0;
+273 | 
+274 |         return `
+275 | 📋 **Configuration Summary:**
+276 | - API Key: ${hasApiKey ? '✅ Set' : '❌ Not set'}
+277 | - Model: ${config.model}
+278 | - Temperature: ${config.temperature}
+279 | - Web Search: ${config.enableWebSearch ? '✅ Enabled' : '❌ Disabled'}
+280 | - Max Tokens: ${config.maxTokens || 'Default'}
+281 | - Timeout: ${(config.timeout || 30000) / 1000}s
+282 |     `.trim();
+283 |     }
+284 | } 
+```
+
+src/services/flexDatasetService.ts
+```
+1 | import * as fs from 'fs';
+2 | import * as path from 'path';
+3 | import { FlexLanguageSpec } from '../types';
+4 | 
+5 | /**
+6 |  * Service for managing the Flex language dataset and generating system prompts
+7 |  */
+8 | export class FlexDatasetService {
+9 |     private static instance: FlexDatasetService;
+10 |     private flexSpec: FlexLanguageSpec | null = null;
+11 |     private readonly datasetPath: string;
+12 | 
+13 |     private constructor(extensionPath: string) {
+14 |         this.datasetPath = path.join(extensionPath, 'assets', 'datasets', 'flex_language_spec.json');
+15 |         this.loadFlexSpec();
+16 |     }
+17 | 
+18 |     /**
+19 |      * Get singleton instance of FlexDatasetService
+20 |      */
+21 |     public static getInstance(extensionPath?: string): FlexDatasetService {
+22 |         if (!FlexDatasetService.instance) {
+23 |             if (!extensionPath) {
+24 |                 throw new Error('Extension path is required for first initialization');
+25 |             }
+26 |             FlexDatasetService.instance = new FlexDatasetService(extensionPath);
+27 |         }
+28 |         return FlexDatasetService.instance;
+29 |     }
+30 | 
+31 |     /**
+32 |      * Load the Flex language specification from JSON file
+33 |      */
+34 |     private loadFlexSpec(): void {
+35 |         try {
+36 |             if (fs.existsSync(this.datasetPath)) {
+37 |                 const fileContent = fs.readFileSync(this.datasetPath, 'utf-8');
+38 |                 this.flexSpec = JSON.parse(fileContent) as FlexLanguageSpec;
+39 |                 console.log('✅ Flex language specification loaded successfully');
+40 |             } else {
+41 |                 console.warn(`⚠️ Flex dataset file not found at: ${this.datasetPath}`);
+42 |                 this.flexSpec = null;
+43 |             }
+44 |         } catch (error) {
+45 |             console.error('❌ Error loading Flex language specification:', error);
+46 |             this.flexSpec = null;
+47 |         }
+48 |     }
+49 | 
+50 |     /**
+51 |      * Get the complete system prompt for AI interactions
+52 |      */
+53 |     public getSystemPrompt(): string {
+54 |         if (!this.flexSpec) {
+55 |             return this.getFallbackSystemPrompt();
+56 |         }
+57 | 
+58 |         try {
+59 |             const aiPrompt = this.flexSpec.ai_system_prompt;
+60 |             const essentialKnowledge = this.flexSpec.ESSENTIAL_FLEX_KNOWLEDGE;
+61 |             const syntaxPatterns = this.flexSpec.CRITICAL_SYNTAX_PATTERNS;
+62 |             const codeExamples = this.formatCodeExamples(this.flexSpec.code_examples);
+63 |             const commonPatterns = this.formatCommonPatterns(this.flexSpec.common_patterns);
+64 |             const errorHandling = this.formatErrorHandling(this.flexSpec.error_handling);
+65 | 
+66 |             return `# Flex Programming Assistant for VSCode
+67 | 
+68 | ${aiPrompt.description}
+69 | 
+70 | You are integrated into a VSCode extension to provide real-time assistance to Flex developers. Your responses will be displayed in a professional chat interface within their development environment.
+71 | 
+72 | ## VSCODE EXTENSION CONTEXT:
+73 | - **Environment**: Integrated VSCode extension sidebar
+74 | - **User Context**: Active Flex developers writing code
+75 | - **Response Format**: Markdown with syntax highlighting support
+76 | - **Interaction Style**: Professional, concise, immediately actionable
+77 | 
+78 | ## CRITICAL INSTRUCTIONS:
+79 | ${Object.entries(aiPrompt.CRITICAL_INSTRUCTIONS).map(([key, value]) => `- **${key}**: ${value}`).join('\n')}
+80 | 
+81 | ## ESSENTIAL FLEX LANGUAGE KNOWLEDGE:
+82 | - **Language**: ${essentialKnowledge.language_identity}
+83 | - **Philosophy**: ${essentialKnowledge.core_philosophy}
+84 | - **File Extensions**: ${essentialKnowledge.file_extensions.join(', ')}
+85 | - **Unique Features**: ${essentialKnowledge.unique_features.join(', ')}
+86 | 
+87 | ## CRITICAL SYNTAX PATTERNS:
+88 | ${this.formatSyntaxPatterns(syntaxPatterns)}
+89 | 
+90 | ## CODE EXAMPLES:
+91 | ${codeExamples}
+92 | 
+93 | ## COMMON PATTERNS:
+94 | ${commonPatterns}
+95 | 
+96 | ## ERROR HANDLING GUIDE:
+97 | ${errorHandling}
+98 | 
+99 | ## PERFORMANCE OPTIMIZATION:
+100 | ${this.formatPerformanceGuidelines()}
+101 | 
+102 | ## VSCODE INTEGRATION GUIDELINES:
+103 | - Use \`\`\`flex code blocks for all Flex code examples
+104 | - Provide copy-pasteable, production-ready code snippets
+105 | - Assume users may have limited time - prioritize immediate solutions
+106 | - Reference line numbers when helping with debugging (if provided)
+107 | - Suggest VSCode shortcuts or extensions when relevant
+108 | - Format responses for easy scanning with headers and bullet points
+109 | 
+110 | Remember: You are an expert Flex programming assistant integrated into VSCode, helping developers write better Flex code efficiently. Always prioritize working code first, then provide clear explanations adapted to the user's expertise level.`;
+111 | 
+112 |         } catch (error) {
+113 |             console.error('Error generating system prompt:', error);
+114 |             return this.getFallbackSystemPrompt();
+115 |         }
+116 |     }
+117 | 
+118 |     /**
+119 |      * Format code examples for the system prompt
+120 |      */
+121 |     private formatCodeExamples(examples: Record<string, any>): string {
+122 |         if (!examples) return '';
+123 | 
+124 |         return Object.entries(examples)
+125 |             .map(([name, example]) => {
+126 |                 if (example.code && Array.isArray(example.code)) {
+127 |                     return `### ${example.description || name}:
+128 | \`\`\`flex
+129 | ${example.code.join('\n')}
+130 | \`\`\``;
+131 |                 }
+132 |                 return '';
+133 |             })
+134 |             .filter(Boolean)
+135 |             .join('\n\n');
+136 |     }
+137 | 
+138 |     /**
+139 |      * Format common patterns for the system prompt
+140 |      */
+141 |     private formatCommonPatterns(patterns: Record<string, any>): string {
+142 |         if (!patterns) return '';
+143 | 
+144 |         return Object.entries(patterns)
+145 |             .map(([name, pattern]) => {
+146 |                 if (Array.isArray(pattern)) {
+147 |                     return `### ${name}:
+148 | \`\`\`flex
+149 | ${pattern.join('\n')}
+150 | \`\`\``;
+151 |                 }
+152 |                 return '';
+153 |             })
+154 |             .filter(Boolean)
+155 |             .join('\n\n');
+156 |     }
+157 | 
+158 |     /**
+159 |      * Format syntax patterns for the system prompt
+160 |      */
+161 |     private formatSyntaxPatterns(patterns: Record<string, any>): string {
+162 |         if (!patterns) return '';
+163 | 
+164 |         return Object.entries(patterns)
+165 |             .map(([category, pattern]) => {
+166 |                 if (typeof pattern === 'object' && pattern.examples) {
+167 |                     return `### ${category}:
+168 | ${Array.isArray(pattern.examples) ? pattern.examples.join('\n') : pattern.examples}`;
+169 |                 }
+170 |                 return '';
+171 |             })
+172 |             .filter(Boolean)
+173 |             .join('\n\n');
+174 |     }
+175 | 
+176 |     /**
+177 |      * Format error handling information
+178 |      */
+179 |     private formatErrorHandling(errorHandling: any): string {
+180 |         if (!errorHandling || !errorHandling.error_categories) return '';
+181 | 
+182 |         const categories = errorHandling.error_categories;
+183 |         return Object.entries(categories)
+184 |             .map(([categoryName, category]: [string, any]) => {
+185 |                 const errors = Object.entries(category)
+186 |                     .filter(([key]) => key !== 'description')
+187 |                     .map(([errorName, errorInfo]: [string, any]) => {
+188 |                         return `**${errorName}**: ${errorInfo.solution || errorInfo.cause || 'See documentation'}`;
+189 |                     })
+190 |                     .join('\n');
+191 | 
+192 |                 return `### ${categoryName}:
+193 | ${category.description || ''}
+194 | ${errors}`;
+195 |             })
+196 |             .join('\n\n');
+197 |     }
+198 | 
+199 |     /**
+200 |      * Format performance optimization guidelines
+201 |      */
+202 |     private formatPerformanceGuidelines(): string {
+203 |         if (!this.flexSpec?.performance_optimization) return '';
+204 | 
+205 |         const perf = this.flexSpec.performance_optimization;
+206 |         let guidelines = '';
+207 | 
+208 |         if (perf.optimization_guidelines) {
+209 |             guidelines += '### Guidelines:\n' + perf.optimization_guidelines.map((g: string) => `- ${g}`).join('\n') + '\n\n';
+210 |         }
+211 | 
+212 |         if (perf.memory_management?.best_practices) {
+213 |             guidelines += '### Memory Management:\n' + perf.memory_management.best_practices.map((p: string) => `- ${p}`).join('\n');
+214 |         }
+215 | 
+216 |         return guidelines;
+217 |     }
+218 | 
+219 |     /**
+220 |      * Get a fallback system prompt if the dataset isn't available
+221 |      */
+222 |     private getFallbackSystemPrompt(): string {
+223 |         return `# Flex Programming Assistant for VSCode (Fallback Mode)
+224 | 
+225 | You are a senior-level expert assistant for the Flex programming language, integrated into a VSCode extension. Flex is a bilingual programming language that supports both Franco Arabic and English syntax.
+226 | 
+227 | ## CORE FLEX FEATURES:
+228 | - **Bilingual Syntax**: Mixed Franco Arabic and English keywords
+229 | - **String Interpolation**: Use {variable} syntax for string templating
+230 | - **No Semicolons**: Clean syntax without required semicolons
+231 | - **Automatic Type Detection**: Smart type inference
+232 | - **File Extensions**: .flex, .lx
+233 | 
+234 | ## CRITICAL SAFETY WARNING:
+235 | ⚠️ **Franco loops with 'l7d' are INCLUSIVE** - always use 'length(array) - 1' for safe array access to prevent out-of-bounds errors.
+236 | 
+237 | ## SYNTAX QUICK REFERENCE:
+238 | ### Variables:
+239 | - Franco: \`rakm x = 10\` | English: \`int x = 10\`
+240 | - Franco: \`kasr y = 3.14\` | English: \`float y = 3.14\`
+241 | 
+242 | ### Functions:
+243 | - Franco: \`sndo2 sayHello() { etb3("Hello") }\`
+244 | - English: \`fun sayHello() { print("Hello") }\`
+245 | 
+246 | ### Conditionals:
+247 | - Franco: \`lw x > 5 { etb3("Big") }\`
+248 | - English: \`if (x > 5) { print("Big") }\`
+249 | 
+250 | ### Loops:
+251 | - Franco: \`karr l7d 10 { etb3(i) }\` (INCLUSIVE - use length-1 for arrays)
+252 | - English: \`for(i=0; i<10; i++) { print(i) }\`
+253 | 
+254 | ## VSCODE INTEGRATION GUIDELINES:
+255 | - Use \`\`\`flex code blocks for all code examples
+256 | - Provide immediate, actionable solutions
+257 | - Format responses with clear headers and bullet points
+258 | - Prioritize working code first, then explanations
+259 | 
+260 | Always help users write safe, efficient Flex code while respecting their syntax preferences (Franco vs English).`;
+261 |     }
+262 | 
+263 |     /**
+264 |      * Get specific section of the specification
+265 |      */
+266 |     public getSpecSection(section: keyof FlexLanguageSpec): any {
+267 |         return this.flexSpec?.[section] || null;
+268 |     }
+269 | 
+270 |     /**
+271 |      * Check if dataset is loaded
+272 |      */
+273 |     public isDatasetLoaded(): boolean {
+274 |         return this.flexSpec !== null;
+275 |     }
+276 | 
+277 |     /**
+278 |      * Reload the dataset (useful for development)
+279 |      */
+280 |     public reload(): void {
+281 |         this.loadFlexSpec();
+282 |     }
+283 | 
+284 |     /**
+285 |      * Get dataset statistics
+286 |      */
+287 |     public getDatasetStats(): Record<string, number> {
+288 |         if (!this.flexSpec) {
+289 |             return { loaded: 0 };
+290 |         }
+291 | 
+292 |         return {
+293 |             loaded: 1,
+294 |             codeExamples: Object.keys(this.flexSpec.code_examples || {}).length,
+295 |             commonPatterns: Object.keys(this.flexSpec.common_patterns || {}).length,
+296 |             syntaxPatterns: Object.keys(this.flexSpec.CRITICAL_SYNTAX_PATTERNS || {}).length,
+297 |             tokens: Object.keys(this.flexSpec.tokens || {}).length
+298 |         };
+299 |     }
+300 | } 
 ```
 
 src/dev/DevTools.ts
@@ -10163,926 +9170,6 @@ src/dev/DevTools.ts
 1335 | export const devTools = DevTools.getInstance(); 
 ```
 
-src/services/apiService.ts
-```
-1 | import axios, { AxiosResponse, AxiosError } from 'axios';
-2 | import { ChatMessage, ModelInfo, ApiResponse, ExtensionConfig, WebSearchResult } from '../types';
-3 | import { debugManager } from '../core/DebugManager';
-4 | import { errorHandler } from '../core/ErrorHandler';
-5 | 
-6 | /**
-7 |  * Enhanced API Service with debugging and error handling
-8 |  * Service for handling API communications with OpenRouter and web search
-9 |  */
-10 | export class ApiService {
-11 |     private static readonly OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
-12 |     private static readonly DEFAULT_TIMEOUT = 30000; // 30 seconds
-13 |     private static readonly MAX_RETRIES = 3;
-14 | 
-15 |     /**
-16 |      * Call OpenRouter API for chat completions with enhanced debugging and error handling
-17 |      */
-18 |     public static async chatCompletion(
-19 |         messages: ChatMessage[],
-20 |         config: ExtensionConfig
-21 |     ): Promise<string> {
-22 |         const sessionId = `api_chat_completion_${Date.now()}`;
-23 |         const startTime = Date.now();
-24 | 
-25 |         debugManager.startDebugSession(sessionId, {
-26 |             model: config.model,
-27 |             messageCount: messages.length,
-28 |             maxTokens: config.maxTokens,
-29 |             temperature: config.temperature
-30 |         });
-31 | 
-32 |         try {
-33 |             const requestData = {
-34 |                 model: config.model,
-35 |                 messages: messages.map(msg => ({
-36 |                     role: msg.role,
-37 |                     content: msg.content
-38 |                 })),
-39 |                 temperature: config.temperature,
-40 |                 max_tokens: config.maxTokens || 4000,
-41 |                 stream: false
-42 |             };
-43 | 
-44 |             const headers = {
-45 |                 'Content-Type': 'application/json',
-46 |                 'Authorization': `Bearer ${config.apiKey}`,
-47 |                 'HTTP-Referer': 'https://github.com/flex/flex-chatbot',
-48 |                 'X-Title': 'Flex Chat Bot'
-49 |             };
-50 | 
-51 |             debugManager.addDebugStep(sessionId, 'request_prepared', {
-52 |                 model: config.model,
-53 |                 tokenLimit: config.maxTokens
-54 |             });
-55 | 
-56 |             let lastError: Error | null = null;
-57 | 
-58 |             for (let attempt = 1; attempt <= this.MAX_RETRIES; attempt++) {
-59 |                 try {
-60 |                     debugManager.addDebugStep(sessionId, `attempt_${attempt}`, { attempt });
-61 | 
-62 |                     const response: AxiosResponse<ApiResponse> = await axios.post(
-63 |                         `${this.OPENROUTER_BASE_URL}/chat/completions`,
-64 |                         requestData,
-65 |                         {
-66 |                             headers,
-67 |                             timeout: config.timeout || this.DEFAULT_TIMEOUT,
-68 |                             validateStatus: (status) => status < 500 // Retry on 5xx errors
-69 |                         }
-70 |                     );
-71 | 
-72 |                     debugManager.addDebugStep(sessionId, 'response_received', {
-73 |                         status: response.status,
-74 |                         hasContent: !!response.data?.choices?.[0]?.message?.content
-75 |                     });
-76 | 
-77 |                     if (response.data?.choices?.[0]?.message?.content) {
-78 |                         const content = response.data.choices[0].message.content;
-79 |                         const duration = Date.now() - startTime;
-80 | 
-81 |                         debugManager.trackPerformance('api_chat_completion', duration, {
-82 |                             model: config.model,
-83 |                             attempts: attempt,
-84 |                             responseLength: content.length
-85 |                         });
-86 | 
-87 |                         debugManager.endDebugSession(sessionId, {
-88 |                             success: true,
-89 |                             duration,
-90 |                             attempts: attempt,
-91 |                             responseLength: content.length
-92 |                         });
-93 | 
-94 |                         return content;
-95 |                     } else {
-96 |                         throw new Error('Invalid response format from API');
-97 |                     }
-98 | 
-99 |                 } catch (error) {
-100 |                     debugManager.addDebugStep(sessionId, `attempt_${attempt}_failed`, {
-101 |                         error: (error as Error).message,
-102 |                         status: (error as AxiosError)?.response?.status
-103 |                     });
-104 | 
-105 |                     lastError = this.handleApiError(error as AxiosError, attempt);
-106 | 
-107 |                     if (attempt === this.MAX_RETRIES) {
-108 |                         const errorResult = await errorHandler.handleError(lastError, {
-109 |                             component: 'api',
-110 |                             operation: 'chat_completion',
-111 |                             retryCount: attempt,
-112 |                             sessionId
-113 |                         });
-114 | 
-115 |                         debugManager.endDebugSession(sessionId, {
-116 |                             success: false,
-117 |                             error: lastError.message,
-118 |                             attempts: attempt,
-119 |                             duration: Date.now() - startTime
-120 |                         });
-121 | 
-122 |                         throw new Error(errorResult.userMessage);
-123 |                     }
-124 | 
-125 |                     // Exponential backoff
-126 |                     const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
-127 |                     debugManager.addDebugStep(sessionId, 'backoff_delay', { delay });
-128 |                     await this.sleep(delay);
-129 |                 }
-130 |             }
-131 | 
-132 |             throw lastError || new Error('Unknown API error');
-133 | 
-134 |         } catch (error) {
-135 |             const duration = Date.now() - startTime;
-136 |             debugManager.trackPerformance('api_chat_completion_failed', duration, {
-137 |                 model: config.model,
-138 |                 error: (error as Error).message
-139 |             });
-140 | 
-141 |             debugManager.endDebugSession(sessionId, {
-142 |                 success: false,
-143 |                 error: (error as Error).message,
-144 |                 duration
-145 |             });
-146 | 
-147 |             throw error;
-148 |         }
-149 |     }
-150 | 
-151 |     /**
-152 |      * Fetch available models from OpenRouter with debugging
-153 |      */
-154 |     public static async fetchAvailableModels(apiKey: string): Promise<ModelInfo[]> {
-155 |         const sessionId = `fetch_models_${Date.now()}`;
-156 |         const startTime = Date.now();
-157 | 
-158 |         debugManager.startDebugSession(sessionId, { operation: 'fetch_models' });
-159 | 
-160 |         try {
-161 |             debugManager.addDebugStep(sessionId, 'api_request_started');
-162 | 
-163 |             const response = await axios.get(`${this.OPENROUTER_BASE_URL}/models`, {
-164 |                 headers: {
-165 |                     'Authorization': `Bearer ${apiKey}`,
-166 |                     'HTTP-Referer': 'https://github.com/flex/flex-chatbot',
-167 |                     'X-Title': 'Flex Chat Bot'
-168 |                 },
-169 |                 timeout: this.DEFAULT_TIMEOUT
-170 |             });
-171 | 
-172 |             debugManager.addDebugStep(sessionId, 'api_response_received', {
-173 |                 status: response.status,
-174 |                 modelsCount: response.data?.data?.length || 0
-175 |             });
-176 | 
-177 |             if (response.data?.data && Array.isArray(response.data.data)) {
-178 |                 const models = response.data.data.map((model: any) => ({
-179 |                     id: model.id,
-180 |                     description: model.description || '',
-181 |                     context_length: model.context_length || 0,
-182 |                     pricing: model.pricing ? {
-183 |                         prompt: parseFloat(model.pricing.prompt) || 0,
-184 |                         completion: parseFloat(model.pricing.completion) || 0
-185 |                     } : undefined
-186 |                 }));
-187 | 
-188 |                 const duration = Date.now() - startTime;
-189 |                 debugManager.trackPerformance('fetch_models', duration, {
-190 |                     modelsCount: models.length
-191 |                 });
-192 | 
-193 |                 debugManager.endDebugSession(sessionId, {
-194 |                     success: true,
-195 |                     modelsCount: models.length,
-196 |                     duration
-197 |                 });
-198 | 
-199 |                 return models;
-200 |             }
-201 | 
-202 |             debugManager.endDebugSession(sessionId, {
-203 |                 success: true,
-204 |                 modelsCount: 0,
-205 |                 duration: Date.now() - startTime
-206 |             });
-207 | 
-208 |             return [];
-209 |         } catch (error) {
-210 |             const errorResult = await errorHandler.handleError(error as Error, {
-211 |                 component: 'api',
-212 |                 operation: 'fetch_models',
-213 |                 sessionId
-214 |             });
-215 | 
-216 |             debugManager.endDebugSession(sessionId, {
-217 |                 success: false,
-218 |                 error: (error as Error).message,
-219 |                 duration: Date.now() - startTime
-220 |             });
-221 | 
-222 |             throw new Error(errorResult.userMessage);
-223 |         }
-224 |     }
-225 | 
-226 |     /**
-227 |      * Perform web search using SerpAPI (with fallback options)
-228 |      */
-229 |     public static async performWebSearch(query: string): Promise<WebSearchResult[]> {
-230 |         try {
-231 |             // First try with demo API key (limited but free)
-232 |             const response = await axios.get('https://serpapi.com/search.json', {
-233 |                 params: {
-234 |                     q: query,
-235 |                     api_key: 'demo',
-236 |                     num: 5,
-237 |                     format: 'json'
-238 |                 },
-239 |                 timeout: 10000
-240 |             });
-241 | 
-242 |             if (response.data?.organic_results) {
-243 |                 return response.data.organic_results.map((result: any) => ({
-244 |                     title: result.title || 'No title',
-245 |                     snippet: result.snippet || 'No description available',
-246 |                     link: result.link || '#'
-247 |                 }));
-248 |             }
-249 | 
-250 |             return [];
-251 |         } catch (error) {
-252 |             console.warn('Web search failed:', error);
-253 |             // Return empty results rather than throwing - web search is optional
-254 |             return [];
-255 |         }
-256 |     }
-257 | 
-258 |     /**
-259 |      * Format web search results for AI consumption
-260 |      */
-261 |     public static formatWebSearchResults(results: WebSearchResult[]): string {
-262 |         if (results.length === 0) {
-263 |             return 'No web search results found.';
-264 |         }
-265 | 
-266 |         return results
-267 |             .map((result, index) =>
-268 |                 `[${index + 1}] ${result.title}\n${result.snippet}\nURL: ${result.link}\n`
-269 |             )
-270 |             .join('\n');
-271 |     }
-272 | 
-273 |     /**
-274 |      * Validate API key format
-275 |      */
-276 |     public static validateApiKey(apiKey: string): boolean {
-277 |         if (!apiKey || typeof apiKey !== 'string') {
-278 |             return false;
-279 |         }
-280 | 
-281 |         // Basic validation - OpenRouter keys typically start with 'sk-or-'
-282 |         const trimmedKey = apiKey.trim();
-283 |         return trimmedKey.length > 20 && /^sk-/.test(trimmedKey);
-284 |     }
-285 | 
-286 |     /**
-287 |      * Test API connectivity
-288 |      */
-289 |     public static async testApiConnection(apiKey: string): Promise<boolean> {
-290 |         try {
-291 |             const models = await this.fetchAvailableModels(apiKey);
-292 |             return models.length > 0;
-293 |         } catch (error) {
-294 |             return false;
-295 |         }
-296 |     }
-297 | 
-298 |     /**
-299 |      * Handle API errors with appropriate user-friendly messages
-300 |      */
-301 |     private static handleApiError(error: AxiosError, attempt: number): Error {
-302 |         if (error.response) {
-303 |             const status = error.response.status;
-304 |             const data = error.response.data as any;
-305 | 
-306 |             switch (status) {
-307 |                 case 401:
-308 |                     return new Error('Invalid API key. Please check your OpenRouter API key in settings.');
-309 |                 case 402:
-310 |                     return new Error('Insufficient credits. Please add credits to your OpenRouter account.');
-311 |                 case 403:
-312 |                     return new Error('Access forbidden. Please check your API key permissions.');
-313 |                 case 429:
-314 |                     return new Error('Rate limit exceeded. Please wait a moment before trying again.');
-315 |                 case 500:
-316 |                 case 502:
-317 |                 case 503:
-318 |                 case 504:
-319 |                     if (attempt < this.MAX_RETRIES) {
-320 |                         return new Error(`Server error (${status}). Retrying... (attempt ${attempt})`);
-321 |                     }
-322 |                     return new Error('Server is currently unavailable. Please try again later.');
-323 |                 default:
-324 |                     return new Error(
-325 |                         data?.error?.message ||
-326 |                         `API error ${status}: ${error.response.statusText}`
-327 |                     );
-328 |             }
-329 |         } else if (error.code === 'ECONNABORTED') {
-330 |             return new Error('Request timed out. Please check your internet connection.');
-331 |         } else if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
-332 |             return new Error('Unable to connect to the API. Please check your internet connection.');
-333 |         } else {
-334 |             return new Error(`Network error: ${error.message}`);
-335 |         }
-336 |     }
-337 | 
-338 |     /**
-339 |      * Extract error message from various error types
-340 |      */
-341 |     private static getErrorMessage(error: any): string {
-342 |         if (error?.response?.data?.error?.message) {
-343 |             return error.response.data.error.message;
-344 |         }
-345 |         if (error?.message) {
-346 |             return error.message;
-347 |         }
-348 |         return 'Unknown error occurred';
-349 |     }
-350 | 
-351 |     /**
-352 |      * Sleep utility for retry delays
-353 |      */
-354 |     private static sleep(ms: number): Promise<void> {
-355 |         return new Promise(resolve => setTimeout(resolve, ms));
-356 |     }
-357 | 
-358 |     /**
-359 |      * Get model pricing information formatted for display
-360 |      */
-361 |     public static formatModelPricing(model: ModelInfo): string {
-362 |         if (!model.pricing) {
-363 |             return 'Pricing N/A';
-364 |         }
-365 | 
-366 |         const promptPrice = (model.pricing.prompt * 1000).toFixed(6);
-367 |         const completionPrice = (model.pricing.completion * 1000).toFixed(6);
-368 | 
-369 |         return `$${promptPrice}/$${completionPrice} per 1K tokens`;
-370 |     }
-371 | 
-372 |     /**
-373 |      * Get recommended models for Flex programming
-374 |      */
-375 |     public static getRecommendedModels(): string[] {
-376 |         return [
-377 |             'openai/gpt-4-turbo',
-378 |             'openai/gpt-4',
-379 |             'anthropic/claude-3-opus',
-380 |             'anthropic/claude-3-sonnet',
-381 |             'google/gemini-pro',
-382 |             'mistralai/mixtral-8x7b-instruct'
-383 |         ];
-384 |     }
-385 | } 
-```
-
-src/services/configService.ts
-```
-1 | import * as vscode from 'vscode';
-2 | import { ExtensionConfig } from '../types';
-3 | 
-4 | /**
-5 |  * Service for managing extension configuration
-6 |  */
-7 | export class ConfigService {
-8 |     private static readonly CONFIG_SECTION = 'flexChatbot';
-9 | 
-10 |     /**
-11 |      * Get all extension configuration
-12 |      */
-13 |     public static getConfig(): ExtensionConfig {
-14 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
-15 | 
-16 |         return {
-17 |             apiKey: config.get<string>('apiKey', ''),
-18 |             model: config.get<string>('model', 'openai/gpt-4-mini'),
-19 |             temperature: config.get<number>('temperature', 0.7),
-20 |             enableWebSearch: config.get<boolean>('enableWebSearch', true),
-21 |             maxTokens: config.get<number>('maxTokens', 4000),
-22 |             timeout: config.get<number>('timeout', 30000)
-23 |         };
-24 |     }
-25 | 
-26 |     /**
-27 |      * Get specific configuration value
-28 |      */
-29 |     public static get<T>(key: keyof ExtensionConfig, defaultValue?: T): T {
-30 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
-31 |         return config.get<T>(key, defaultValue as T);
-32 |     }
-33 | 
-34 |     /**
-35 |      * Set configuration value
-36 |      */
-37 |     public static async set<T>(
-38 |         key: keyof ExtensionConfig,
-39 |         value: T,
-40 |         target: vscode.ConfigurationTarget = vscode.ConfigurationTarget.Global
-41 |     ): Promise<void> {
-42 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
-43 |         await config.update(key, value, target);
-44 |     }
-45 | 
-46 |     /**
-47 |      * Check if API key is configured
-48 |      */
-49 |     public static isApiKeyConfigured(): boolean {
-50 |         const apiKey = this.get<string>('apiKey', '');
-51 |         return apiKey.trim().length > 0;
-52 |     }
-53 | 
-54 |     /**
-55 |      * Validate configuration
-56 |      */
-57 |     public static validateConfig(): { isValid: boolean; errors: string[] } {
-58 |         const config = this.getConfig();
-59 |         const errors: string[] = [];
-60 | 
-61 |         // Validate API key
-62 |         if (!config.apiKey || config.apiKey.trim().length === 0) {
-63 |             errors.push('API key is required');
-64 |         } else if (config.apiKey.length < 20) {
-65 |             errors.push('API key appears to be invalid (too short)');
-66 |         }
-67 | 
-68 |         // Validate model
-69 |         if (!config.model || config.model.trim().length === 0) {
-70 |             errors.push('Model selection is required');
-71 |         }
-72 | 
-73 |         // Validate temperature
-74 |         if (config.temperature < 0 || config.temperature > 2) {
-75 |             errors.push('Temperature must be between 0 and 2');
-76 |         }
-77 | 
-78 |         // Validate max tokens
-79 |         if (config.maxTokens && (config.maxTokens < 1 || config.maxTokens > 32000)) {
-80 |             errors.push('Max tokens must be between 1 and 32000');
-81 |         }
-82 | 
-83 |         // Validate timeout
-84 |         if (config.timeout && (config.timeout < 5000 || config.timeout > 300000)) {
-85 |             errors.push('Timeout must be between 5 and 300 seconds');
-86 |         }
-87 | 
-88 |         return {
-89 |             isValid: errors.length === 0,
-90 |             errors
-91 |         };
-92 |     }
-93 | 
-94 |     /**
-95 |      * Get default configuration
-96 |      */
-97 |     public static getDefaultConfig(): ExtensionConfig {
-98 |         return {
-99 |             apiKey: '',
-100 |             model: 'openai/gpt-4-mini',
-101 |             temperature: 0.7,
-102 |             enableWebSearch: true,
-103 |             maxTokens: 4000,
-104 |             timeout: 30000
-105 |         };
-106 |     }
-107 | 
-108 |     /**
-109 |      * Reset configuration to defaults
-110 |      */
-111 |     public static async resetToDefaults(): Promise<void> {
-112 |         const defaultConfig = this.getDefaultConfig();
-113 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
-114 | 
-115 |         for (const [key, value] of Object.entries(defaultConfig)) {
-116 |             if (key !== 'apiKey') { // Don't reset API key
-117 |                 await config.update(key, value, vscode.ConfigurationTarget.Global);
-118 |             }
-119 |         }
-120 |     }
-121 | 
-122 |     /**
-123 |      * Show configuration dialog
-124 |      */
-125 |     public static async showConfigurationDialog(): Promise<void> {
-126 |         const actions = [
-127 |             'Open Settings',
-128 |             'Set API Key',
-129 |             'Select Model',
-130 |             'Test Connection'
-131 |         ];
-132 | 
-133 |         const selectedAction = await vscode.window.showQuickPick(actions, {
-134 |             placeHolder: 'Choose configuration action'
-135 |         });
-136 | 
-137 |         switch (selectedAction) {
-138 |             case 'Open Settings':
-139 |                 await vscode.commands.executeCommand('workbench.action.openSettings', this.CONFIG_SECTION);
-140 |                 break;
-141 | 
-142 |             case 'Set API Key':
-143 |                 await this.promptForApiKey();
-144 |                 break;
-145 | 
-146 |             case 'Select Model':
-147 |                 await vscode.commands.executeCommand('flexChatbot.selectModel');
-148 |                 break;
-149 | 
-150 |             case 'Test Connection':
-151 |                 await this.testConnection();
-152 |                 break;
-153 |         }
-154 |     }
-155 | 
-156 |     /**
-157 |      * Prompt user for API key
-158 |      */
-159 |     public static async promptForApiKey(): Promise<void> {
-160 |         const apiKey = await vscode.window.showInputBox({
-161 |             prompt: 'Enter your OpenRouter API key',
-162 |             password: true,
-163 |             placeHolder: 'sk-or-...',
-164 |             validateInput: (value) => {
-165 |                 if (!value || value.trim().length === 0) {
-166 |                     return 'API key is required';
-167 |                 }
-168 |                 if (value.length < 20) {
-169 |                     return 'API key appears to be invalid (too short)';
-170 |                 }
-171 |                 return null;
-172 |             }
-173 |         });
-174 | 
-175 |         if (apiKey) {
-176 |             await this.set('apiKey', apiKey.trim());
-177 |             vscode.window.showInformationMessage('API key saved successfully!');
-178 |         }
-179 |     }
-180 | 
-181 |     /**
-182 |      * Test API connection
-183 |      */
-184 |     private static async testConnection(): Promise<void> {
-185 |         const config = this.getConfig();
-186 | 
-187 |         if (!config.apiKey) {
-188 |             vscode.window.showErrorMessage('Please set your API key first');
-189 |             return;
-190 |         }
-191 | 
-192 |         try {
-193 |             // Import ApiService dynamically to avoid circular dependencies
-194 |             const { ApiService } = await import('./apiService');
-195 |             const isConnected = await ApiService.testApiConnection(config.apiKey);
-196 | 
-197 |             if (isConnected) {
-198 |                 vscode.window.showInformationMessage('✅ API connection successful!');
-199 |             } else {
-200 |                 vscode.window.showErrorMessage('❌ API connection failed. Please check your API key.');
-201 |             }
-202 |         } catch (error) {
-203 |             vscode.window.showErrorMessage(`❌ Connection test failed: ${error}`);
-204 |         }
-205 |     }
-206 | 
-207 |     /**
-208 |      * Watch for configuration changes
-209 |      */
-210 |     public static onConfigurationChanged(
-211 |         callback: (config: ExtensionConfig) => void
-212 |     ): vscode.Disposable {
-213 |         return vscode.workspace.onDidChangeConfiguration((event) => {
-214 |             if (event.affectsConfiguration(this.CONFIG_SECTION)) {
-215 |                 callback(this.getConfig());
-216 |             }
-217 |         });
-218 |     }
-219 | 
-220 |     /**
-221 |      * Export configuration (excluding sensitive data)
-222 |      */
-223 |     public static exportConfig(): Partial<ExtensionConfig> {
-224 |         const config = this.getConfig();
-225 |         return {
-226 |             model: config.model,
-227 |             temperature: config.temperature,
-228 |             enableWebSearch: config.enableWebSearch,
-229 |             maxTokens: config.maxTokens,
-230 |             timeout: config.timeout
-231 |             // Explicitly exclude apiKey for security
-232 |         };
-233 |     }
-234 | 
-235 |     /**
-236 |      * Import configuration (excluding sensitive data)
-237 |      */
-238 |     public static async importConfig(importedConfig: Partial<ExtensionConfig>): Promise<void> {
-239 |         const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
-240 | 
-241 |         for (const [key, value] of Object.entries(importedConfig)) {
-242 |             if (key !== 'apiKey' && value !== undefined) {
-243 |                 await config.update(key, value, vscode.ConfigurationTarget.Global);
-244 |             }
-245 |         }
-246 | 
-247 |         vscode.window.showInformationMessage('Configuration imported successfully!');
-248 |     }
-249 | 
-250 |     /**
-251 |      * Get configuration summary for display
-252 |      */
-253 |     public static getConfigSummary(): string {
-254 |         const config = this.getConfig();
-255 |         const hasApiKey = config.apiKey.length > 0;
-256 | 
-257 |         return `
-258 | 📋 **Configuration Summary:**
-259 | - API Key: ${hasApiKey ? '✅ Set' : '❌ Not set'}
-260 | - Model: ${config.model}
-261 | - Temperature: ${config.temperature}
-262 | - Web Search: ${config.enableWebSearch ? '✅ Enabled' : '❌ Disabled'}
-263 | - Max Tokens: ${config.maxTokens || 'Default'}
-264 | - Timeout: ${(config.timeout || 30000) / 1000}s
-265 |     `.trim();
-266 |     }
-267 | } 
-```
-
-src/services/flexDatasetService.ts
-```
-1 | import * as fs from 'fs';
-2 | import * as path from 'path';
-3 | import { FlexLanguageSpec } from '../types';
-4 | 
-5 | /**
-6 |  * Service for managing the Flex language dataset and generating system prompts
-7 |  */
-8 | export class FlexDatasetService {
-9 |     private static instance: FlexDatasetService;
-10 |     private flexSpec: FlexLanguageSpec | null = null;
-11 |     private readonly datasetPath: string;
-12 | 
-13 |     private constructor(extensionPath: string) {
-14 |         this.datasetPath = path.join(extensionPath, 'dataset', 'flex_language_spec.json');
-15 |         this.loadFlexSpec();
-16 |     }
-17 | 
-18 |     /**
-19 |      * Get singleton instance of FlexDatasetService
-20 |      */
-21 |     public static getInstance(extensionPath?: string): FlexDatasetService {
-22 |         if (!FlexDatasetService.instance) {
-23 |             if (!extensionPath) {
-24 |                 throw new Error('Extension path is required for first initialization');
-25 |             }
-26 |             FlexDatasetService.instance = new FlexDatasetService(extensionPath);
-27 |         }
-28 |         return FlexDatasetService.instance;
-29 |     }
-30 | 
-31 |     /**
-32 |      * Load the Flex language specification from JSON file
-33 |      */
-34 |     private loadFlexSpec(): void {
-35 |         try {
-36 |             if (fs.existsSync(this.datasetPath)) {
-37 |                 const fileContent = fs.readFileSync(this.datasetPath, 'utf-8');
-38 |                 this.flexSpec = JSON.parse(fileContent) as FlexLanguageSpec;
-39 |                 console.log('✅ Flex language specification loaded successfully');
-40 |             } else {
-41 |                 console.warn(`⚠️ Flex dataset file not found at: ${this.datasetPath}`);
-42 |                 this.flexSpec = null;
-43 |             }
-44 |         } catch (error) {
-45 |             console.error('❌ Error loading Flex language specification:', error);
-46 |             this.flexSpec = null;
-47 |         }
-48 |     }
-49 | 
-50 |     /**
-51 |      * Get the complete system prompt for AI interactions
-52 |      */
-53 |     public getSystemPrompt(): string {
-54 |         if (!this.flexSpec) {
-55 |             return this.getFallbackSystemPrompt();
-56 |         }
-57 | 
-58 |         try {
-59 |             const aiPrompt = this.flexSpec.ai_system_prompt;
-60 |             const essentialKnowledge = this.flexSpec.ESSENTIAL_FLEX_KNOWLEDGE;
-61 |             const syntaxPatterns = this.flexSpec.CRITICAL_SYNTAX_PATTERNS;
-62 |             const codeExamples = this.formatCodeExamples(this.flexSpec.code_examples);
-63 |             const commonPatterns = this.formatCommonPatterns(this.flexSpec.common_patterns);
-64 |             const errorHandling = this.formatErrorHandling(this.flexSpec.error_handling);
-65 | 
-66 |             return `${aiPrompt.description}
-67 | 
-68 | ## CRITICAL INSTRUCTIONS:
-69 | ${Object.entries(aiPrompt.CRITICAL_INSTRUCTIONS).map(([key, value]) => `- **${key}**: ${value}`).join('\n')}
-70 | 
-71 | ## ESSENTIAL FLEX LANGUAGE KNOWLEDGE:
-72 | - **Language**: ${essentialKnowledge.language_identity}
-73 | - **Philosophy**: ${essentialKnowledge.core_philosophy}
-74 | - **File Extensions**: ${essentialKnowledge.file_extensions.join(', ')}
-75 | - **Unique Features**: ${essentialKnowledge.unique_features.join(', ')}
-76 | 
-77 | ## CRITICAL SYNTAX PATTERNS:
-78 | ${this.formatSyntaxPatterns(syntaxPatterns)}
-79 | 
-80 | ## CODE EXAMPLES:
-81 | ${codeExamples}
-82 | 
-83 | ## COMMON PATTERNS:
-84 | ${commonPatterns}
-85 | 
-86 | ## ERROR HANDLING GUIDE:
-87 | ${errorHandling}
-88 | 
-89 | ## PERFORMANCE OPTIMIZATION:
-90 | ${this.formatPerformanceGuidelines()}
-91 | 
-92 | Remember: You are an expert in the Flex programming language with its bilingual (Franco Arabic + English) syntax. Always prioritize working code first, then provide clear explanations adapted to the user's expertise level.`;
-93 | 
-94 |         } catch (error) {
-95 |             console.error('Error generating system prompt:', error);
-96 |             return this.getFallbackSystemPrompt();
-97 |         }
-98 |     }
-99 | 
-100 |     /**
-101 |      * Format code examples for the system prompt
-102 |      */
-103 |     private formatCodeExamples(examples: Record<string, any>): string {
-104 |         if (!examples) return '';
-105 | 
-106 |         return Object.entries(examples)
-107 |             .map(([name, example]) => {
-108 |                 if (example.code && Array.isArray(example.code)) {
-109 |                     return `### ${example.description || name}:
-110 | \`\`\`flex
-111 | ${example.code.join('\n')}
-112 | \`\`\``;
-113 |                 }
-114 |                 return '';
-115 |             })
-116 |             .filter(Boolean)
-117 |             .join('\n\n');
-118 |     }
-119 | 
-120 |     /**
-121 |      * Format common patterns for the system prompt
-122 |      */
-123 |     private formatCommonPatterns(patterns: Record<string, any>): string {
-124 |         if (!patterns) return '';
-125 | 
-126 |         return Object.entries(patterns)
-127 |             .map(([name, pattern]) => {
-128 |                 if (Array.isArray(pattern)) {
-129 |                     return `### ${name}:
-130 | \`\`\`flex
-131 | ${pattern.join('\n')}
-132 | \`\`\``;
-133 |                 }
-134 |                 return '';
-135 |             })
-136 |             .filter(Boolean)
-137 |             .join('\n\n');
-138 |     }
-139 | 
-140 |     /**
-141 |      * Format syntax patterns for the system prompt
-142 |      */
-143 |     private formatSyntaxPatterns(patterns: Record<string, any>): string {
-144 |         if (!patterns) return '';
-145 | 
-146 |         return Object.entries(patterns)
-147 |             .map(([category, pattern]) => {
-148 |                 if (typeof pattern === 'object' && pattern.examples) {
-149 |                     return `### ${category}:
-150 | ${Array.isArray(pattern.examples) ? pattern.examples.join('\n') : pattern.examples}`;
-151 |                 }
-152 |                 return '';
-153 |             })
-154 |             .filter(Boolean)
-155 |             .join('\n\n');
-156 |     }
-157 | 
-158 |     /**
-159 |      * Format error handling information
-160 |      */
-161 |     private formatErrorHandling(errorHandling: any): string {
-162 |         if (!errorHandling || !errorHandling.error_categories) return '';
-163 | 
-164 |         const categories = errorHandling.error_categories;
-165 |         return Object.entries(categories)
-166 |             .map(([categoryName, category]: [string, any]) => {
-167 |                 const errors = Object.entries(category)
-168 |                     .filter(([key]) => key !== 'description')
-169 |                     .map(([errorName, errorInfo]: [string, any]) => {
-170 |                         return `**${errorName}**: ${errorInfo.solution || errorInfo.cause || 'See documentation'}`;
-171 |                     })
-172 |                     .join('\n');
-173 | 
-174 |                 return `### ${categoryName}:
-175 | ${category.description || ''}
-176 | ${errors}`;
-177 |             })
-178 |             .join('\n\n');
-179 |     }
-180 | 
-181 |     /**
-182 |      * Format performance optimization guidelines
-183 |      */
-184 |     private formatPerformanceGuidelines(): string {
-185 |         if (!this.flexSpec?.performance_optimization) return '';
-186 | 
-187 |         const perf = this.flexSpec.performance_optimization;
-188 |         let guidelines = '';
-189 | 
-190 |         if (perf.optimization_guidelines) {
-191 |             guidelines += '### Guidelines:\n' + perf.optimization_guidelines.map((g: string) => `- ${g}`).join('\n') + '\n\n';
-192 |         }
-193 | 
-194 |         if (perf.memory_management?.best_practices) {
-195 |             guidelines += '### Memory Management:\n' + perf.memory_management.best_practices.map((p: string) => `- ${p}`).join('\n');
-196 |         }
-197 | 
-198 |         return guidelines;
-199 |     }
-200 | 
-201 |     /**
-202 |      * Get a fallback system prompt if the dataset isn't available
-203 |      */
-204 |     private getFallbackSystemPrompt(): string {
-205 |         return `You are a helpful assistant for the Flex programming language, a bilingual programming language that supports both Franco Arabic and English syntax.
-206 | 
-207 | Key features of Flex:
-208 | - Mixed Franco Arabic and English keywords (e.g., "lw" or "if" for conditionals)
-209 | - String interpolation with {variable} syntax
-210 | - No semicolons required
-211 | - Automatic type detection
-212 | - File extensions: .flex, .lx
-213 | 
-214 | Important: Franco loops with 'l7d' are INCLUSIVE - always use 'length(array) - 1' for safe array access.
-215 | 
-216 | Please help users with Flex programming questions, provide code examples, and explain syntax in both languages when helpful.`;
-217 |     }
-218 | 
-219 |     /**
-220 |      * Get specific section of the specification
-221 |      */
-222 |     public getSpecSection(section: keyof FlexLanguageSpec): any {
-223 |         return this.flexSpec?.[section] || null;
-224 |     }
-225 | 
-226 |     /**
-227 |      * Check if dataset is loaded
-228 |      */
-229 |     public isDatasetLoaded(): boolean {
-230 |         return this.flexSpec !== null;
-231 |     }
-232 | 
-233 |     /**
-234 |      * Reload the dataset (useful for development)
-235 |      */
-236 |     public reload(): void {
-237 |         this.loadFlexSpec();
-238 |     }
-239 | 
-240 |     /**
-241 |      * Get dataset statistics
-242 |      */
-243 |     public getDatasetStats(): Record<string, number> {
-244 |         if (!this.flexSpec) {
-245 |             return { loaded: 0 };
-246 |         }
-247 | 
-248 |         return {
-249 |             loaded: 1,
-250 |             codeExamples: Object.keys(this.flexSpec.code_examples || {}).length,
-251 |             commonPatterns: Object.keys(this.flexSpec.common_patterns || {}).length,
-252 |             syntaxPatterns: Object.keys(this.flexSpec.CRITICAL_SYNTAX_PATTERNS || {}).length,
-253 |             tokens: Object.keys(this.flexSpec.tokens || {}).length
-254 |         };
-255 |     }
-256 | } 
-```
-
 src/test/TestFramework.ts
 ```
 1 | import * as assert from 'assert';
@@ -11785,7 +9872,7 @@ src/types/index.ts
 64 | }
 65 | 
 66 | export interface WebviewMessage {
-67 |     command: 'sendMessage' | 'clearChat' | 'selectModel' | 'statusUpdate' | 'aiResponse' | 'chatCleared';
+67 |     command: 'sendMessage' | 'clearChat' | 'selectModel' | 'statusUpdate' | 'aiResponse' | 'chatCleared' | 'aiStreamStart' | 'aiStreamChunk' | 'aiStreamComplete';
 68 |     text?: string;
 69 |     data?: any;
 70 | }
@@ -12217,641 +10304,774 @@ assets/webview/css/main.css
 120 | 	align-items: center;
 121 | 	gap: var(--space-3);
 122 | 	flex: 1;
-123 | }
-124 | 
-125 | .header-logo {
-126 | 	width: 20px;
-127 | 	height: 20px;
-128 | 	flex-shrink: 0;
-129 | }
-130 | 
-131 | .header-title {
-132 | 	font-size: 0.875rem;
-133 | 	font-weight: var(--font-weight-semibold);
-134 | 	color: var(--text-primary);
-135 | 	white-space: nowrap;
-136 | }
-137 | 
-138 | .status-indicators {
-139 | 	display: flex;
-140 | 	align-items: center;
-141 | 	gap: var(--space-2);
-142 | 	margin-left: var(--space-3);
-143 | }
-144 | 
-145 | .status-dot {
-146 | 	width: 8px;
-147 | 	height: 8px;
-148 | 	border-radius: 50%;
-149 | 	flex-shrink: 0;
-150 | 	position: relative;
-151 | }
-152 | 
-153 | .status-dot.success {
-154 | 	background: var(--success-color);
-155 | 	box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
-156 | }
-157 | 
-158 | .status-dot.warning {
-159 | 	background: var(--warning-color);
-160 | 	box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
-161 | }
-162 | 
-163 | .status-dot.loading {
-164 | 	background: var(--accent-color);
-165 | 	animation: pulse 2s infinite;
-166 | }
-167 | 
-168 | .header-right {
-169 | 	display: flex;
-170 | 	align-items: center;
-171 | 	gap: var(--space-2);
-172 | }
-173 | 
-174 | .model-display {
-175 | 	background: linear-gradient(135deg,
-176 | 			rgba(59, 130, 246, 0.15) 0%,
-177 | 			rgba(99, 102, 241, 0.15) 100%);
-178 | 	border: 1px solid var(--border-accent);
-179 | 	color: var(--accent-light);
-180 | 	padding: var(--space-1) var(--space-3);
-181 | 	border-radius: var(--radius-md);
-182 | 	font-size: 0.75rem;
-183 | 	font-weight: var(--font-weight-medium);
-184 | 	backdrop-filter: blur(10px);
-185 | 	white-space: nowrap;
-186 | }
-187 | 
-188 | .icon-button {
-189 | 	background: var(--card-bg);
-190 | 	border: 1px solid var(--border-color);
-191 | 	color: var(--text-secondary);
-192 | 	padding: var(--space-2);
-193 | 	border-radius: var(--radius-md);
-194 | 	cursor: pointer;
-195 | 	transition: all 0.2s ease;
-196 | 	font-size: 0.8125rem;
-197 | 	display: flex;
-198 | 	align-items: center;
-199 | 	justify-content: center;
-200 | 	min-width: 32px;
-201 | 	height: 32px;
-202 | }
-203 | 
-204 | .icon-button:hover {
-205 | 	background: var(--accent-color);
-206 | 	border-color: var(--accent-color);
-207 | 	color: white;
-208 | 	transform: translateY(-1px);
-209 | }
-210 | 
-211 | .icon-button:active {
-212 | 	transform: translateY(0);
-213 | }
-214 | 
-215 | /* Professional Chat Container */
-216 | #chat-box {
-217 | 	flex: 1;
-218 | 	overflow-y: auto;
-219 | 	padding: var(--space-4);
-220 | 	display: flex;
-221 | 	flex-direction: column;
-222 | 	gap: var(--space-4);
-223 | 	scroll-behavior: smooth;
-224 | 	scrollbar-width: thin;
-225 | 	scrollbar-color: rgba(248, 250, 252, 0.2) transparent;
-226 | }
-227 | 
-228 | #chat-box::-webkit-scrollbar {
-229 | 	width: 6px;
-230 | }
-231 | 
-232 | #chat-box::-webkit-scrollbar-thumb {
-233 | 	background: rgba(248, 250, 252, 0.2);
-234 | 	border-radius: 3px;
-235 | }
-236 | 
-237 | #chat-box::-webkit-scrollbar-track {
-238 | 	background: transparent;
-239 | }
-240 | 
-241 | /* Welcome Message */
-242 | .welcome-message {
-243 | 	display: flex;
-244 | 	flex-direction: column;
-245 | 	align-items: center;
-246 | 	text-align: center;
-247 | 	padding: var(--space-8);
-248 | 	background: var(--card-bg);
-249 | 	border: 1px solid var(--border-color);
-250 | 	border-radius: var(--radius-lg);
-251 | 	backdrop-filter: blur(20px);
-252 | 	margin-bottom: var(--space-4);
-253 | }
-254 | 
-255 | .welcome-message .bot-avatar {
-256 | 	margin-bottom: var(--space-4);
-257 | }
-258 | 
-259 | .welcome-message .bot-avatar img {
-260 | 	width: 64px;
-261 | 	height: 64px;
-262 | 	object-fit: contain;
-263 | 	filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.3));
-264 | 	border-radius: var(--radius-lg);
+123 | 	min-width: 0; /* Allow flex shrinking */
+124 | 	overflow: hidden;
+125 | }
+126 | 
+127 | .header-logo {
+128 | 	width: 20px;
+129 | 	height: 20px;
+130 | 	flex-shrink: 0;
+131 | }
+132 | 
+133 | .header-title {
+134 | 	font-size: 0.875rem;
+135 | 	font-weight: var(--font-weight-semibold);
+136 | 	color: var(--text-primary);
+137 | 	white-space: nowrap;
+138 | }
+139 | 
+140 | .status-indicators {
+141 | 	display: flex;
+142 | 	align-items: center;
+143 | 	gap: var(--space-2);
+144 | 	margin-left: var(--space-3);
+145 | }
+146 | 
+147 | .status-dot {
+148 | 	width: 8px;
+149 | 	height: 8px;
+150 | 	border-radius: 50%;
+151 | 	flex-shrink: 0;
+152 | 	position: relative;
+153 | }
+154 | 
+155 | .status-dot.success {
+156 | 	background: var(--success-color);
+157 | 	box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+158 | }
+159 | 
+160 | .status-dot.warning {
+161 | 	background: var(--warning-color);
+162 | 	box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
+163 | }
+164 | 
+165 | .status-dot.loading {
+166 | 	background: var(--accent-color);
+167 | 	animation: pulse 2s infinite;
+168 | }
+169 | 
+170 | .header-right {
+171 | 	display: flex;
+172 | 	align-items: center;
+173 | 	gap: var(--space-2);
+174 | 	flex-shrink: 0; /* Prevent shrinking */
+175 | }
+176 | 
+177 | .model-display {
+178 | 	background: linear-gradient(135deg,
+179 | 			rgba(59, 130, 246, 0.15) 0%,
+180 | 			rgba(99, 102, 241, 0.15) 100%);
+181 | 	border: 1px solid var(--border-accent);
+182 | 	color: var(--accent-light);
+183 | 	padding: var(--space-1) var(--space-3);
+184 | 	border-radius: var(--radius-md);
+185 | 	font-size: 0.75rem;
+186 | 	font-weight: var(--font-weight-medium);
+187 | 	backdrop-filter: blur(10px);
+188 | 	white-space: nowrap;
+189 | 	overflow: hidden;
+190 | 	text-overflow: ellipsis;
+191 | 	max-width: 120px; /* Reasonable default max width */
+192 | }
+193 | 
+194 | .icon-button {
+195 | 	background: var(--card-bg);
+196 | 	border: 1px solid var(--border-color);
+197 | 	color: var(--text-secondary);
+198 | 	padding: var(--space-2);
+199 | 	border-radius: var(--radius-md);
+200 | 	cursor: pointer;
+201 | 	transition: all 0.2s ease;
+202 | 	font-size: 0.8125rem;
+203 | 	display: flex;
+204 | 	align-items: center;
+205 | 	justify-content: center;
+206 | 	min-width: 32px;
+207 | 	height: 32px;
+208 | }
+209 | 
+210 | .icon-button:hover {
+211 | 	background: var(--accent-color);
+212 | 	border-color: var(--accent-color);
+213 | 	color: white;
+214 | 	transform: translateY(-1px);
+215 | }
+216 | 
+217 | .icon-button:active {
+218 | 	transform: translateY(0);
+219 | }
+220 | 
+221 | /* Professional Chat Container */
+222 | #chat-box {
+223 | 	flex: 1;
+224 | 	overflow-y: auto;
+225 | 	padding: var(--space-4);
+226 | 	display: flex;
+227 | 	flex-direction: column;
+228 | 	gap: var(--space-4);
+229 | 	scroll-behavior: smooth;
+230 | 	scrollbar-width: thin;
+231 | 	scrollbar-color: rgba(248, 250, 252, 0.2) transparent;
+232 | 	min-height: 0; /* Allow flex child to shrink */
+233 | 	position: relative;
+234 | }
+235 | 
+236 | #chat-box::-webkit-scrollbar {
+237 | 	width: 6px;
+238 | }
+239 | 
+240 | #chat-box::-webkit-scrollbar-thumb {
+241 | 	background: rgba(248, 250, 252, 0.2);
+242 | 	border-radius: 3px;
+243 | }
+244 | 
+245 | #chat-box::-webkit-scrollbar-track {
+246 | 	background: transparent;
+247 | }
+248 | 
+249 | /* Welcome Message */
+250 | .welcome-message {
+251 | 	display: flex;
+252 | 	flex-direction: column;
+253 | 	align-items: center;
+254 | 	text-align: center;
+255 | 	padding: var(--space-8);
+256 | 	background: var(--card-bg);
+257 | 	border: 1px solid var(--border-color);
+258 | 	border-radius: var(--radius-lg);
+259 | 	backdrop-filter: blur(20px);
+260 | 	margin-bottom: var(--space-4);
+261 | }
+262 | 
+263 | .welcome-message .bot-avatar {
+264 | 	margin-bottom: var(--space-4);
 265 | }
 266 | 
-267 | .welcome-content h3 {
-268 | 	margin: 0 0 var(--space-3) 0;
-269 | 	font-size: 1.125rem;
-270 | 	font-weight: var(--font-weight-bold);
-271 | 	color: var(--text-primary);
-272 | }
-273 | 
-274 | .welcome-content p {
-275 | 	margin: 0 0 var(--space-4) 0;
-276 | 	color: var(--text-secondary);
-277 | 	line-height: 1.6;
-278 | }
-279 | 
-280 | .features-grid {
-281 | 	display: grid;
-282 | 	grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-283 | 	gap: var(--space-3);
-284 | 	width: 100%;
-285 | 	max-width: 400px;
+267 | .welcome-message .bot-avatar img {
+268 | 	width: 64px;
+269 | 	height: 64px;
+270 | 	object-fit: contain;
+271 | 	filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.3));
+272 | 	border-radius: var(--radius-lg);
+273 | }
+274 | 
+275 | .welcome-content h3 {
+276 | 	margin: 0 0 var(--space-3) 0;
+277 | 	font-size: 1.125rem;
+278 | 	font-weight: var(--font-weight-bold);
+279 | 	color: var(--text-primary);
+280 | }
+281 | 
+282 | .welcome-content p {
+283 | 	margin: 0 0 var(--space-4) 0;
+284 | 	color: var(--text-secondary);
+285 | 	line-height: 1.6;
 286 | }
 287 | 
-288 | .feature-item {
-289 | 	background: linear-gradient(135deg,
-290 | 			rgba(59, 130, 246, 0.1) 0%,
-291 | 			rgba(99, 102, 241, 0.1) 100%);
-292 | 	border: 1px solid var(--border-accent);
-293 | 	color: var(--accent-light);
-294 | 	padding: var(--space-2) var(--space-3);
-295 | 	border-radius: var(--radius-md);
-296 | 	font-size: 0.75rem;
-297 | 	font-weight: var(--font-weight-medium);
-298 | 	text-align: center;
-299 | 	backdrop-filter: blur(10px);
-300 | 	transition: all 0.2s ease;
-301 | }
-302 | 
-303 | .feature-item:hover {
-304 | 	background: linear-gradient(135deg,
-305 | 			rgba(59, 130, 246, 0.2) 0%,
-306 | 			rgba(99, 102, 241, 0.2) 100%);
-307 | 	transform: translateY(-1px);
-308 | }
-309 | 
-310 | /* Professional Message Styles */
-311 | .message {
-312 | 	display: flex;
-313 | 	flex-direction: column;
-314 | 	max-width: 85%;
-315 | 	animation: messageSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+288 | .features-grid {
+289 | 	display: grid;
+290 | 	grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+291 | 	gap: var(--space-3);
+292 | 	width: 100%;
+293 | 	max-width: 400px;
+294 | }
+295 | 
+296 | .feature-item {
+297 | 	background: linear-gradient(135deg,
+298 | 			rgba(59, 130, 246, 0.1) 0%,
+299 | 			rgba(99, 102, 241, 0.1) 100%);
+300 | 	border: 1px solid var(--border-accent);
+301 | 	color: var(--accent-light);
+302 | 	padding: var(--space-2) var(--space-3);
+303 | 	border-radius: var(--radius-md);
+304 | 	font-size: 0.75rem;
+305 | 	font-weight: var(--font-weight-medium);
+306 | 	text-align: center;
+307 | 	backdrop-filter: blur(10px);
+308 | 	transition: all 0.2s ease;
+309 | }
+310 | 
+311 | .feature-item:hover {
+312 | 	background: linear-gradient(135deg,
+313 | 			rgba(59, 130, 246, 0.2) 0%,
+314 | 			rgba(99, 102, 241, 0.2) 100%);
+315 | 	transform: translateY(-1px);
 316 | }
 317 | 
-318 | @keyframes messageSlideIn {
-319 | 	from {
-320 | 		opacity: 0;
-321 | 		transform: translateY(16px);
-322 | 	}
-323 | 
-324 | 	to {
-325 | 		opacity: 1;
-326 | 		transform: translateY(0);
-327 | 	}
-328 | }
-329 | 
-330 | .user-message {
-331 | 	align-self: flex-end;
-332 | }
-333 | 
-334 | .ai-message {
-335 | 	align-self: flex-start;
+318 | /* Professional Message Styles */
+319 | .message {
+320 | 	display: flex;
+321 | 	flex-direction: column;
+322 | 	max-width: 85%;
+323 | 	animation: messageSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+324 | }
+325 | 
+326 | @keyframes messageSlideIn {
+327 | 	from {
+328 | 		opacity: 0;
+329 | 		transform: translateY(16px);
+330 | 	}
+331 | 
+332 | 	to {
+333 | 		opacity: 1;
+334 | 		transform: translateY(0);
+335 | 	}
 336 | }
 337 | 
-338 | .user-label,
-339 | .ai-label {
-340 | 	font-size: 0.75rem;
-341 | 	font-weight: var(--font-weight-semibold);
-342 | 	margin-bottom: var(--space-2);
-343 | 	text-transform: uppercase;
-344 | 	letter-spacing: 0.05em;
-345 | 	display: flex;
-346 | 	align-items: center;
-347 | 	gap: var(--space-2);
-348 | }
-349 | 
-350 | .user-label {
-351 | 	color: var(--user-color);
-352 | 	text-align: right;
-353 | 	justify-content: flex-end;
-354 | }
-355 | 
-356 | .ai-label {
-357 | 	color: var(--ai-color);
-358 | }
-359 | 
-360 | .message-avatar {
-361 | 	font-size: 0.875rem;
+338 | .user-message {
+339 | 	align-self: flex-end;
+340 | }
+341 | 
+342 | .ai-message {
+343 | 	align-self: flex-start;
+344 | }
+345 | 
+346 | .user-label,
+347 | .ai-label {
+348 | 	font-size: 0.75rem;
+349 | 	font-weight: var(--font-weight-semibold);
+350 | 	margin-bottom: var(--space-2);
+351 | 	text-transform: uppercase;
+352 | 	letter-spacing: 0.05em;
+353 | 	display: flex;
+354 | 	align-items: center;
+355 | 	gap: var(--space-2);
+356 | }
+357 | 
+358 | .user-label {
+359 | 	color: var(--user-color);
+360 | 	text-align: right;
+361 | 	justify-content: flex-end;
 362 | }
 363 | 
-364 | .message-content {
-365 | 	background: var(--card-bg);
-366 | 	backdrop-filter: blur(20px);
-367 | 	padding: var(--space-4) var(--space-5);
-368 | 	border-radius: var(--radius-lg);
-369 | 	line-height: 1.6;
-370 | 	font-size: 0.875rem;
-371 | 	word-wrap: break-word;
-372 | 	border: 1px solid var(--border-color);
-373 | 	box-shadow: var(--shadow-sm);
-374 | }
-375 | 
-376 | .user-message .message-content {
-377 | 	background: linear-gradient(135deg,
-378 | 			rgba(99, 102, 241, 0.15) 0%,
-379 | 			rgba(59, 130, 246, 0.15) 100%);
-380 | 	border: 1px solid rgba(99, 102, 241, 0.3);
-381 | 	border-radius: var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-lg);
+364 | .ai-label {
+365 | 	color: var(--ai-color);
+366 | }
+367 | 
+368 | .message-avatar {
+369 | 	font-size: 0.875rem;
+370 | }
+371 | 
+372 | .message-content {
+373 | 	background: var(--card-bg);
+374 | 	backdrop-filter: blur(20px);
+375 | 	padding: var(--space-4) var(--space-5);
+376 | 	border-radius: var(--radius-lg);
+377 | 	line-height: 1.6;
+378 | 	font-size: 0.875rem;
+379 | 	word-wrap: break-word;
+380 | 	border: 1px solid var(--border-color);
+381 | 	box-shadow: var(--shadow-sm);
 382 | }
 383 | 
-384 | .ai-message .message-content {
+384 | .user-message .message-content {
 385 | 	background: linear-gradient(135deg,
-386 | 			rgba(139, 92, 246, 0.08) 0%,
-387 | 			rgba(168, 85, 247, 0.08) 100%);
-388 | 	border-left: 3px solid var(--ai-color);
-389 | 	border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-sm);
+386 | 			rgba(99, 102, 241, 0.15) 0%,
+387 | 			rgba(59, 130, 246, 0.15) 100%);
+388 | 	border: 1px solid rgba(99, 102, 241, 0.3);
+389 | 	border-radius: var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-lg);
 390 | }
 391 | 
-392 | /* Enhanced Input Section */
-393 | #input-section {
-394 | 	flex-shrink: 0;
-395 | 	background: var(--secondary-bg);
-396 | 	border-top: 1px solid var(--border-color);
-397 | 	padding: var(--space-4);
+392 | .ai-message .message-content {
+393 | 	background: linear-gradient(135deg,
+394 | 			rgba(139, 92, 246, 0.08) 0%,
+395 | 			rgba(168, 85, 247, 0.08) 100%);
+396 | 	border-left: 3px solid var(--ai-color);
+397 | 	border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-sm);
 398 | }
 399 | 
-400 | .input-container {
-401 | 	position: relative;
-402 | 	width: 100%;
-403 | 	max-width: 100%;
-404 | }
-405 | 
-406 | .input-wrapper {
-407 | 	display: flex;
-408 | 	align-items: stretch;
-409 | 	background: var(--card-bg);
-410 | 	border: 1px solid var(--border-color);
-411 | 	border-radius: var(--radius-lg);
-412 | 	padding: var(--space-2);
-413 | 	gap: var(--space-2);
-414 | 	backdrop-filter: blur(20px);
-415 | 	transition: all 0.2s ease;
-416 | 	position: relative;
-417 | 	min-height: 48px;
-418 | }
-419 | 
-420 | .input-wrapper:focus-within {
-421 | 	border-color: var(--accent-color);
-422 | 	box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-423 | }
-424 | 
-425 | #user-input {
-426 | 	flex: 1;
-427 | 	min-height: 44px;
-428 | 	max-height: 120px;
-429 | 	padding: var(--space-3);
-430 | 	background: transparent;
-431 | 	border: none;
-432 | 	color: var(--text-primary);
-433 | 	font-family: var(--font-family);
-434 | 	font-size: 0.875rem;
-435 | 	line-height: 1.5;
-436 | 	resize: none;
-437 | 	overflow-y: auto;
-438 | 	outline: none;
-439 | 	margin: 0;
-440 | 	box-sizing: border-box;
-441 | 	scrollbar-width: thin;
-442 | 	scrollbar-color: rgba(248, 250, 252, 0.2) transparent;
-443 | }
-444 | 
-445 | #user-input::-webkit-scrollbar {
-446 | 	width: 4px;
-447 | }
-448 | 
-449 | #user-input::-webkit-scrollbar-thumb {
-450 | 	background: rgba(248, 250, 252, 0.2);
-451 | 	border-radius: 2px;
-452 | }
-453 | 
-454 | .send-button {
-455 | 	background: var(--accent-color) !important;
-456 | 	border: none !important;
-457 | 	border-radius: var(--radius-md) !important;
-458 | 	color: white !important;
-459 | 	width: 36px !important;
-460 | 	height: 36px !important;
-461 | 	display: flex !important;
-462 | 	align-items: center !important;
-463 | 	justify-content: center !important;
-464 | 	cursor: pointer !important;
-465 | 	transition: all 0.2s ease !important;
-466 | 	flex-shrink: 0 !important;
-467 | 	visibility: visible !important;
-468 | 	opacity: 1 !important;
-469 | 	position: relative !important;
-470 | 	z-index: 10 !important;
-471 | }
-472 | 
-473 | .send-button:hover:not(:disabled) {
-474 | 	background: var(--accent-hover);
-475 | 	transform: translateY(-1px);
-476 | 	box-shadow: var(--shadow-md);
-477 | }
-478 | 
-479 | .send-button:active:not(:disabled) {
-480 | 	transform: translateY(0);
+400 | /* Enhanced Input Section */
+401 | #input-section {
+402 | 	flex-shrink: 0;
+403 | 	background: var(--secondary-bg);
+404 | 	border-top: 1px solid var(--border-color);
+405 | 	padding: var(--space-4);
+406 | 	position: relative;
+407 | 	z-index: 5;
+408 | }
+409 | 
+410 | .input-container {
+411 | 	position: relative;
+412 | 	width: 100%;
+413 | 	max-width: 100%;
+414 | }
+415 | 
+416 | .input-wrapper {
+417 | 	display: flex;
+418 | 	align-items: stretch;
+419 | 	background: var(--card-bg);
+420 | 	border: 1px solid var(--border-color);
+421 | 	border-radius: var(--radius-lg);
+422 | 	padding: var(--space-2);
+423 | 	gap: var(--space-2);
+424 | 	backdrop-filter: blur(20px);
+425 | 	transition: all 0.2s ease;
+426 | 	position: relative;
+427 | 	min-height: 48px;
+428 | }
+429 | 
+430 | .input-wrapper:focus-within {
+431 | 	border-color: var(--accent-color);
+432 | 	box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+433 | }
+434 | 
+435 | #user-input {
+436 | 	flex: 1;
+437 | 	min-height: 44px;
+438 | 	max-height: 120px;
+439 | 	padding: var(--space-3);
+440 | 	background: transparent;
+441 | 	border: none;
+442 | 	color: var(--text-primary);
+443 | 	font-family: var(--font-family);
+444 | 	font-size: 0.875rem;
+445 | 	line-height: 1.5;
+446 | 	resize: none;
+447 | 	overflow-y: auto;
+448 | 	outline: none;
+449 | 	margin: 0;
+450 | 	box-sizing: border-box;
+451 | 	scrollbar-width: thin;
+452 | 	scrollbar-color: rgba(248, 250, 252, 0.2) transparent;
+453 | }
+454 | 
+455 | #user-input::-webkit-scrollbar {
+456 | 	width: 4px;
+457 | }
+458 | 
+459 | #user-input::-webkit-scrollbar-thumb {
+460 | 	background: rgba(248, 250, 252, 0.2);
+461 | 	border-radius: 2px;
+462 | }
+463 | 
+464 | .send-button {
+465 | 	background: var(--accent-color) !important;
+466 | 	border: none !important;
+467 | 	border-radius: var(--radius-md) !important;
+468 | 	color: white !important;
+469 | 	width: 36px !important;
+470 | 	height: 36px !important;
+471 | 	display: flex !important;
+472 | 	align-items: center !important;
+473 | 	justify-content: center !important;
+474 | 	cursor: pointer !important;
+475 | 	transition: all 0.2s ease !important;
+476 | 	flex-shrink: 0 !important;
+477 | 	visibility: visible !important;
+478 | 	opacity: 1 !important;
+479 | 	position: relative !important;
+480 | 	z-index: 10 !important;
 481 | }
 482 | 
-483 | .send-button:disabled {
-484 | 	opacity: 0.7;
-485 | 	cursor: not-allowed;
-486 | 	transform: none;
+483 | .send-button:hover:not(:disabled) {
+484 | 	background: var(--accent-hover);
+485 | 	transform: translateY(-1px);
+486 | 	box-shadow: var(--shadow-md);
 487 | }
 488 | 
-489 | .send-icon {
-490 | 	font-size: 0.875rem;
-491 | 	line-height: 1;
-492 | }
-493 | 
-494 | /* Professional Code Block Styles */
-495 | .code-block {
-496 | 	background: linear-gradient(135deg,
-497 | 			#0f172a 0%,
-498 | 			#1e293b 50%,
-499 | 			#0f172a 100%);
-500 | 	border: 1px solid var(--border-color);
-501 | 	border-radius: var(--radius-lg);
-502 | 	padding: var(--space-5);
-503 | 	margin: var(--space-4) 0;
-504 | 	font-family: var(--font-family-mono);
-505 | 	font-size: 0.8125rem;
-506 | 	line-height: 1.6;
-507 | 	overflow-x: auto;
-508 | 	position: relative;
-509 | 	box-shadow: var(--shadow-md);
-510 | }
-511 | 
-512 | .code-block::before {
-513 | 	content: 'Code';
-514 | 	position: absolute;
-515 | 	top: var(--space-3);
-516 | 	right: var(--space-3);
-517 | 	background: var(--accent-color);
-518 | 	color: white;
-519 | 	padding: var(--space-1) var(--space-3);
-520 | 	border-radius: var(--radius-sm);
-521 | 	font-size: 0.6875rem;
-522 | 	font-weight: var(--font-weight-semibold);
-523 | 	text-transform: uppercase;
-524 | 	letter-spacing: 0.05em;
-525 | }
-526 | 
-527 | .code-block.flex-code::before {
-528 | 	background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
-529 | 	content: 'Flex';
-530 | }
-531 | 
-532 | .code-block.flex-code {
-533 | 	border-left: 3px solid var(--accent-color);
-534 | }
-535 | 
-536 | /* Professional Syntax Highlighting */
-537 | .flex-keyword-franco {
-538 | 	color: #ff6b6b;
-539 | 	font-weight: var(--font-weight-semibold);
+489 | .send-button:active:not(:disabled) {
+490 | 	transform: translateY(0);
+491 | }
+492 | 
+493 | .send-button:disabled {
+494 | 	opacity: 0.7;
+495 | 	cursor: not-allowed;
+496 | 	transform: none;
+497 | }
+498 | 
+499 | .send-icon {
+500 | 	font-size: 0.875rem;
+501 | 	line-height: 1;
+502 | }
+503 | 
+504 | /* Professional Code Block Styles */
+505 | .code-block {
+506 | 	background: linear-gradient(135deg,
+507 | 			#0f172a 0%,
+508 | 			#1e293b 50%,
+509 | 			#0f172a 100%);
+510 | 	border: 1px solid var(--border-color);
+511 | 	border-radius: var(--radius-lg);
+512 | 	padding: var(--space-5);
+513 | 	margin: var(--space-4) 0;
+514 | 	font-family: var(--font-family-mono);
+515 | 	font-size: 0.8125rem;
+516 | 	line-height: 1.6;
+517 | 	overflow-x: auto;
+518 | 	position: relative;
+519 | 	box-shadow: var(--shadow-md);
+520 | }
+521 | 
+522 | .code-block::before {
+523 | 	content: 'Code';
+524 | 	position: absolute;
+525 | 	top: var(--space-3);
+526 | 	right: var(--space-3);
+527 | 	background: var(--accent-color);
+528 | 	color: white;
+529 | 	padding: var(--space-1) var(--space-3);
+530 | 	border-radius: var(--radius-sm);
+531 | 	font-size: 0.6875rem;
+532 | 	font-weight: var(--font-weight-semibold);
+533 | 	text-transform: uppercase;
+534 | 	letter-spacing: 0.05em;
+535 | }
+536 | 
+537 | .code-block.flex-code::before {
+538 | 	background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+539 | 	content: 'Flex';
 540 | }
 541 | 
-542 | .flex-keyword-english {
-543 | 	color: #4ecdc4;
-544 | 	font-weight: var(--font-weight-semibold);
-545 | }
-546 | 
-547 | .flex-string {
-548 | 	color: #95e1d3;
-549 | }
-550 | 
-551 | .flex-number {
-552 | 	color: #fce38a;
-553 | }
+542 | .code-block.flex-code {
+543 | 	border-left: 3px solid var(--accent-color);
+544 | 	padding: var(--space-4) var(--space-5);
+545 | 	margin: var(--space-3) 0;
+546 | 	background: rgba(15, 23, 42, 0.6);
+547 | 	border-radius: var(--radius-lg);
+548 | 	backdrop-filter: blur(10px);
+549 | 	line-height: 1.6;
+550 | 	font-size: 0.875rem;
+551 | }
+552 | 
+553 | /* Enhanced Professional Syntax Highlighting - Official Flex Token Categories */
 554 | 
-555 | .flex-comment {
-556 | 	color: var(--text-subtle);
-557 | 	font-style: italic;
-558 | }
-559 | 
-560 | .flex-operator {
-561 | 	color: #ff8a80;
-562 | }
-563 | 
-564 | .flex-function {
-565 | 	color: #81c784;
+555 | /* Function Keywords (highest priority) */
+556 | .flex-function-keyword {
+557 | 	color: #c678dd;
+558 | 	font-weight: var(--font-weight-bold);
+559 | 	text-shadow: 0 0 8px rgba(198, 120, 221, 0.3);
+560 | }
+561 | 
+562 | /* Control Flow Keywords */
+563 | .flex-control-keyword {
+564 | 	color: #e06c75;
+565 | 	font-weight: var(--font-weight-semibold);
 566 | }
 567 | 
-568 | .flex-variable {
-569 | 	color: #64b5f6;
-570 | }
-571 | 
-572 | /* Animation Keyframes */
-573 | @keyframes pulse {
-574 | 
-575 | 	0%,
-576 | 	100% {
-577 | 		opacity: 1;
-578 | 	}
-579 | 
-580 | 	50% {
-581 | 		opacity: 0.5;
-582 | 	}
-583 | }
-584 | 
-585 | /* Status Message Styles */
-586 | .status-message {
-587 | 	background: linear-gradient(135deg,
-588 | 			rgba(59, 130, 246, 0.1) 0%,
-589 | 			rgba(99, 102, 241, 0.1) 100%);
-590 | 	border: 1px solid var(--border-accent);
-591 | 	color: var(--accent-light);
-592 | 	padding: var(--space-3) var(--space-4);
-593 | 	border-radius: var(--radius-lg);
-594 | 	font-size: 0.875rem;
-595 | 	font-weight: var(--font-weight-medium);
-596 | 	text-align: center;
-597 | 	backdrop-filter: blur(10px);
-598 | 	animation: pulse 2s ease-in-out infinite;
-599 | }
-600 | 
-601 | /* Responsive Design */
-602 | @media (max-width: 768px) {
-603 | 	:root {
-604 | 		--header-height: 2.5rem;
-605 | 	}
-606 | 
-607 | 	#header-bar {
-608 | 		padding: var(--space-2) var(--space-3);
-609 | 	}
+568 | /* Loop Keywords */
+569 | .flex-loop-keyword {
+570 | 	color: #d19a66;
+571 | 	font-weight: var(--font-weight-semibold);
+572 | }
+573 | 
+574 | /* I/O Keywords */
+575 | .flex-io-keyword {
+576 | 	color: #56b6c2;
+577 | 	font-weight: var(--font-weight-semibold);
+578 | 	text-decoration: underline;
+579 | 	text-decoration-style: dotted;
+580 | 	text-decoration-color: rgba(86, 182, 194, 0.5);
+581 | }
+582 | 
+583 | /* Data Type Keywords */
+584 | .flex-datatype-keyword {
+585 | 	color: #61afef;
+586 | 	font-weight: var(--font-weight-semibold);
+587 | 	font-style: italic;
+588 | }
+589 | 
+590 | /* Literals (booleans, null) */
+591 | .flex-literal {
+592 | 	color: #98c379;
+593 | 	font-weight: var(--font-weight-medium);
+594 | }
+595 | 
+596 | /* List Methods */
+597 | .flex-list-method {
+598 | 	color: #e5c07b;
+599 | 	font-weight: var(--font-weight-medium);
+600 | 	background: rgba(229, 192, 123, 0.1);
+601 | 	padding: 1px 3px;
+602 | 	border-radius: 3px;
+603 | }
+604 | 
+605 | /* Legacy Franco Arabic Keywords */
+606 | .flex-keyword-franco {
+607 | 	color: #ff6b6b;
+608 | 	font-weight: var(--font-weight-semibold);
+609 | }
 610 | 
-611 | 	.header-title {
-612 | 		font-size: 0.8125rem;
-613 | 	}
-614 | 
-615 | 	.status-indicators {
-616 | 		margin-left: var(--space-2);
-617 | 		gap: var(--space-1);
-618 | 	}
-619 | 
-620 | 	.header-right {
-621 | 		gap: var(--space-1);
-622 | 	}
-623 | 
-624 | 	.model-display {
-625 | 		font-size: 0.6875rem;
-626 | 		padding: var(--space-1) var(--space-2);
-627 | 	}
-628 | 
-629 | 	.icon-button {
-630 | 		min-width: 28px;
-631 | 		height: 28px;
-632 | 		padding: var(--space-1);
-633 | 		font-size: 0.75rem;
-634 | 	}
-635 | 
-636 | 	.welcome-message {
-637 | 		padding: var(--space-6);
-638 | 	}
-639 | 
-640 | 	.welcome-message .bot-avatar img {
-641 | 		width: 48px;
-642 | 		height: 48px;
-643 | 	}
-644 | 
-645 | 	.welcome-content h3 {
-646 | 		font-size: 1rem;
-647 | 	}
-648 | 
-649 | 	.features-grid {
-650 | 		grid-template-columns: repeat(2, 1fr);
-651 | 		gap: var(--space-2);
-652 | 	}
-653 | 
-654 | 	.message {
-655 | 		max-width: 95%;
-656 | 	}
-657 | 
-658 | 	#input-section {
-659 | 		padding: var(--space-3);
-660 | 	}
-661 | 
-662 | 	.input-wrapper {
-663 | 		padding: var(--space-2);
-664 | 		gap: var(--space-2);
-665 | 	}
-666 | 
-667 | 	.send-button {
-668 | 		min-width: 32px;
-669 | 		height: 32px;
-670 | 	}
-671 | }
-672 | 
-673 | @media (max-width: 480px) {
-674 | 	.header-title {
-675 | 		display: none;
-676 | 	}
+611 | /* Legacy English Keywords */
+612 | .flex-keyword-english {
+613 | 	color: #4ecdc4;
+614 | 	font-weight: var(--font-weight-semibold);
+615 | }
+616 | 
+617 | /* String Literals */
+618 | .flex-string {
+619 | 	color: #95e1d3;
+620 | 	background: rgba(149, 225, 211, 0.1);
+621 | 	padding: 1px 2px;
+622 | 	border-radius: 2px;
+623 | }
+624 | 
+625 | /* Numeric Literals */
+626 | .flex-number {
+627 | 	color: #fce38a;
+628 | 	font-weight: var(--font-weight-medium);
+629 | }
+630 | 
+631 | /* Comments */
+632 | .flex-comment {
+633 | 	color: var(--text-subtle);
+634 | 	font-style: italic;
+635 | 	opacity: 0.8;
+636 | }
+637 | 
+638 | /* Operators */
+639 | .flex-operator {
+640 | 	color: #ff8a80;
+641 | 	font-weight: var(--font-weight-medium);
+642 | }
+643 | 
+644 | /* Functions */
+645 | .flex-function {
+646 | 	color: #81c784;
+647 | 	font-weight: var(--font-weight-medium);
+648 | }
+649 | 
+650 | /* Variables */
+651 | .flex-variable {
+652 | 	color: #64b5f6;
+653 | }
+654 | 
+655 | /* Copy Button for Code Blocks */
+656 | .copy-code-button {
+657 | 	position: absolute;
+658 | 	top: var(--space-2);
+659 | 	right: var(--space-2);
+660 | 	background: var(--accent-color);
+661 | 	border: none;
+662 | 	border-radius: var(--radius-sm);
+663 | 	color: white;
+664 | 	padding: var(--space-1) var(--space-2);
+665 | 	font-size: 0.75rem;
+666 | 	cursor: pointer;
+667 | 	opacity: 0.8;
+668 | 	transition: all 0.2s ease;
+669 | 	z-index: 2;
+670 | }
+671 | 
+672 | .copy-code-button:hover {
+673 | 	opacity: 1;
+674 | 	transform: translateY(-1px);
+675 | 	box-shadow: var(--shadow-sm);
+676 | }
 677 | 
-678 | 	.status-indicators {
-679 | 		margin-left: var(--space-1);
-680 | 	}
+678 | .code-block:hover .copy-code-button {
+679 | 	opacity: 1;
+680 | }
 681 | 
-682 | 	.model-display {
-683 | 		max-width: 60px;
-684 | 		font-size: 0.625rem;
-685 | 	}
-686 | 
-687 | 	.features-grid {
-688 | 		grid-template-columns: 1fr;
-689 | 	}
-690 | 
-691 | 	.quick-actions {
-692 | 		flex-direction: column;
-693 | 		align-items: center;
-694 | 	}
-695 | 
-696 | 	.hint-item {
-697 | 		min-width: 120px;
-698 | 		text-align: center;
-699 | 	}
-700 | }
-701 | 
-702 | /* Accessibility and Motion */
-703 | @media (prefers-reduced-motion: reduce) {
-704 | 	* {
-705 | 		animation-duration: 0.01ms !important;
-706 | 		animation-iteration-count: 1 !important;
-707 | 		transition-duration: 0.01ms !important;
-708 | 	}
-709 | }
-710 | 
-711 | /* Focus Styles */
-712 | button:focus-visible,
-713 | textarea:focus-visible {
-714 | 	outline: 2px solid var(--accent-color);
-715 | 	outline-offset: 2px;
-716 | }
-717 | 
-718 | /* Configuration Status Indicators */
-719 | body[data-config-status="invalid"] .input-container {
-720 | 	opacity: 0.7;
-721 | }
-722 | 
-723 | body[data-config-status="invalid"] .input-wrapper::before {
-724 | 	content: '⚠️ Configuration needed - check settings';
-725 | 	position: absolute;
-726 | 	top: -24px;
-727 | 	left: 0;
-728 | 	font-size: 0.75rem;
-729 | 	color: var(--warning-color);
-730 | 	background: var(--card-bg);
-731 | 	padding: var(--space-1) var(--space-2);
-732 | 	border-radius: var(--radius-sm);
-733 | 	border: 1px solid var(--warning-color);
-734 | }
-735 | 
-736 | /* Enhanced Typography */
-737 | code {
-738 | 	background: rgba(248, 250, 252, 0.1);
-739 | 	border: 1px solid var(--border-color);
-740 | 	border-radius: var(--radius-sm);
-741 | 	padding: var(--space-1) var(--space-2);
-742 | 	font-family: var(--font-family-mono);
-743 | 	font-size: 0.8125rem;
-744 | 	color: var(--accent-light);
-745 | }
-746 | 
-747 | /* Link Styles */
-748 | a {
-749 | 	color: var(--accent-light);
-750 | 	text-decoration: none;
-751 | 	border-bottom: 1px solid transparent;
-752 | 	transition: border-color 0.2s ease;
-753 | }
+682 | .has-copy-button {
+683 | 	position: relative;
+684 | }
+685 | 
+686 | /* Animation Keyframes */
+687 | @keyframes pulse {
+688 | 
+689 | 	0%,
+690 | 	100% {
+691 | 		opacity: 1;
+692 | 	}
+693 | 
+694 | 	50% {
+695 | 		opacity: 0.5;
+696 | 	}
+697 | }
+698 | 
+699 | /* Status Message Styles */
+700 | .status-message {
+701 | 	background: linear-gradient(135deg,
+702 | 			rgba(59, 130, 246, 0.1) 0%,
+703 | 			rgba(99, 102, 241, 0.1) 100%);
+704 | 	border: 1px solid var(--border-accent);
+705 | 	color: var(--accent-light);
+706 | 	padding: var(--space-3) var(--space-4);
+707 | 	border-radius: var(--radius-lg);
+708 | 	font-size: 0.875rem;
+709 | 	font-weight: var(--font-weight-medium);
+710 | 	text-align: center;
+711 | 	backdrop-filter: blur(10px);
+712 | 	animation: pulse 2s ease-in-out infinite;
+713 | }
+714 | 
+715 | /* Responsive Design */
+716 | @media (max-width: 768px) {
+717 | 	:root {
+718 | 		--header-height: 2.5rem;
+719 | 	}
+720 | 
+721 | 	#header-bar {
+722 | 		padding: var(--space-2) var(--space-3);
+723 | 	}
+724 | 
+725 | 	.header-title {
+726 | 		font-size: 0.8125rem;
+727 | 	}
+728 | 
+729 | 	.status-indicators {
+730 | 		margin-left: var(--space-2);
+731 | 		gap: var(--space-1);
+732 | 	}
+733 | 
+734 | 	.header-right {
+735 | 		gap: var(--space-1);
+736 | 	}
+737 | 
+738 | 	.model-display {
+739 | 		font-size: 0.6875rem;
+740 | 		padding: var(--space-1) var(--space-2);
+741 | 		max-width: 100px; /* Adjust for tablet */
+742 | 	}
+743 | 
+744 | 	.icon-button {
+745 | 		min-width: 28px;
+746 | 		height: 28px;
+747 | 		padding: var(--space-1);
+748 | 		font-size: 0.75rem;
+749 | 	}
+750 | 
+751 | 	.welcome-message {
+752 | 		padding: var(--space-6);
+753 | 	}
 754 | 
-755 | a:hover {
-756 | 	border-bottom-color: var(--accent-light);
-757 | }
+755 | 	.welcome-message .bot-avatar img {
+756 | 		width: 48px;
+757 | 		height: 48px;
+758 | 	}
+759 | 
+760 | 	.welcome-content h3 {
+761 | 		font-size: 1rem;
+762 | 	}
+763 | 
+764 | 	.features-grid {
+765 | 		grid-template-columns: repeat(2, 1fr);
+766 | 		gap: var(--space-2);
+767 | 	}
+768 | 
+769 | 	.message {
+770 | 		max-width: 95%;
+771 | 	}
+772 | 
+773 | 	#input-section {
+774 | 		padding: var(--space-3);
+775 | 	}
+776 | 
+777 | 	.input-wrapper {
+778 | 		padding: var(--space-2);
+779 | 		gap: var(--space-2);
+780 | 	}
+781 | 
+782 | 	.send-button {
+783 | 		min-width: 32px;
+784 | 		height: 32px;
+785 | 	}
+786 | }
+787 | 
+788 | @media (max-width: 480px) {
+789 | 	.header-title {
+790 | 		display: none;
+791 | 	}
+792 | 
+793 | 	.status-indicators {
+794 | 		margin-left: var(--space-1);
+795 | 	}
+796 | 
+797 | 	.model-display {
+798 | 		max-width: 80px; /* More reasonable for mobile */
+799 | 		font-size: 0.625rem;
+800 | 		padding: var(--space-1);
+801 | 	}
+802 | 
+803 | 	.features-grid {
+804 | 		grid-template-columns: 1fr;
+805 | 	}
+806 | 
+807 | 	.welcome-message {
+808 | 		padding: var(--space-4);
+809 | 	}
+810 | 
+811 | 	.message {
+812 | 		max-width: 100%;
+813 | 	}
+814 | 
+815 | 	/* Ensure no overlapping on very small screens */
+816 | 	#chat-box {
+817 | 		padding: var(--space-2);
+818 | 		gap: var(--space-2);
+819 | 	}
+820 | 
+821 | 	#input-section {
+822 | 		padding: var(--space-2);
+823 | 	}
+824 | 
+825 | 	.input-wrapper {
+826 | 		min-height: 44px;
+827 | 	}
+828 | 
+829 | 	.send-button {
+830 | 		width: 32px !important;
+831 | 		height: 32px !important;
+832 | 	}
+833 | }
+834 | 
+835 | /* Accessibility and Motion */
+836 | @media (prefers-reduced-motion: reduce) {
+837 | 	* {
+838 | 		animation-duration: 0.01ms !important;
+839 | 		animation-iteration-count: 1 !important;
+840 | 		transition-duration: 0.01ms !important;
+841 | 	}
+842 | }
+843 | 
+844 | /* Focus Styles */
+845 | button:focus-visible,
+846 | textarea:focus-visible {
+847 | 	outline: 2px solid var(--accent-color);
+848 | 	outline-offset: 2px;
+849 | }
+850 | 
+851 | /* Configuration Status Indicators */
+852 | body[data-config-status="invalid"] .input-container {
+853 | 	opacity: 0.7;
+854 | }
+855 | 
+856 | body[data-config-status="invalid"] .input-wrapper::before {
+857 | 	content: '⚠️ Configuration needed - check settings';
+858 | 	position: absolute;
+859 | 	top: -24px;
+860 | 	left: 0;
+861 | 	font-size: 0.75rem;
+862 | 	color: var(--warning-color);
+863 | 	background: var(--card-bg);
+864 | 	padding: var(--space-1) var(--space-2);
+865 | 	border-radius: var(--radius-sm);
+866 | 	border: 1px solid var(--warning-color);
+867 | }
+868 | 
+869 | /* Enhanced Typography */
+870 | code {
+871 | 	background: rgba(248, 250, 252, 0.1);
+872 | 	border: 1px solid var(--border-color);
+873 | 	border-radius: var(--radius-sm);
+874 | 	padding: var(--space-1) var(--space-2);
+875 | 	font-family: var(--font-family-mono);
+876 | 	font-size: 0.8125rem;
+877 | 	color: var(--accent-light);
+878 | }
+879 | 
+880 | /* Link Styles */
+881 | a {
+882 | 	color: var(--accent-light);
+883 | 	text-decoration: none;
+884 | 	border-bottom: 1px solid transparent;
+885 | 	transition: border-color 0.2s ease;
+886 | }
+887 | 
+888 | a:hover {
+889 | 	border-bottom-color: var(--accent-light);
+890 | }
 ```
 
 assets/webview/css/reset.css
@@ -12990,566 +11210,1829 @@ assets/webview/js/chat.js
 3 |   const userInput = document.getElementById('user-input');
 4 |   const sendButton = document.getElementById('send-button');
 5 |   const clearButton = document.getElementById('clear-button');
-6 |   const chatBox = document.getElementById('chat-box');
-7 | 
-8 |   // Flex language keywords and patterns for syntax highlighting
-9 |   const flexSyntax = {
-10 |     // Franco Arabic keywords (common Franco-Arabic programming terms)
-11 |     francoKeywords: [
-12 |       'fonction', 'fi', 'law', 'walla', 'lamma', 'kol', 'men', 'ila', 'iza', 'yerga3',
-13 |       'safha', 'kateb', 'egra', 'esm', 'rakam', 'noss', 'sahih', 'khata', 'tamam',
-14 |       'bdaye', 'nehaye', 'loop', 'break', 'continue', 'class', 'struct', 'enum',
-15 |       'switch', 'case', 'default', 'try', 'catch', 'finally', 'throw', 'new',
-16 |       'delete', 'this', 'super', 'extends', 'implements', 'interface', 'package',
-17 |       'import', 'export', 'const', 'var', 'let', 'static', 'final', 'abstract',
-18 |       'public', 'private', 'protected', 'void', 'return', 'null', 'true', 'false'
-19 |     ],
-20 | 
-21 |     // English keywords
-22 |     englishKeywords: [
-23 |       'function', 'if', 'else', 'elif', 'while', 'for', 'do', 'switch', 'case',
-24 |       'default', 'break', 'continue', 'return', 'class', 'struct', 'enum',
-25 |       'try', 'catch', 'finally', 'throw', 'new', 'delete', 'this', 'super',
-26 |       'extends', 'implements', 'interface', 'package', 'import', 'export',
-27 |       'const', 'var', 'let', 'static', 'final', 'abstract', 'public', 'private',
-28 |       'protected', 'void', 'null', 'true', 'false', 'async', 'await', 'promise'
-29 |     ],
-30 | 
-31 |     // Operators
-32 |     operators: [
-33 |       '\\+', '\\-', '\\*', '\\/', '%', '=', '==', '!=', '<', '>', '<=', '>=',
-34 |       '&&', '\\|\\|', '!', '&', '\\|', '\\^', '<<', '>>', '\\+=', '\\-=',
-35 |       '\\*=', '\\/=', '%=', '\\+\\+', '\\-\\-', '\\?', ':', ';', ',', '\\.',
-36 |       '\\[', '\\]', '\\{', '\\}', '\\(', '\\)'
-37 |     ]
-38 |   };
-39 | 
-40 |   // Function to properly escape HTML
-41 |   function escapeHtml(unsafe) {
-42 |     return unsafe
-43 |       .replace(/&/g, "&amp;")
-44 |       .replace(/</g, "&lt;")
-45 |       .replace(/>/g, "&gt;")
-46 |       .replace(/"/g, "&quot;")
-47 |       .replace(/'/g, "&#039;");
-48 |   }
-49 | 
-50 |   // Function to detect if text contains Flex code
-51 |   function isFlexCode(text) {
-52 |     const flexIndicators = [
-53 |       ...flexSyntax.francoKeywords.slice(0, 10), // Check first 10 Franco keywords
-54 |       ...flexSyntax.englishKeywords.slice(0, 10), // Check first 10 English keywords
-55 |       'flex', 'Flex', 'FLEX'
-56 |     ];
+6 |   const changeModelButton = document.getElementById('change-model');
+7 |   const chatBox = document.getElementById('chat-box');
+8 |   const welcomeMessage = document.querySelector('.welcome-message');
+9 | 
+10 |   // Official Flex language syntax highlighting rules from documentation
+11 |   const flexSyntax = {
+12 |     // Function keywords (official tokens)
+13 |     functionKeywords: [
+14 |       'fun', 'sndo2', 'sando2', 'fn', 'function'
+15 |     ],
+16 | 
+17 |     // Control flow keywords
+18 |     controlKeywords: [
+19 |       'if', 'cond', 'lw', 'elif', 'aw', 'else', 'otherwise', 'gher'
+20 |     ],
+21 | 
+22 |     // Loop keywords
+23 |     loopKeywords: [
+24 |       'while', 'loop', 'talama', 'talma', 'tlma', 'for', 'krr', 'karr', 'karar', 'l7d'
+25 |     ],
+26 | 
+27 |     // I/O keywords
+28 |     ioKeywords: [
+29 |       'etb3', 'out', 'output', 'print', 'printf', 'cout', 'scan', 'read', 'input', 'da5l', 'da5al', 'd5l'
+30 |     ],
+31 | 
+32 |     // Data type keywords
+33 |     dataTypeKeywords: [
+34 |       'rakm', 'klma', 'so2al', 'dorg', 'string', 'int', 'bool', 'list', 'float', 'double', 'char'
+35 |     ],
+36 | 
+37 |     // List operation methods
+38 |     listMethods: [
+39 |       '\\.append', '\\.push', '\\.pop', '\\.remove', '\\.delete'
+40 |     ],
+41 | 
+42 |     // Boolean and null literals
+43 |     literals: [
+44 |       'sa7', 'khata', 'true', 'false', 'null', 'void'
+45 |     ],
+46 | 
+47 |     // Franco Arabic keywords (from original codebase for backward compatibility)
+48 |     francoKeywords: [
+49 |       'fonction', 'fi', 'law', 'walla', 'lamma', 'kol', 'men', 'ila', 'iza', 'yerga3',
+50 |       'safha', 'kateb', 'egra', 'esm', 'noss', 'sahih', 'khata', 'tamam',
+51 |       'bdaye', 'nehaye', 'break', 'continue', 'class', 'struct', 'enum',
+52 |       'switch', 'case', 'default', 'try', 'catch', 'finally', 'throw', 'new',
+53 |       'delete', 'this', 'super', 'extends', 'implements', 'interface', 'package',
+54 |       'import', 'export', 'const', 'var', 'let', 'static', 'final', 'abstract',
+55 |       'public', 'private', 'protected', 'return'
+56 |     ],
 57 | 
-58 |     return flexIndicators.some(keyword =>
-59 |       text.toLowerCase().includes(keyword.toLowerCase())
-60 |     );
-61 |   }
+58 |     // English keywords (for compatibility)
+59 |     englishKeywords: [
+60 |       'async', 'await', 'promise', 'do', 'switch', 'case', 'default'
+61 |     ],
 62 | 
-63 |   // Enhanced Flex syntax highlighting
-64 |   function highlightFlexSyntax(code) {
-65 |     let highlighted = code;
-66 | 
-67 |     // Highlight comments (// and /* */)
-68 |     highlighted = highlighted.replace(
-69 |       /(\/\/.*$|\/\*[\s\S]*?\*\/)/gm,
-70 |       '<span class="flex-comment">$1</span>'
-71 |     );
-72 | 
-73 |     // Highlight strings (single and double quotes)
-74 |     highlighted = highlighted.replace(
-75 |       /(['"])((?:(?!\1)[^\\]|\\.)*)(\1)/g,
-76 |       '<span class="flex-string">$1$2$3</span>'
-77 |     );
-78 | 
-79 |     // Highlight numbers (integers, floats, hex)
-80 |     highlighted = highlighted.replace(
-81 |       /\b(0x[0-9a-fA-F]+|0b[01]+|\d+\.?\d*(?:[eE][+-]?\d+)?)\b/g,
-82 |       '<span class="flex-number">$1</span>'
-83 |     );
-84 | 
-85 |     // Highlight Franco Arabic keywords
-86 |     flexSyntax.francoKeywords.forEach(keyword => {
-87 |       const regex = new RegExp(`\\b(${keyword})\\b`, 'gi');
-88 |       highlighted = highlighted.replace(regex, '<span class="flex-keyword-franco">$1</span>');
-89 |     });
-90 | 
-91 |     // Highlight English keywords  
-92 |     flexSyntax.englishKeywords.forEach(keyword => {
-93 |       const regex = new RegExp(`\\b(${keyword})\\b`, 'gi');
-94 |       highlighted = highlighted.replace(regex, '<span class="flex-keyword-english">$1</span>');
-95 |     });
-96 | 
-97 |     // Highlight operators
-98 |     flexSyntax.operators.forEach(op => {
-99 |       const regex = new RegExp(`(${op})`, 'g');
-100 |       highlighted = highlighted.replace(regex, '<span class="flex-operator">$1</span>');
-101 |     });
-102 | 
-103 |     // Highlight function names (word followed by parentheses)
-104 |     highlighted = highlighted.replace(
-105 |       /\b([a-zA-Z_][a-zA-Z0-9_]*)\s*(?=\()/g,
-106 |       '<span class="flex-function">$1</span>'
-107 |     );
-108 | 
-109 |     // Highlight variables (camelCase, snake_case patterns)
-110 |     highlighted = highlighted.replace(
-111 |       /\b([a-zA-Z_][a-zA-Z0-9_]*)\b(?![<>])/g,
-112 |       (match, p1) => {
-113 |         // Don't highlight if already highlighted
-114 |         if (highlighted.includes(`<span class="flex-keyword`) ||
-115 |           highlighted.includes(`<span class="flex-function">${p1}</span>`)) {
-116 |           return match;
-117 |         }
-118 |         return `<span class="flex-variable">${p1}</span>`;
-119 |       }
-120 |     );
-121 | 
-122 |     return highlighted;
-123 |   }
-124 | 
-125 |   // Enhanced code block formatting
-126 |   function formatCodeBlock(code, language = '') {
-127 |     const isFlexLang = language.toLowerCase() === 'flex' || isFlexCode(code);
-128 | 
-129 |     if (isFlexLang) {
-130 |       const highlighted = highlightFlexSyntax(code);
-131 |       return `<div class="code-block flex-code" data-language="flex">${highlighted}</div>`;
-132 |     } else {
-133 |       // Basic highlighting for other languages
-134 |       let highlighted = code;
-135 | 
-136 |       // Basic keyword highlighting for common languages
-137 |       const basicKeywords = ['function', 'if', 'else', 'for', 'while', 'return', 'class', 'import', 'export', 'const', 'let', 'var'];
-138 |       basicKeywords.forEach(keyword => {
-139 |         const regex = new RegExp(`\\b(${keyword})\\b`, 'g');
-140 |         highlighted = highlighted.replace(regex, '<span class="flex-keyword-english">$1</span>');
-141 |       });
-142 | 
-143 |       // Highlight strings
-144 |       highlighted = highlighted.replace(
-145 |         /(['"])((?:(?!\1)[^\\]|\\.)*)(\1)/g,
-146 |         '<span class="flex-string">$1$2$3</span>'
-147 |       );
-148 | 
-149 |       // Highlight numbers
-150 |       highlighted = highlighted.replace(
-151 |         /\b(\d+\.?\d*)\b/g,
-152 |         '<span class="flex-number">$1</span>'
-153 |       );
-154 | 
-155 |       return `<div class="code-block" data-language="${language || 'code'}">${highlighted}</div>`;
-156 |     }
-157 |   }
-158 | 
-159 |   // Enhanced text formatting function
-160 |   function formatText(text) {
-161 |     let formatted = text;
-162 | 
-163 |     // Format code blocks with language specification
-164 |     formatted = formatted.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => {
-165 |       return formatCodeBlock(code.trim(), lang);
-166 |     });
-167 | 
-168 |     // Format code blocks without language specification
-169 |     formatted = formatted.replace(/```([\s\S]*?)```/g, (match, code) => {
-170 |       return formatCodeBlock(code.trim());
-171 |     });
-172 | 
-173 |     // Format inline code with enhanced styling
-174 |     formatted = formatted.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+63 |     // Operators (safe ones that won't break HTML)
+64 |     operators: [
+65 |       '\\+', '\\-', '\\*', '\\/', '%', '=', '==', '!=', '<=', '>=',
+66 |       '&&', '\\|\\|', '!', '\\+=', '\\-=', '\\*=', '\\/=', '%=', 
+67 |       '\\+\\+', '\\-\\-', '\\?', ':', ';', ',', '\\.',
+68 |       '\\[', '\\]', '\\{', '\\}', '\\(', '\\)'
+69 |     ]
+70 |   };
+71 | 
+72 |   // Function to properly escape HTML
+73 |   function escapeHtml(unsafe) {
+74 |     return unsafe
+75 |       .replace(/&/g, "&amp;")
+76 |       .replace(/</g, "&lt;")
+77 |       .replace(/>/g, "&gt;")
+78 |       .replace(/"/g, "&quot;")
+79 |       .replace(/'/g, "&#039;");
+80 |   }
+81 | 
+82 |   // Enhanced Flex code detection with confidence scoring
+83 |   function isFlexCode(text, threshold = 0.3) {
+84 |     const flexIndicators = {
+85 |       // High confidence indicators
+86 |       strong: [
+87 |         'fonction', 'fi', 'law', 'walla', 'lamma', 'kol', 'men', 'ila', 'iza', 'yerga3',
+88 |         'safha', 'kateb', 'egra', 'esm', 'rakam', 'noss', 'sahih', 'bdaye', 'nehaye',
+89 |         'flex', 'Flex', 'FLEX', '.lx', '.fx', '.flex', 'Franco-Arabic', 'franco'
+90 |       ],
+91 |       // Medium confidence indicators
+92 |       medium: [
+93 |         'function', 'if', 'else', 'while', 'for', 'class', 'struct', 'enum',
+94 |         'return', 'import', 'export', 'const', 'let', 'var', 'public', 'private'
+95 |       ],
+96 |       // Low confidence indicators
+97 |       weak: [
+98 |         '{', '}', '(', ')', ';', '=', '==', '!=', '&&', '||', '++', '--'
+99 |       ]
+100 |     };
+101 | 
+102 |     const textLower = text.toLowerCase();
+103 |     let score = 0;
+104 |     let totalWords = text.split(/\s+/).length;
+105 | 
+106 |     // Calculate confidence score
+107 |     flexIndicators.strong.forEach(keyword => {
+108 |       const regex = new RegExp(`\\b${keyword.toLowerCase()}\\b`, 'g');
+109 |       const matches = textLower.match(regex);
+110 |       if (matches) score += matches.length * 0.3;
+111 |     });
+112 | 
+113 |     flexIndicators.medium.forEach(keyword => {
+114 |       const regex = new RegExp(`\\b${keyword.toLowerCase()}\\b`, 'g');
+115 |       const matches = textLower.match(regex);
+116 |       if (matches) score += matches.length * 0.15;
+117 |     });
+118 | 
+119 |     flexIndicators.weak.forEach(keyword => {
+120 |       const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+121 |       const regex = new RegExp(escaped, 'g');
+122 |       const matches = text.match(regex);
+123 |       if (matches) score += matches.length * 0.05;
+124 |     });
+125 | 
+126 |     const confidence = Math.min(score / Math.max(totalWords, 1), 1);
+127 |     return confidence >= threshold;
+128 |   }
+129 | 
+130 |   // Extract Flex code snippets from text
+131 |   function extractFlexCodeSnippets(text) {
+132 |     const snippets = [];
+133 |     
+134 |     // Extract code blocks with language specification
+135 |     const langCodeBlocks = text.match(/```(\w*)\n?([\s\S]*?)```/g);
+136 |     if (langCodeBlocks) {
+137 |       langCodeBlocks.forEach((block, index) => {
+138 |         const match = block.match(/```(\w*)\n?([\s\S]*?)```/);
+139 |         if (match) {
+140 |           const lang = match[1].toLowerCase();
+141 |           const code = match[2].trim();
+142 |           
+143 |           if (lang === 'flex' || lang === 'lx' || lang === 'fx' || isFlexCode(code, 0.4)) {
+144 |             snippets.push({
+145 |               id: `flex-snippet-${Date.now()}-${index}`,
+146 |               code: code,
+147 |               language: lang || 'flex',
+148 |               confidence: isFlexCode(code, 0) ? 'high' : 'medium',
+149 |               lineCount: code.split('\n').length,
+150 |               size: code.length
+151 |             });
+152 |           }
+153 |         }
+154 |       });
+155 |     }
+156 | 
+157 |     // Extract code blocks without language specification
+158 |     const genericCodeBlocks = text.match(/```([\s\S]*?)```/g);
+159 |     if (genericCodeBlocks) {
+160 |       genericCodeBlocks.forEach((block, index) => {
+161 |         const code = block.replace(/```/g, '').trim();
+162 |         
+163 |         if (isFlexCode(code, 0.5) && !snippets.some(s => s.code === code)) {
+164 |           snippets.push({
+165 |             id: `flex-snippet-generic-${Date.now()}-${index}`,
+166 |             code: code,
+167 |             language: 'flex',
+168 |             confidence: 'auto-detected',
+169 |             lineCount: code.split('\n').length,
+170 |             size: code.length
+171 |           });
+172 |         }
+173 |       });
+174 |     }
 175 | 
-176 |     // Format **bold** text
-177 |     formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+176 |     return snippets;
+177 |   }
 178 | 
-179 |     // Format *italic* text
-180 |     formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
-181 | 
-182 |     // Format links [text](url)
-183 |     formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-184 | 
-185 |     // Format line breaks but preserve code block formatting
-186 |     formatted = formatted.replace(/\n(?![^<]*<\/div>)/g, '<br>');
+179 |   // Enhanced Flex syntax highlighting with HTML corruption prevention
+180 |   function highlightFlexSyntax(code) {
+181 |     // DO NOT escape HTML here - we'll handle it differently to preserve syntax highlighting tags
+182 |     let highlighted = code;
+183 |     
+184 |     // Create a temporary placeholder system to protect HTML tags during highlighting
+185 |     const placeholders = [];
+186 |     let placeholderIndex = 0;
 187 | 
-188 |     // Add syntax highlighting for Flex keywords in regular text
-189 |     if (isFlexCode(formatted)) {
-190 |       // Highlight common Flex terms in regular text (but not in code blocks)
-191 |       const flexTerms = ['Flex', 'franco', 'arabic', 'bilingual', 'programming'];
-192 |       flexTerms.forEach(term => {
-193 |         const regex = new RegExp(`\\b(${term})\\b(?![^<]*<\/(code|span|div)>)`, 'gi');
-194 |         formatted = formatted.replace(regex, '<span class="flex-highlight">$1</span>');
-195 |       });
-196 |     }
-197 | 
-198 |     return formatted;
-199 |   }
+188 |     // Helper function to create and store placeholders with proper HTML escaping
+189 |     function createPlaceholder(htmlTaggedContent) {
+190 |       const placeholder = `__FLEX_PLACEHOLDER_${placeholderIndex++}__`;
+191 |       placeholders.push({ placeholder, content: htmlTaggedContent });
+192 |       return placeholder;
+193 |     }
+194 |     
+195 |     // Helper function to safely escape HTML content inside spans
+196 |     function createHighlightedSpan(cssClass, textContent) {
+197 |       const escapedContent = escapeHtml(textContent);
+198 |       return `<span class="${cssClass}">${escapedContent}</span>`;
+199 |     }
 200 | 
-201 |   // Professional message adding with enhanced animations and styling
-202 |   function addMessage(content, sender, isStatus = false) {
-203 |     const messageDiv = document.createElement('div');
-204 | 
-205 |     if (isStatus) {
-206 |       messageDiv.className = 'status-message status-pulse';
-207 |       messageDiv.innerHTML = escapeHtml(content);
-208 |     } else {
-209 |       messageDiv.className = `message ${sender}-message message-animation`;
-210 | 
-211 |       const label = document.createElement('div');
-212 |       label.className = `${sender}-label`;
-213 |       label.innerHTML = sender === 'user' ?
-214 |         '<span class="user-icon">👤</span> You' :
-215 |         '<span class="ai-icon">⚡</span> Flex Assistant';
-216 | 
-217 |       const contentDiv = document.createElement('div');
-218 |       contentDiv.className = 'message-content';
-219 | 
-220 |       // Apply formatting based on content type
-221 |       const processedContent = sender === 'user' ? escapeHtml(content) : formatText(content);
-222 |       contentDiv.innerHTML = processedContent;
-223 | 
-224 |       messageDiv.appendChild(label);
-225 |       messageDiv.appendChild(contentDiv);
-226 |     }
-227 | 
-228 |     chatBox.appendChild(messageDiv);
-229 | 
-230 |     // Professional entrance animation using CSS classes
-231 |     messageDiv.style.opacity = '0';
-232 |     messageDiv.style.transform = 'translateY(16px) scale(0.98)';
-233 | 
-234 |     requestAnimationFrame(() => {
-235 |       messageDiv.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-236 |       messageDiv.style.opacity = '1';
-237 |       messageDiv.style.transform = 'translateY(0) scale(1)';
-238 |     });
-239 | 
-240 |     // Smooth scroll to bottom
-241 |     scrollChatToBottom();
-242 | 
-243 |     // Add copy functionality to code blocks
-244 |     setTimeout(() => {
-245 |       addCopyButtonsToCodeBlocks();
-246 |     }, 150);
-247 |   }
-248 | 
-249 |   // Professional copy button functionality for code blocks
-250 |   function addCopyButtonsToCodeBlocks() {
-251 |     const codeBlocks = chatBox.querySelectorAll('.code-block:not(.has-copy-button)');
-252 | 
-253 |     codeBlocks.forEach(block => {
-254 |       block.classList.add('has-copy-button');
-255 | 
-256 |       const copyButton = document.createElement('button');
-257 |       copyButton.className = 'copy-code-button';
-258 |       copyButton.innerHTML = '📋';
-259 |       copyButton.title = 'Copy code to clipboard';
-260 |       copyButton.setAttribute('aria-label', 'Copy code to clipboard');
-261 | 
-262 |       copyButton.addEventListener('click', async () => {
-263 |         // Get clean text content without HTML tags
-264 |         const codeText = block.textContent || block.innerText;
-265 | 
-266 |         try {
-267 |           if (navigator.clipboard && window.isSecureContext) {
-268 |             await navigator.clipboard.writeText(codeText);
-269 | 
-270 |             // Professional success feedback
-271 |             copyButton.innerHTML = '✅';
-272 |             copyButton.title = 'Code copied!';
-273 |             copyButton.style.background = 'var(--success-color)';
-274 | 
-275 |             setTimeout(() => {
-276 |               copyButton.innerHTML = '📋';
-277 |               copyButton.title = 'Copy code to clipboard';
-278 |               copyButton.style.background = 'var(--accent-color)';
-279 |             }, 2000);
-280 |           } else {
-281 |             // Fallback for older browsers or non-secure contexts
-282 |             const textArea = document.createElement('textarea');
-283 |             textArea.value = codeText;
-284 |             textArea.style.position = 'fixed';
-285 |             textArea.style.left = '-999999px';
-286 |             textArea.style.top = '-999999px';
-287 |             document.body.appendChild(textArea);
-288 |             textArea.focus();
-289 |             textArea.select();
-290 | 
-291 |             const successful = document.execCommand('copy');
-292 |             document.body.removeChild(textArea);
-293 | 
-294 |             if (successful) {
-295 |               copyButton.innerHTML = '✅';
-296 |               copyButton.title = 'Code copied!';
-297 |               setTimeout(() => {
-298 |                 copyButton.innerHTML = '📋';
-299 |                 copyButton.title = 'Copy code to clipboard';
-300 |               }, 2000);
-301 |             } else {
-302 |               throw new Error('Copy command failed');
-303 |             }
-304 |           }
-305 |         } catch (err) {
-306 |           console.warn('Copy failed:', err);
-307 |           copyButton.innerHTML = '❌';
-308 |           copyButton.title = 'Copy failed';
-309 |           setTimeout(() => {
-310 |             copyButton.innerHTML = '📋';
-311 |             copyButton.title = 'Copy code to clipboard';
-312 |           }, 2000);
-313 |         }
-314 |       });
+201 |     // Helper function to restore placeholders
+202 |     function restorePlaceholders(text) {
+203 |       let result = text;
+204 |       // Process placeholders in reverse order to handle nested placeholders correctly
+205 |       for (let i = placeholders.length - 1; i >= 0; i--) {
+206 |         const { placeholder, content } = placeholders[i];
+207 |         // Use a more robust replacement method
+208 |         while (result.includes(placeholder)) {
+209 |           result = result.replace(placeholder, content);
+210 |         }
+211 |       }
+212 |       
+213 |       // Debug: Check if any placeholders remain unreplaced
+214 |       const remainingPlaceholders = result.match(/__FLEX_PLACEHOLDER_\d+__/g);
+215 |       if (remainingPlaceholders) {
+216 |         console.warn('Unreplaced placeholders found:', remainingPlaceholders);
+217 |         // Force cleanup of any remaining placeholders
+218 |         remainingPlaceholders.forEach(placeholder => {
+219 |           result = result.replace(new RegExp(placeholder, 'g'), '');
+220 |         });
+221 |       }
+222 |       
+223 |       return result;
+224 |     }
+225 | 
+226 |     // Highlight comments first (// and /* */)
+227 |     highlighted = highlighted.replace(
+228 |       /(\/\/.*$|\/\*[\s\S]*?\*\/)/gm,
+229 |       (match) => createPlaceholder(createHighlightedSpan('flex-comment', match))
+230 |     );
+231 | 
+232 |     // Highlight strings (single and double quotes) - protect them from further highlighting
+233 |     highlighted = highlighted.replace(
+234 |       /(['"])((?:(?!\1)[^\\]|\\.)*)(\1)/g,
+235 |       (match) => createPlaceholder(createHighlightedSpan('flex-string', match))
+236 |     );
+237 | 
+238 |     // Highlight numbers (integers, floats, hex)
+239 |     highlighted = highlighted.replace(
+240 |       /\b(0x[0-9a-fA-F]+|0b[01]+|\d+\.?\d*(?:[eE][+-]?\d+)?)\b/g,
+241 |       (match) => createPlaceholder(createHighlightedSpan('flex-number', match))
+242 |     );
+243 | 
+244 |     // Highlight function keywords (highest priority)
+245 |     flexSyntax.functionKeywords.forEach(keyword => {
+246 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+247 |       highlighted = highlighted.replace(regex, (match) => {
+248 |         return createPlaceholder(createHighlightedSpan('flex-function-keyword', match));
+249 |       });
+250 |     });
+251 | 
+252 |     // Highlight control flow keywords
+253 |     flexSyntax.controlKeywords.forEach(keyword => {
+254 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+255 |       highlighted = highlighted.replace(regex, (match) => {
+256 |         return createPlaceholder(createHighlightedSpan('flex-control-keyword', match));
+257 |       });
+258 |     });
+259 | 
+260 |     // Highlight loop keywords
+261 |     flexSyntax.loopKeywords.forEach(keyword => {
+262 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+263 |       highlighted = highlighted.replace(regex, (match) => {
+264 |         return createPlaceholder(createHighlightedSpan('flex-loop-keyword', match));
+265 |       });
+266 |     });
+267 | 
+268 |     // Highlight I/O keywords
+269 |     flexSyntax.ioKeywords.forEach(keyword => {
+270 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+271 |       highlighted = highlighted.replace(regex, (match) => {
+272 |         return createPlaceholder(createHighlightedSpan('flex-io-keyword', match));
+273 |       });
+274 |     });
+275 | 
+276 |     // Highlight data type keywords
+277 |     flexSyntax.dataTypeKeywords.forEach(keyword => {
+278 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+279 |       highlighted = highlighted.replace(regex, (match) => {
+280 |         return createPlaceholder(createHighlightedSpan('flex-datatype-keyword', match));
+281 |       });
+282 |     });
+283 | 
+284 |     // Highlight literals (boolean and null values)
+285 |     flexSyntax.literals.forEach(literal => {
+286 |       const regex = new RegExp(`\\b(${literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+287 |       highlighted = highlighted.replace(regex, (match) => {
+288 |         return createPlaceholder(createHighlightedSpan('flex-literal', match));
+289 |       });
+290 |     });
+291 | 
+292 |     // Highlight list methods
+293 |     flexSyntax.listMethods.forEach(method => {
+294 |       const regex = new RegExp(`(${method.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+295 |       highlighted = highlighted.replace(regex, (match) => {
+296 |         return createPlaceholder(createHighlightedSpan('flex-list-method', match));
+297 |       });
+298 |     });
+299 | 
+300 |     // Highlight Franco Arabic keywords (for backward compatibility)
+301 |     flexSyntax.francoKeywords.forEach(keyword => {
+302 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+303 |       highlighted = highlighted.replace(regex, (match) => {
+304 |         return createPlaceholder(createHighlightedSpan('flex-keyword-franco', match));
+305 |       });
+306 |     });
+307 | 
+308 |     // Highlight English keywords (for backward compatibility)
+309 |     flexSyntax.englishKeywords.forEach(keyword => {
+310 |       const regex = new RegExp(`\\b(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+311 |       highlighted = highlighted.replace(regex, (match) => {
+312 |         return createPlaceholder(createHighlightedSpan('flex-keyword-english', match));
+313 |       });
+314 |     });
 315 | 
-316 |       // Ensure proper positioning
-317 |       if (getComputedStyle(block).position === 'static') {
-318 |         block.style.position = 'relative';
-319 |       }
-320 | 
-321 |       block.appendChild(copyButton);
-322 |     });
-323 |   }
-324 | 
-325 |   // Enhanced scrolling function
-326 |   function scrollChatToBottom() {
-327 |     const scrollOptions = {
-328 |       top: chatBox.scrollHeight,
-329 |       behavior: 'smooth'
-330 |     };
-331 | 
-332 |     chatBox.scrollTo(scrollOptions);
-333 | 
-334 |     // Fallback for browsers that don't support smooth scrolling
-335 |     setTimeout(() => {
-336 |       chatBox.scrollTop = chatBox.scrollHeight;
-337 |     }, 100);
-338 |   }
-339 | 
-340 |   // Enhanced send message function
-341 |   function sendMessage() {
-342 |     const message = userInput.value.trim();
-343 |     if (!message) return;
-344 | 
-345 |     // Add user message to chat
-346 |     addMessage(message, 'user');
-347 | 
-348 |     // Show typing indicator
-349 |     const typingIndicator = document.createElement('div');
-350 |     typingIndicator.className = 'status-message typing-indicator';
-351 |     typingIndicator.innerHTML = '<span class="typing-dots">Flex Assistant is thinking</span><span class="dots">...</span>';
-352 |     chatBox.appendChild(typingIndicator);
-353 |     scrollChatToBottom();
-354 | 
-355 |     // Send message to extension
-356 |     vscode.postMessage({
-357 |       command: 'sendMessage',
-358 |       text: message
-359 |     });
-360 | 
-361 |     // Clear input field and focus
-362 |     userInput.value = '';
-363 |     userInput.focus();
-364 | 
-365 |     // Store the typing indicator reference
-366 |     window.currentTypingIndicator = typingIndicator;
-367 |   }
+316 |     // Highlight function names (word followed by parentheses)
+317 |     highlighted = highlighted.replace(
+318 |       /\b([a-zA-Z_][a-zA-Z0-9_]*)\s*(?=\()/g,
+319 |       (match, funcName) => {
+320 |         return createPlaceholder(createHighlightedSpan('flex-function', funcName)) + match.substring(funcName.length);
+321 |       }
+322 |     );
+323 | 
+324 |     // Highlight operators - be very careful with HTML-sensitive characters
+325 |     const safeOperators = flexSyntax.operators.filter(op => {
+326 |       // Skip operators that could interfere with HTML tags
+327 |       return !['<', '>', '&'].some(htmlChar => op.includes(htmlChar.replace(/\\/g, '')));
+328 |     });
+329 |     
+330 |     safeOperators.forEach(op => {
+331 |       const regex = new RegExp(`(${op})`, 'g');
+332 |       highlighted = highlighted.replace(regex, (match) => {
+333 |         // Double-check we're not inside a placeholder
+334 |         if (match.includes('__FLEX_PLACEHOLDER_')) {
+335 |           return match;
+336 |         }
+337 |         return createPlaceholder(createHighlightedSpan('flex-operator', match));
+338 |       });
+339 |     });
+340 | 
+341 |     // Restore all placeholders to get final highlighted code
+342 |     highlighted = restorePlaceholders(highlighted);
+343 | 
+344 |     return highlighted;
+345 |   }
+346 | 
+347 |   // Create specialized Flex code snippet container
+348 |   function createFlexCodeSnippet(snippet) {
+349 |     const snippetContainer = document.createElement('div');
+350 |     snippetContainer.className = 'flex-code-snippet';
+351 |     snippetContainer.id = snippet.id;
+352 | 
+353 |     // Header with metadata and controls
+354 |     const header = document.createElement('div');
+355 |     header.className = 'flex-snippet-header';
+356 |     
+357 |     const metadata = document.createElement('div');
+358 |     metadata.className = 'flex-snippet-metadata';
+359 |     metadata.innerHTML = `
+360 |       <span class="flex-snippet-language">
+361 |         <span class="flex-icon">⚡</span>
+362 |         Flex Code
+363 |       </span>
+364 |       <span class="flex-snippet-stats">
+365 |         ${snippet.lineCount} lines • ${(snippet.size / 1024).toFixed(1)}KB • ${snippet.confidence}
+366 |       </span>
+367 |     `;
 368 | 
-369 |   // Event listeners
-370 |   sendButton.addEventListener('click', sendMessage);
-371 | 
-372 |   clearButton.addEventListener('click', () => {
-373 |     // Add confirmation for clearing chat
-374 |     const confirmClear = confirm('Are you sure you want to clear the chat history?');
-375 |     if (confirmClear) {
-376 |       vscode.postMessage({
-377 |         command: 'clearChat'
-378 |       });
-379 |     }
-380 |   });
-381 | 
-382 |   // Professional input handling with enhanced UX
-383 |   userInput.addEventListener('keydown', (e) => {
-384 |     if (e.key === 'Enter' && !e.shiftKey) {
-385 |       e.preventDefault();
-386 |       sendMessage();
-387 |     } else if (e.key === 'Enter' && e.shiftKey) {
-388 |       // Allow Shift+Enter for line breaks
-389 |       return true;
-390 |     }
-391 |   });
-392 | 
-393 |   // Auto-resize input with smooth animation
-394 |   userInput.addEventListener('input', function () {
-395 |     this.style.height = 'auto';
-396 |     const newHeight = Math.min(this.scrollHeight, 120);
-397 |     this.style.height = newHeight + 'px';
-398 | 
-399 |     // Add subtle animation for height changes
-400 |     this.style.transition = 'height 0.2s ease-out';
-401 |   });
-402 | 
-403 |   // Professional focus effects
-404 |   userInput.addEventListener('focus', function () {
-405 |     const container = this.closest('.input-container');
-406 |     if (container) {
-407 |       container.classList.add('input-focus-ring', 'focused');
-408 |     }
-409 |   });
+369 |     const controls = document.createElement('div');
+370 |     controls.className = 'flex-snippet-controls';
+371 |     
+372 |     const copyButton = document.createElement('button');
+373 |     copyButton.className = 'flex-copy-button';
+374 |     copyButton.innerHTML = `
+375 |       <span class="copy-icon">📋</span>
+376 |       <span class="copy-text">Copy Code</span>
+377 |     `;
+378 |     copyButton.title = 'Copy Flex code to clipboard';
+379 | 
+380 |     const expandButton = document.createElement('button');
+381 |     expandButton.className = 'flex-expand-button';
+382 |     expandButton.innerHTML = `<span class="expand-icon">⤢</span>`;
+383 |     expandButton.title = 'Toggle fullscreen view';
+384 | 
+385 |     controls.appendChild(copyButton);
+386 |     controls.appendChild(expandButton);
+387 |     
+388 |     header.appendChild(metadata);
+389 |     header.appendChild(controls);
+390 | 
+391 |     // Code container with enhanced highlighting
+392 |     const codeContainer = document.createElement('div');
+393 |     codeContainer.className = 'flex-snippet-code-container';
+394 |     
+395 |     const lineNumbers = document.createElement('div');
+396 |     lineNumbers.className = 'flex-snippet-line-numbers';
+397 |     
+398 |     const codeContent = document.createElement('div');
+399 |     codeContent.className = 'flex-snippet-code-content';
+400 |     
+401 |     // Generate line numbers
+402 |     const lines = snippet.code.split('\n');
+403 |     lineNumbers.innerHTML = lines.map((_, index) => 
+404 |       `<span class="line-number">${index + 1}</span>`
+405 |     ).join('');
+406 |     
+407 |     // Apply enhanced Flex syntax highlighting
+408 |     const highlightedCode = highlightFlexSyntax(snippet.code);
+409 |     codeContent.innerHTML = highlightedCode;
 410 | 
-411 |   userInput.addEventListener('blur', function () {
-412 |     const container = this.closest('.input-container');
-413 |     if (container) {
-414 |       container.classList.remove('focused');
-415 |     }
-416 |   });
-417 | 
-418 |   // Handle messages from the extension
-419 |   window.addEventListener('message', event => {
-420 |     const message = event.data;
-421 | 
-422 |     switch (message.command) {
-423 |       case 'aiResponse':
-424 |         // Remove typing indicator
-425 |         if (window.currentTypingIndicator) {
-426 |           window.currentTypingIndicator.remove();
-427 |           window.currentTypingIndicator = null;
-428 |         }
-429 | 
-430 |         // Display AI response with enhanced formatting
-431 |         addMessage(message.text, 'ai');
-432 |         break;
-433 | 
-434 |       case 'statusUpdate':
-435 |         // Show status update in chat
-436 |         addMessage(message.text, null, true);
-437 |         break;
-438 | 
-439 |       case 'chatCleared':
-440 |         // Clear the chat box with animation
-441 |         const messages = chatBox.querySelectorAll('.message, .status-message');
-442 |         messages.forEach((msg, index) => {
-443 |           setTimeout(() => {
-444 |             msg.style.transition = 'all 0.2s ease-out';
-445 |             msg.style.opacity = '0';
-446 |             msg.style.transform = 'translateY(-20px)';
-447 |             setTimeout(() => msg.remove(), 200);
-448 |           }, index * 50);
-449 |         });
-450 | 
-451 |         setTimeout(() => {
-452 |           chatBox.innerHTML = '';
-453 |           addMessage('Chat cleared. How can I help you with Flex programming today?', null, true);
-454 |         }, messages.length * 50 + 200);
-455 |         break;
-456 | 
-457 |       case 'error':
-458 |         // Display error messages with special styling
-459 |         const errorDiv = document.createElement('div');
-460 |         errorDiv.className = 'status-message error-message';
-461 |         errorDiv.innerHTML = `⚠️ ${escapeHtml(message.text)}`;
-462 |         chatBox.appendChild(errorDiv);
-463 |         scrollChatToBottom();
-464 |         break;
-465 |     }
-466 |   });
-467 | 
-468 |   // Initialize chat
-469 |   function initializeChat() {
-470 |     userInput.focus();
-471 | 
-472 |     // Add welcome message if chat is empty
-473 |     if (chatBox.children.length === 0) {
-474 |       setTimeout(() => {
-475 |         addMessage('Welcome! I\'m your Flex programming assistant. I can help you with Franco-Arabic programming, syntax, examples, and best practices. How can I assist you today?', null, true);
-476 |       }, 500);
-477 |     }
-478 |   }
-479 | 
-480 |   // Professional dynamic styles
-481 |   const style = document.createElement('style');
-482 |   style.textContent = `
-483 |     .typing-indicator .dots {
-484 |       animation: typing 1.8s ease-in-out infinite;
-485 |     }
-486 |     
-487 |     @keyframes typing {
-488 |       0%, 60%, 100% { opacity: 1; }
-489 |       30% { opacity: 0.4; }
-490 |     }
-491 |     
-492 |     .flex-highlight {
-493 |       background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
-494 |       color: white;
-495 |       padding: var(--space-1) var(--space-2);
-496 |       border-radius: var(--radius-sm);
-497 |       font-weight: var(--font-weight-semibold);
-498 |       box-shadow: var(--shadow-sm);
-499 |     }
-500 |     
-501 |     .error-message {
-502 |       background: linear-gradient(135deg, 
-503 |         rgba(239, 68, 68, 0.08) 0%, 
-504 |         rgba(239, 68, 68, 0.05) 100%);
-505 |       border: 1px solid rgba(239, 68, 68, 0.2);
-506 |       border-left: 3px solid var(--error-color);
-507 |       color: var(--error-color);
-508 |       backdrop-filter: blur(10px);
-509 |     }
-510 |     
-511 |     .message-animation {
-512 |       animation: messageAppear 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-513 |     }
-514 |     
-515 |     @keyframes messageAppear {
-516 |       0% {
-517 |         opacity: 0;
-518 |         transform: translateY(20px) scale(0.95);
-519 |       }
-520 |       100% {
-521 |         opacity: 1;
-522 |         transform: translateY(0) scale(1);
-523 |       }
-524 |     }
-525 |     
-526 |     .status-pulse {
-527 |       animation: statusPulse 2.5s ease-in-out infinite;
-528 |     }
-529 |     
-530 |     @keyframes statusPulse {
-531 |       0%, 100% { 
-532 |         opacity: 0.8; 
-533 |         transform: scale(1);
-534 |       }
-535 |       50% { 
-536 |         opacity: 1; 
-537 |         transform: scale(1.02);
-538 |       }
-539 |     }
-540 |     
-541 |     .input-focus-ring {
-542 |       position: relative;
-543 |     }
-544 |     
-545 |     .input-focus-ring::before {
-546 |       content: '';
-547 |       position: absolute;
-548 |       inset: -2px;
-549 |       background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
-550 |       border-radius: calc(var(--radius-lg) + 2px);
-551 |       opacity: 0;
-552 |       transition: opacity 0.3s ease;
-553 |       z-index: -1;
-554 |     }
-555 |     
-556 |     .input-focus-ring.focused::before {
-557 |       opacity: 0.1;
-558 |     }
-559 |   `;
-560 | 
-561 |   document.head.appendChild(style);
+411 |     codeContainer.appendChild(lineNumbers);
+412 |     codeContainer.appendChild(codeContent);
+413 | 
+414 |     // Footer with usage hint
+415 |     const footer = document.createElement('div');
+416 |     footer.className = 'flex-snippet-footer';
+417 |     footer.innerHTML = `
+418 |       <span class="flex-hint">
+419 |         💡 This code can be saved as a <code>.lx</code>, <code>.fx</code>, or <code>.flex</code> file
+420 |       </span>
+421 |     `;
+422 | 
+423 |     snippetContainer.appendChild(header);
+424 |     snippetContainer.appendChild(codeContainer);
+425 |     snippetContainer.appendChild(footer);
+426 | 
+427 |     // Add copy functionality
+428 |     copyButton.addEventListener('click', async () => {
+429 |       await copyFlexCodeToClipboard(snippet.code, copyButton);
+430 |     });
+431 | 
+432 |     // Add expand functionality
+433 |     expandButton.addEventListener('click', () => {
+434 |       toggleFlexSnippetExpanded(snippetContainer);
+435 |     });
+436 | 
+437 |     return snippetContainer;
+438 |   }
+439 | 
+440 |   // Advanced copy functionality for Flex code
+441 |   async function copyFlexCodeToClipboard(code, buttonElement) {
+442 |     try {
+443 |       // Clean the code (remove any HTML tags that might have been added)
+444 |       const cleanCode = code.replace(/<[^>]*>/g, '');
+445 |       
+446 |       if (navigator.clipboard && window.isSecureContext) {
+447 |         await navigator.clipboard.writeText(cleanCode);
+448 |         showCopySuccess(buttonElement, 'Code copied!');
+449 |       } else {
+450 |         // Fallback for older browsers
+451 |         const textArea = document.createElement('textarea');
+452 |         textArea.value = cleanCode;
+453 |         textArea.style.position = 'fixed';
+454 |         textArea.style.left = '-999999px';
+455 |         textArea.style.top = '-999999px';
+456 |         document.body.appendChild(textArea);
+457 |         textArea.focus();
+458 |         textArea.select();
+459 |         
+460 |         const successful = document.execCommand('copy');
+461 |         document.body.removeChild(textArea);
+462 |         
+463 |         if (successful) {
+464 |           showCopySuccess(buttonElement, 'Code copied!');
+465 |         } else {
+466 |           showCopyError(buttonElement, 'Copy failed');
+467 |         }
+468 |       }
+469 |     } catch (err) {
+470 |       console.warn('Copy failed:', err);
+471 |       showCopyError(buttonElement, 'Copy failed');
+472 |     }
+473 |   }
+474 | 
+475 |   // Visual feedback for copy operations
+476 |   function showCopySuccess(buttonElement, message) {
+477 |     const originalHTML = buttonElement.innerHTML;
+478 |     buttonElement.innerHTML = `
+479 |       <span class="copy-icon">✅</span>
+480 |       <span class="copy-text">${message}</span>
+481 |     `;
+482 |     buttonElement.classList.add('copy-success');
+483 |     
+484 |     setTimeout(() => {
+485 |       buttonElement.innerHTML = originalHTML;
+486 |       buttonElement.classList.remove('copy-success');
+487 |     }, 2000);
+488 |   }
+489 | 
+490 |   function showCopyError(buttonElement, message) {
+491 |     const originalHTML = buttonElement.innerHTML;
+492 |     buttonElement.innerHTML = `
+493 |       <span class="copy-icon">❌</span>
+494 |       <span class="copy-text">${message}</span>
+495 |     `;
+496 |     buttonElement.classList.add('copy-error');
+497 |     
+498 |     setTimeout(() => {
+499 |       buttonElement.innerHTML = originalHTML;
+500 |       buttonElement.classList.remove('copy-error');
+501 |     }, 2000);
+502 |   }
+503 | 
+504 |   // Toggle expanded view for large code snippets
+505 |   function toggleFlexSnippetExpanded(snippetContainer) {
+506 |     snippetContainer.classList.toggle('expanded');
+507 |     const expandButton = snippetContainer.querySelector('.flex-expand-button');
+508 |     const isExpanded = snippetContainer.classList.contains('expanded');
+509 |     
+510 |     expandButton.innerHTML = isExpanded 
+511 |       ? `<span class="expand-icon">⤡</span>` 
+512 |       : `<span class="expand-icon">⤢</span>`;
+513 |     expandButton.title = isExpanded ? 'Exit fullscreen view' : 'Toggle fullscreen view';
+514 |   }
+515 | 
+516 |   // Enhanced code block formatting with proper spacing and line breaks
+517 |   function formatCodeBlock(code, language = '') {
+518 |     const isFlexLang = language.toLowerCase() === 'flex' || isFlexCode(code);
+519 | 
+520 |     if (isFlexLang) {
+521 |       // Preserve original formatting and line breaks
+522 |       const formattedCode = code
+523 |         .split('\n')
+524 |         .map(line => line.trimEnd()) // Remove trailing spaces but preserve leading indentation
+525 |         .join('\n');
+526 |       
+527 |       const highlighted = highlightFlexSyntax(formattedCode);
+528 |       
+529 |       // Convert newlines to HTML line breaks after highlighting
+530 |       const finalHighlighted = highlighted.replace(/\n/g, '<br>\n');
+531 |       
+532 |       return `<div class="code-block flex-code" data-language="flex"><pre><code>${finalHighlighted}</code></pre></div>`;
+533 |     } else {
+534 |       // Basic highlighting for other languages
+535 |       let highlighted = code;
+536 | 
+537 |       // Basic keyword highlighting for common languages
+538 |       const basicKeywords = ['function', 'if', 'else', 'for', 'while', 'return', 'class', 'import', 'export', 'const', 'let', 'var'];
+539 |       basicKeywords.forEach(keyword => {
+540 |         const regex = new RegExp(`\\b(${keyword})\\b`, 'g');
+541 |         highlighted = highlighted.replace(regex, '<span class="flex-keyword-english">$1</span>');
+542 |       });
+543 | 
+544 |       // Highlight strings
+545 |       highlighted = highlighted.replace(
+546 |         /(['"])((?:(?!\1)[^\\]|\\.)*)(\1)/g,
+547 |         '<span class="flex-string">$1$2$3</span>'
+548 |       );
+549 | 
+550 |       // Highlight numbers
+551 |       highlighted = highlighted.replace(
+552 |         /\b(\d+\.?\d*)\b/g,
+553 |         '<span class="flex-number">$1</span>'
+554 |       );
+555 | 
+556 |       // Preserve line breaks and format with proper HTML structure
+557 |       const formattedHighlighted = highlighted.replace(/\n/g, '<br>\n');
+558 |       
+559 |       return `<div class="code-block" data-language="${language || 'code'}"><pre><code>${formattedHighlighted}</code></pre></div>`;
+560 |     }
+561 |   }
 562 | 
-563 |   // Initialize the chat interface
-564 |   initializeChat();
-565 | }());
+563 |   // Enhanced text formatting function with Flex snippet extraction
+564 |   function formatText(text) {
+565 |     let formatted = text;
+566 | 
+567 |     // First, extract Flex code snippets for separate display
+568 |     const flexSnippets = extractFlexCodeSnippets(text);
+569 | 
+570 |     // Format code blocks with language specification
+571 |     formatted = formatted.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => {
+572 |       return formatCodeBlock(code.trim(), lang);
+573 |     });
+574 | 
+575 |     // Format code blocks without language specification
+576 |     formatted = formatted.replace(/```([\s\S]*?)```/g, (match, code) => {
+577 |       return formatCodeBlock(code.trim());
+578 |     });
+579 | 
+580 |     // Format inline code with enhanced styling
+581 |     formatted = formatted.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+582 | 
+583 |     // Format **bold** text
+584 |     formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+585 | 
+586 |     // Format *italic* text
+587 |     formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+588 | 
+589 |     // Format links [text](url)
+590 |     formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+591 | 
+592 |     // Format line breaks but preserve code block formatting
+593 |     formatted = formatted.replace(/\n(?![^<]*<\/div>)/g, '<br>');
+594 | 
+595 |     // Add syntax highlighting for Flex keywords in regular text
+596 |     if (isFlexCode(formatted)) {
+597 |       // Highlight common Flex terms in regular text (but not in code blocks)
+598 |       const flexTerms = ['Flex', 'franco', 'arabic', 'bilingual', 'programming'];
+599 |       flexTerms.forEach(term => {
+600 |         const regex = new RegExp(`\\b(${term})\\b(?![^<]*<\/(code|span|div)>)`, 'gi');
+601 |         formatted = formatted.replace(regex, '<span class="flex-highlight">$1</span>');
+602 |       });
+603 |     }
+604 | 
+605 |     return { formatted, flexSnippets };
+606 |   }
+607 | 
+608 |   // Enhanced message adding with Flex snippet support
+609 |   function addMessageWithFlexSnippets(content, sender, isStatus = false) {
+610 |     // Hide welcome message when first real message is added
+611 |     if (welcomeMessage && !isStatus) {
+612 |       welcomeMessage.style.display = 'none';
+613 |     }
+614 | 
+615 |     let processedContent;
+616 |     let flexSnippets = [];
+617 | 
+618 |     if (sender === 'ai' && !isStatus) {
+619 |       const result = formatText(content);
+620 |       processedContent = result.formatted;
+621 |       flexSnippets = result.flexSnippets;
+622 |     } else {
+623 |       processedContent = sender === 'user' ? escapeHtml(content) : content;
+624 |     }
+625 | 
+626 |     // Create main message
+627 |     const messageDiv = document.createElement('div');
+628 | 
+629 |     if (isStatus) {
+630 |       messageDiv.className = 'status-message status-pulse';
+631 |       messageDiv.innerHTML = escapeHtml(content);
+632 |     } else {
+633 |       messageDiv.className = `message ${sender}-message message-animation`;
+634 | 
+635 |       const label = document.createElement('div');
+636 |       label.className = `${sender}-label`;
+637 |       label.innerHTML = sender === 'user' ?
+638 |         '<span class="user-icon">👤</span> You' :
+639 |         '<span class="ai-icon">⚡</span> Flex Assistant';
+640 | 
+641 |       const contentDiv = document.createElement('div');
+642 |       contentDiv.className = 'message-content';
+643 |       contentDiv.innerHTML = processedContent;
+644 | 
+645 |       messageDiv.appendChild(label);
+646 |       messageDiv.appendChild(contentDiv);
+647 |     }
+648 | 
+649 |     chatBox.appendChild(messageDiv);
+650 | 
+651 |     // Add Flex code snippets after the main message
+652 |     if (flexSnippets.length > 0) {
+653 |       flexSnippets.forEach((snippet, index) => {
+654 |         setTimeout(() => {
+655 |           const snippetElement = createFlexCodeSnippet(snippet);
+656 |           chatBox.appendChild(snippetElement);
+657 |           
+658 |           // Animate snippet appearance
+659 |           snippetElement.style.opacity = '0';
+660 |           snippetElement.style.transform = 'translateY(20px)';
+661 |           
+662 |           requestAnimationFrame(() => {
+663 |             snippetElement.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+664 |             snippetElement.style.opacity = '1';
+665 |             snippetElement.style.transform = 'translateY(0)';
+666 |           });
+667 |           
+668 |           scrollChatToBottom();
+669 |         }, index * 200); // Stagger snippet animations
+670 |       });
+671 |     }
+672 | 
+673 |     // Professional entrance animation for main message
+674 |     messageDiv.style.opacity = '0';
+675 |     messageDiv.style.transform = 'translateY(16px) scale(0.98)';
+676 | 
+677 |     requestAnimationFrame(() => {
+678 |       messageDiv.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+679 |       messageDiv.style.opacity = '1';
+680 |       messageDiv.style.transform = 'translateY(0) scale(1)';
+681 |     });
+682 | 
+683 |     // Smooth scroll to bottom
+684 |     scrollChatToBottom();
+685 | 
+686 |     // Add copy functionality to regular code blocks
+687 |     setTimeout(() => {
+688 |       addCopyButtonsToCodeBlocks();
+689 |     }, 150);
+690 | 
+691 |     return { messageDiv, flexSnippets };
+692 |   }
+693 | 
+694 |   // Professional message adding with enhanced animations and styling
+695 |   function addMessage(content, sender, isStatus = false) {
+696 |     return addMessageWithFlexSnippets(content, sender, isStatus);
+697 |   }
+698 | 
+699 |   // Professional copy button functionality for code blocks
+700 |   function addCopyButtonsToCodeBlocks() {
+701 |     const codeBlocks = chatBox.querySelectorAll('.code-block:not(.has-copy-button)');
+702 | 
+703 |     codeBlocks.forEach(block => {
+704 |       block.classList.add('has-copy-button');
+705 | 
+706 |       const copyButton = document.createElement('button');
+707 |       copyButton.className = 'copy-code-button';
+708 |       copyButton.innerHTML = '📋';
+709 |       copyButton.title = 'Copy code to clipboard';
+710 |       copyButton.setAttribute('aria-label', 'Copy code to clipboard');
+711 | 
+712 |       copyButton.addEventListener('click', async () => {
+713 |         // Get clean text content without HTML tags
+714 |         const codeText = block.textContent || block.innerText;
+715 | 
+716 |         try {
+717 |           if (navigator.clipboard && window.isSecureContext) {
+718 |             await navigator.clipboard.writeText(codeText);
+719 | 
+720 |             // Professional success feedback
+721 |             copyButton.innerHTML = '✅';
+722 |             copyButton.title = 'Code copied!';
+723 |             copyButton.style.background = 'var(--success-color)';
+724 | 
+725 |             setTimeout(() => {
+726 |               copyButton.innerHTML = '📋';
+727 |               copyButton.title = 'Copy code to clipboard';
+728 |               copyButton.style.background = 'var(--accent-color)';
+729 |             }, 2000);
+730 |           } else {
+731 |             // Fallback for older browsers or non-secure contexts
+732 |             const textArea = document.createElement('textarea');
+733 |             textArea.value = codeText;
+734 |             textArea.style.position = 'fixed';
+735 |             textArea.style.left = '-999999px';
+736 |             textArea.style.top = '-999999px';
+737 |             document.body.appendChild(textArea);
+738 |             textArea.focus();
+739 |             textArea.select();
+740 | 
+741 |             const successful = document.execCommand('copy');
+742 |             document.body.removeChild(textArea);
+743 | 
+744 |             if (successful) {
+745 |               copyButton.innerHTML = '✅';
+746 |               copyButton.title = 'Code copied!';
+747 |               setTimeout(() => {
+748 |                 copyButton.innerHTML = '📋';
+749 |                 copyButton.title = 'Copy code to clipboard';
+750 |               }, 2000);
+751 |             } else {
+752 |               throw new Error('Copy command failed');
+753 |             }
+754 |           }
+755 |         } catch (err) {
+756 |           console.warn('Copy failed:', err);
+757 |           copyButton.innerHTML = '❌';
+758 |           copyButton.title = 'Copy failed';
+759 |           setTimeout(() => {
+760 |             copyButton.innerHTML = '📋';
+761 |             copyButton.title = 'Copy code to clipboard';
+762 |           }, 2000);
+763 |         }
+764 |       });
+765 | 
+766 |       // Ensure proper positioning
+767 |       if (getComputedStyle(block).position === 'static') {
+768 |         block.style.position = 'relative';
+769 |       }
+770 | 
+771 |       block.appendChild(copyButton);
+772 |     });
+773 |   }
+774 | 
+775 |   // Enhanced scrolling function
+776 |   function scrollChatToBottom() {
+777 |     const scrollOptions = {
+778 |       top: chatBox.scrollHeight,
+779 |       behavior: 'smooth'
+780 |     };
+781 | 
+782 |     chatBox.scrollTo(scrollOptions);
+783 | 
+784 |     // Fallback for browsers that don't support smooth scrolling
+785 |     setTimeout(() => {
+786 |       chatBox.scrollTop = chatBox.scrollHeight;
+787 |     }, 100);
+788 |   }
+789 | 
+790 |   // Enhanced streaming response functions with debugging
+791 |   let streamingMessage = null;
+792 |   let streamingContent = '';
+793 |   let streamingStartTime = 0;
+794 |   let chunkCount = 0;
+795 |   let streamingDebugLog = [];
+796 |   let streamingHealthCheck = null;
+797 |   const MAX_STREAMING_TIME = 600000; // 10 minutes max
+798 |   const MAX_STREAMING_SIZE = 5 * 1024 * 1024; // 5MB frontend limit
+799 | 
+800 |   function logStreamingDebug(event, data = {}) {
+801 |     const debugEntry = {
+802 |       timestamp: Date.now(),
+803 |       event,
+804 |       data: { ...data, chunkCount, contentLength: streamingContent.length }
+805 |     };
+806 |     streamingDebugLog.push(debugEntry);
+807 |     console.debug('[STREAMING]', event, debugEntry.data);
+808 |     
+809 |     // Keep only last 1000 debug entries to prevent memory issues
+810 |     if (streamingDebugLog.length > 1000) {
+811 |       streamingDebugLog = streamingDebugLog.slice(-1000);
+812 |     }
+813 |   }
+814 | 
+815 |   function startStreamingMessage() {
+816 |     try {
+817 |       logStreamingDebug('streaming_start');
+818 |       
+819 |       // Reset streaming state
+820 |       streamingContent = '';
+821 |       chunkCount = 0;
+822 |       streamingStartTime = Date.now();
+823 |       streamingDebugLog = [];
+824 |       
+825 |       // Clear any existing health check
+826 |       if (streamingHealthCheck) {
+827 |         clearInterval(streamingHealthCheck);
+828 |       }
+829 | 
+830 |       // Hide welcome message when streaming starts
+831 |       if (welcomeMessage) {
+832 |         welcomeMessage.style.display = 'none';
+833 |       }
+834 | 
+835 |       // Create streaming message container
+836 |       streamingMessage = document.createElement('div');
+837 |       streamingMessage.className = 'message ai-message message-animation streaming-message';
+838 |       streamingMessage.dataset.streamingId = Date.now().toString();
+839 | 
+840 |       const label = document.createElement('div');
+841 |       label.className = 'ai-label';
+842 |       label.innerHTML = '<span class="ai-icon">⚡</span> Flex Assistant <span class="streaming-status">Streaming...</span>';
+843 | 
+844 |       const contentDiv = document.createElement('div');
+845 |       contentDiv.className = 'message-content streaming-content';
+846 |       contentDiv.innerHTML = '<span class="streaming-cursor">|</span>';
+847 | 
+848 |       streamingMessage.appendChild(label);
+849 |       streamingMessage.appendChild(contentDiv);
+850 |       chatBox.appendChild(streamingMessage);
+851 | 
+852 |       // Professional entrance animation
+853 |       streamingMessage.style.opacity = '0';
+854 |       streamingMessage.style.transform = 'translateY(16px) scale(0.98)';
+855 | 
+856 |       requestAnimationFrame(() => {
+857 |         streamingMessage.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+858 |         streamingMessage.style.opacity = '1';
+859 |         streamingMessage.style.transform = 'translateY(0) scale(1)';
+860 |       });
+861 | 
+862 |       // Set up health monitoring
+863 |       streamingHealthCheck = setInterval(() => {
+864 |         const elapsed = Date.now() - streamingStartTime;
+865 |         const status = streamingMessage.querySelector('.streaming-status');
+866 |         
+867 |         if (elapsed > MAX_STREAMING_TIME) {
+868 |           logStreamingDebug('streaming_timeout', { elapsed });
+869 |           handleStreamingError(new Error('Streaming timeout exceeded'));
+870 |           return;
+871 |         }
+872 |         
+873 |         if (streamingContent.length > MAX_STREAMING_SIZE) {
+874 |           logStreamingDebug('streaming_size_limit', { contentLength: streamingContent.length });
+875 |           handleStreamingError(new Error('Response size limit exceeded'));
+876 |           return;
+877 |         }
+878 |         
+879 |         // Update status display
+880 |         if (status) {
+881 |           const seconds = Math.floor(elapsed / 1000);
+882 |           const size = (streamingContent.length / 1024).toFixed(1);
+883 |           status.textContent = `Streaming... ${seconds}s | ${size}KB | ${chunkCount} chunks`;
+884 |         }
+885 |       }, 1000);
+886 | 
+887 |       scrollChatToBottom();
+888 |       logStreamingDebug('streaming_initialized');
+889 |       
+890 |     } catch (error) {
+891 |       logStreamingDebug('streaming_start_error', { error: error.message });
+892 |       handleStreamingError(error);
+893 |     }
+894 |   }
+895 | 
+896 |   function addStreamingChunk(chunk) {
+897 |     try {
+898 |       if (!streamingMessage) {
+899 |         logStreamingDebug('chunk_received_no_message', { chunkLength: chunk.length });
+900 |         return;
+901 |       }
+902 | 
+903 |       if (!chunk || typeof chunk !== 'string') {
+904 |         logStreamingDebug('invalid_chunk', { chunk, type: typeof chunk });
+905 |         return;
+906 |       }
+907 | 
+908 |       chunkCount++;
+909 |       const chunkSize = chunk.length;
+910 |       
+911 |       // Memory safety check
+912 |       if (streamingContent.length + chunkSize > MAX_STREAMING_SIZE) {
+913 |         logStreamingDebug('chunk_size_exceeded', { 
+914 |           currentSize: streamingContent.length, 
+915 |           chunkSize, 
+916 |           maxSize: MAX_STREAMING_SIZE 
+917 |         });
+918 |         handleStreamingError(new Error('Response size limit exceeded during chunk processing'));
+919 |         return;
+920 |       }
+921 | 
+922 |       streamingContent += chunk;
+923 |       const contentDiv = streamingMessage.querySelector('.streaming-content');
+924 |       
+925 |       if (!contentDiv) {
+926 |         logStreamingDebug('content_div_missing');
+927 |         handleStreamingError(new Error('Streaming content container missing'));
+928 |         return;
+929 |       }
+930 |       
+931 |       // Throttle DOM updates for performance
+932 |       if (chunkCount % 3 === 0 || chunkSize > 100) {
+933 |         try {
+934 |           const result = formatText(streamingContent);
+935 |           const formattedContent = result.formatted;
+936 |           contentDiv.innerHTML = formattedContent + '<span class="streaming-cursor">|</span>';
+937 |           
+938 |           // Auto-scroll but don't force it every time
+939 |           if (chunkCount % 10 === 0) {
+940 |             scrollChatToBottom();
+941 |           }
+942 |         } catch (formatError) {
+943 |           logStreamingDebug('format_error', { 
+944 |             error: formatError.message, 
+945 |             contentLength: streamingContent.length 
+946 |           });
+947 |           // Fallback to plain text if formatting fails
+948 |           contentDiv.innerHTML = escapeHtml(streamingContent) + '<span class="streaming-cursor">|</span>';
+949 |         }
+950 |       }
+951 |       
+952 |       // Log progress periodically
+953 |       if (chunkCount % 50 === 0) {
+954 |         logStreamingDebug('chunk_progress', {
+955 |           chunkSize,
+956 |           totalSize: streamingContent.length,
+957 |           avgChunkSize: streamingContent.length / chunkCount,
+958 |           elapsed: Date.now() - streamingStartTime
+959 |         });
+960 |       }
+961 |       
+962 |     } catch (error) {
+963 |       logStreamingDebug('chunk_processing_error', { error: error.message, chunkCount });
+964 |       handleStreamingError(error);
+965 |     }
+966 |   }
+967 | 
+968 |   function completeStreamingMessage() {
+969 |     try {
+970 |       logStreamingDebug('streaming_complete_start');
+971 |       
+972 |       if (!streamingMessage) {
+973 |         logStreamingDebug('complete_no_message');
+974 |         return;
+975 |       }
+976 | 
+977 |       // Clear health check
+978 |       if (streamingHealthCheck) {
+979 |         clearInterval(streamingHealthCheck);
+980 |         streamingHealthCheck = null;
+981 |       }
+982 | 
+983 |       const contentDiv = streamingMessage.querySelector('.streaming-content');
+984 |       
+985 |       if (!contentDiv) {
+986 |         logStreamingDebug('complete_content_div_missing');
+987 |         return;
+988 |       }
+989 |       
+990 |       // Final content formatting and Flex snippet extraction
+991 |       let flexSnippets = [];
+992 |       try {
+993 |         const result = formatText(streamingContent);
+994 |         const finalContent = result.formatted;
+995 |         flexSnippets = result.flexSnippets;
+996 |         contentDiv.innerHTML = finalContent;
+997 |       } catch (formatError) {
+998 |         logStreamingDebug('final_format_error', { error: formatError.message });
+999 |         // Fallback to plain text
+1000 |         contentDiv.innerHTML = escapeHtml(streamingContent);
+1001 |       }
+1002 |       
+1003 |       // Remove streaming class and update status
+1004 |       streamingMessage.classList.remove('streaming-message');
+1005 |       const status = streamingMessage.querySelector('.streaming-status');
+1006 |       if (status) {
+1007 |         const elapsed = Date.now() - streamingStartTime;
+1008 |         const size = (streamingContent.length / 1024).toFixed(1);
+1009 |         status.textContent = `Complete - ${Math.floor(elapsed / 1000)}s | ${size}KB | ${chunkCount} chunks`;
+1010 |         status.style.color = 'var(--success-color)';
+1011 |       }
+1012 |       
+1013 |       // Add Flex code snippets after streaming completes
+1014 |       if (flexSnippets.length > 0) {
+1015 |         logStreamingDebug('adding_flex_snippets', { snippetCount: flexSnippets.length });
+1016 |         
+1017 |         flexSnippets.forEach((snippet, index) => {
+1018 |           setTimeout(() => {
+1019 |             const snippetElement = createFlexCodeSnippet(snippet);
+1020 |             chatBox.appendChild(snippetElement);
+1021 |             
+1022 |             // Animate snippet appearance
+1023 |             snippetElement.style.opacity = '0';
+1024 |             snippetElement.style.transform = 'translateY(20px)';
+1025 |             
+1026 |             requestAnimationFrame(() => {
+1027 |               snippetElement.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+1028 |               snippetElement.style.opacity = '1';
+1029 |               snippetElement.style.transform = 'translateY(0)';
+1030 |             });
+1031 |             
+1032 |             scrollChatToBottom();
+1033 |           }, index * 300); // Stagger snippet animations
+1034 |         });
+1035 |       }
+1036 | 
+1037 |       // Add copy functionality to regular code blocks
+1038 |       setTimeout(() => {
+1039 |         addCopyButtonsToCodeBlocks();
+1040 |       }, 150);
+1041 | 
+1042 |       // Final scroll to show complete content
+1043 |       scrollChatToBottom();
+1044 |       
+1045 |       logStreamingDebug('streaming_complete_success', {
+1046 |         totalChunks: chunkCount,
+1047 |         totalSize: streamingContent.length,
+1048 |         elapsed: Date.now() - streamingStartTime,
+1049 |         flexSnippets: flexSnippets.length
+1050 |       });
+1051 | 
+1052 |       // Reset streaming state
+1053 |       streamingMessage = null;
+1054 |       streamingContent = '';
+1055 |       chunkCount = 0;
+1056 |       
+1057 |     } catch (error) {
+1058 |       logStreamingDebug('complete_error', { error: error.message });
+1059 |       handleStreamingError(error);
+1060 |     }
+1061 |   }
+1062 | 
+1063 |   function handleStreamingError(error) {
+1064 |     try {
+1065 |       logStreamingDebug('streaming_error', { 
+1066 |         error: error.message,
+1067 |         contentLength: streamingContent.length,
+1068 |         elapsed: Date.now() - streamingStartTime
+1069 |       });
+1070 | 
+1071 |       // Clear health check
+1072 |       if (streamingHealthCheck) {
+1073 |         clearInterval(streamingHealthCheck);
+1074 |         streamingHealthCheck = null;
+1075 |       }
+1076 | 
+1077 |       // Show error in the UI
+1078 |       if (streamingMessage) {
+1079 |         const contentDiv = streamingMessage.querySelector('.streaming-content');
+1080 |         if (contentDiv) {
+1081 |           const errorHtml = `
+1082 |             <div class="streaming-error">
+1083 |               ⚠️ Streaming interrupted: ${escapeHtml(error.message)}
+1084 |               <br><br>
+1085 |               ${formatText(streamingContent)}
+1086 |               <div class="streaming-debug">
+1087 |                 <details>
+1088 |                   <summary>Debug Information</summary>
+1089 |                   <pre>${JSON.stringify({
+1090 |                     chunkCount,
+1091 |                     contentLength: streamingContent.length,
+1092 |                     elapsed: Date.now() - streamingStartTime,
+1093 |                     lastLogs: streamingDebugLog.slice(-10)
+1094 |                   }, null, 2)}</pre>
+1095 |                 </details>
+1096 |               </div>
+1097 |             </div>
+1098 |           `;
+1099 |           contentDiv.innerHTML = errorHtml;
+1100 |         }
+1101 | 
+1102 |         streamingMessage.classList.remove('streaming-message');
+1103 |         streamingMessage.classList.add('streaming-error-message');
+1104 |         
+1105 |         const status = streamingMessage.querySelector('.streaming-status');
+1106 |         if (status) {
+1107 |           status.textContent = 'Error - Check debug info below';
+1108 |           status.style.color = 'var(--error-color)';
+1109 |         }
+1110 |       }
+1111 | 
+1112 |       // Re-enable send button
+1113 |       if (sendButton) {
+1114 |         sendButton.disabled = false;
+1115 |         sendButton.innerHTML = '<span class="send-icon">📤</span>';
+1116 |       }
+1117 | 
+1118 |       // Reset state
+1119 |       streamingMessage = null;
+1120 |       streamingContent = '';
+1121 |       chunkCount = 0;
+1122 | 
+1123 |     } catch (handlerError) {
+1124 |       console.error('[STREAMING] Error in error handler:', handlerError);
+1125 |       // Last resort: show simple error message
+1126 |       addMessage(`⚠️ Streaming error: ${error.message}. Check browser console for details.`, 'ai');
+1127 |     }
+1128 |   }
+1129 | 
+1130 |   // Enhanced send message function
+1131 |   function sendMessage() {
+1132 |     const message = userInput.value.trim();
+1133 |     if (!message) return;
+1134 | 
+1135 |     // Disable send button temporarily
+1136 |     sendButton.disabled = true;
+1137 |     sendButton.innerHTML = '<span class="send-icon">⏳</span>';
+1138 | 
+1139 |     // Add user message to chat
+1140 |     addMessage(message, 'user');
+1141 | 
+1142 |     // Show typing indicator
+1143 |     const typingIndicator = document.createElement('div');
+1144 |     typingIndicator.className = 'status-message typing-indicator';
+1145 |     typingIndicator.innerHTML = '<span class="typing-dots">Flex Assistant is thinking</span><span class="dots">...</span>';
+1146 |     chatBox.appendChild(typingIndicator);
+1147 |     scrollChatToBottom();
+1148 | 
+1149 |     // Send message to extension
+1150 |     vscode.postMessage({
+1151 |       command: 'sendMessage',
+1152 |       text: message
+1153 |     });
+1154 | 
+1155 |     // Clear input field and focus
+1156 |     userInput.value = '';
+1157 |     userInput.focus();
+1158 | 
+1159 |     // Store the typing indicator reference
+1160 |     window.currentTypingIndicator = typingIndicator;
+1161 | 
+1162 |     // Re-enable send button after 2 seconds
+1163 |     setTimeout(() => {
+1164 |       sendButton.disabled = false;
+1165 |       sendButton.innerHTML = '<span class="send-icon">📤</span>';
+1166 |     }, 2000);
+1167 |   }
+1168 | 
+1169 |   // Event listeners
+1170 |   sendButton.addEventListener('click', sendMessage);
+1171 | 
+1172 |   clearButton.addEventListener('click', () => {
+1173 |     // Add confirmation for clearing chat
+1174 |     const confirmClear = confirm('Are you sure you want to clear the chat history?');
+1175 |     if (confirmClear) {
+1176 |       vscode.postMessage({
+1177 |         command: 'clearChat'
+1178 |       });
+1179 |     }
+1180 |   });
+1181 | 
+1182 |   // Change model button event listener
+1183 |   if (changeModelButton) {
+1184 |     changeModelButton.addEventListener('click', () => {
+1185 |       vscode.postMessage({
+1186 |         command: 'selectModel'
+1187 |       });
+1188 |     });
+1189 |   }
+1190 | 
+1191 |   // Professional input handling with enhanced UX
+1192 |   userInput.addEventListener('keydown', (e) => {
+1193 |     if (e.key === 'Enter' && !e.shiftKey) {
+1194 |       e.preventDefault();
+1195 |       sendMessage();
+1196 |     } else if (e.key === 'Enter' && e.shiftKey) {
+1197 |       // Allow Shift+Enter for line breaks
+1198 |       return true;
+1199 |     }
+1200 |   });
+1201 | 
+1202 |   // Auto-resize input with smooth animation
+1203 |   userInput.addEventListener('input', function () {
+1204 |     this.style.height = 'auto';
+1205 |     const newHeight = Math.min(this.scrollHeight, 120);
+1206 |     this.style.height = newHeight + 'px';
+1207 | 
+1208 |     // Add subtle animation for height changes
+1209 |     this.style.transition = 'height 0.2s ease-out';
+1210 |   });
+1211 | 
+1212 |   // Professional focus effects
+1213 |   userInput.addEventListener('focus', function () {
+1214 |     const container = this.closest('.input-container');
+1215 |     if (container) {
+1216 |       container.classList.add('input-focus-ring', 'focused');
+1217 |     }
+1218 |   });
+1219 | 
+1220 |   userInput.addEventListener('blur', function () {
+1221 |     const container = this.closest('.input-container');
+1222 |     if (container) {
+1223 |       container.classList.remove('focused');
+1224 |     }
+1225 |   });
+1226 | 
+1227 |   // Handle messages from the extension
+1228 |   window.addEventListener('message', event => {
+1229 |     const message = event.data;
+1230 | 
+1231 |     switch (message.command) {
+1232 |       case 'aiStreamStart':
+1233 |         // Remove typing indicator and start streaming response
+1234 |         if (window.currentTypingIndicator) {
+1235 |           window.currentTypingIndicator.remove();
+1236 |           window.currentTypingIndicator = null;
+1237 |         }
+1238 | 
+1239 |         // Create streaming message container
+1240 |         startStreamingMessage();
+1241 |         break;
+1242 | 
+1243 |       case 'aiStreamChunk':
+1244 |         // Add chunk to streaming message
+1245 |         addStreamingChunk(message.text);
+1246 |         break;
+1247 | 
+1248 |       case 'aiStreamComplete':
+1249 |         // Complete streaming response
+1250 |         completeStreamingMessage();
+1251 |         
+1252 |         // Re-enable send button
+1253 |         sendButton.disabled = false;
+1254 |         sendButton.innerHTML = '<span class="send-icon">📤</span>';
+1255 |         break;
+1256 | 
+1257 |       case 'aiResponse':
+1258 |         // Fallback for non-streaming responses
+1259 |         // Remove typing indicator
+1260 |         if (window.currentTypingIndicator) {
+1261 |           window.currentTypingIndicator.remove();
+1262 |           window.currentTypingIndicator = null;
+1263 |         }
+1264 | 
+1265 |         // Re-enable send button
+1266 |         sendButton.disabled = false;
+1267 |         sendButton.innerHTML = '<span class="send-icon">📤</span>';
+1268 | 
+1269 |         // Display AI response with enhanced formatting
+1270 |         addMessage(message.text, 'ai');
+1271 |         break;
+1272 | 
+1273 |       case 'statusUpdate':
+1274 |         // Handle status updates - if empty, clear typing indicator
+1275 |         if (!message.text || message.text.trim() === '') {
+1276 |           if (window.currentTypingIndicator) {
+1277 |             window.currentTypingIndicator.remove();
+1278 |             window.currentTypingIndicator = null;
+1279 |           }
+1280 |           // Re-enable send button
+1281 |           sendButton.disabled = false;
+1282 |           sendButton.innerHTML = '<span class="send-icon">📤</span>';
+1283 |         } else {
+1284 |           // Show status update in chat
+1285 |           addMessage(message.text, null, true);
+1286 |         }
+1287 |         break;
+1288 | 
+1289 |       case 'chatCleared':
+1290 |         // Clear the chat box with animation
+1291 |         const messages = chatBox.querySelectorAll('.message, .status-message');
+1292 |         messages.forEach((msg, index) => {
+1293 |           setTimeout(() => {
+1294 |             msg.style.transition = 'all 0.2s ease-out';
+1295 |             msg.style.opacity = '0';
+1296 |             msg.style.transform = 'translateY(-20px)';
+1297 |             setTimeout(() => msg.remove(), 200);
+1298 |           }, index * 50);
+1299 |         });
+1300 | 
+1301 |         setTimeout(() => {
+1302 |           chatBox.innerHTML = '';
+1303 |           // Re-add welcome message if it exists
+1304 |           if (welcomeMessage) {
+1305 |             const welcomeClone = welcomeMessage.cloneNode(true);
+1306 |             welcomeClone.style.display = 'flex';
+1307 |             chatBox.appendChild(welcomeClone);
+1308 |           }
+1309 |         }, messages.length * 50 + 200);
+1310 |         break;
+1311 | 
+1312 |       case 'error':
+1313 |         // Display error messages with special styling
+1314 |         const errorDiv = document.createElement('div');
+1315 |         errorDiv.className = 'status-message error-message';
+1316 |         errorDiv.innerHTML = `⚠️ ${escapeHtml(message.text)}`;
+1317 |         chatBox.appendChild(errorDiv);
+1318 |         scrollChatToBottom();
+1319 |         break;
+1320 |     }
+1321 |   });
+1322 | 
+1323 |   // Initialize chat
+1324 |   function initializeChat() {
+1325 |     userInput.focus();
+1326 | 
+1327 |     // Add welcome message if chat is empty
+1328 |     if (chatBox.children.length === 0) {
+1329 |       setTimeout(() => {
+1330 |         addMessage('Welcome! I\'m your Flex programming assistant. I can help you with Franco-Arabic programming, syntax, examples, and best practices. How can I assist you today?', null, true);
+1331 |       }, 500);
+1332 |     }
+1333 |   }
+1334 | 
+1335 |   // Professional dynamic styles
+1336 |   const style = document.createElement('style');
+1337 |   style.textContent = `
+1338 |     .typing-indicator .dots {
+1339 |       animation: typing 1.8s ease-in-out infinite;
+1340 |     }
+1341 |     
+1342 |     @keyframes typing {
+1343 |       0%, 60%, 100% { opacity: 1; }
+1344 |       30% { opacity: 0.4; }
+1345 |     }
+1346 |     
+1347 |     .flex-highlight {
+1348 |       background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+1349 |       color: white;
+1350 |       padding: var(--space-1) var(--space-2);
+1351 |       border-radius: var(--radius-sm);
+1352 |       font-weight: var(--font-weight-semibold);
+1353 |       box-shadow: var(--shadow-sm);
+1354 |     }
+1355 |     
+1356 |     .error-message {
+1357 |       background: linear-gradient(135deg, 
+1358 |         rgba(239, 68, 68, 0.08) 0%, 
+1359 |         rgba(239, 68, 68, 0.05) 100%);
+1360 |       border: 1px solid rgba(239, 68, 68, 0.2);
+1361 |       border-left: 3px solid var(--error-color);
+1362 |       color: var(--error-color);
+1363 |       backdrop-filter: blur(10px);
+1364 |     }
+1365 |     
+1366 |     .message-animation {
+1367 |       animation: messageAppear 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+1368 |     }
+1369 |     
+1370 |     @keyframes messageAppear {
+1371 |       0% {
+1372 |         opacity: 0;
+1373 |         transform: translateY(20px) scale(0.95);
+1374 |       }
+1375 |       100% {
+1376 |         opacity: 1;
+1377 |         transform: translateY(0) scale(1);
+1378 |       }
+1379 |     }
+1380 |     
+1381 |     .status-pulse {
+1382 |       animation: statusPulse 2.5s ease-in-out infinite;
+1383 |     }
+1384 |     
+1385 |     @keyframes statusPulse {
+1386 |       0%, 100% { 
+1387 |         opacity: 0.8; 
+1388 |         transform: scale(1);
+1389 |       }
+1390 |       50% { 
+1391 |         opacity: 1; 
+1392 |         transform: scale(1.02);
+1393 |       }
+1394 |     }
+1395 |     
+1396 |     .input-focus-ring {
+1397 |       position: relative;
+1398 |     }
+1399 |     
+1400 |     .input-focus-ring::before {
+1401 |       content: '';
+1402 |       position: absolute;
+1403 |       inset: -2px;
+1404 |       background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+1405 |       border-radius: calc(var(--radius-lg) + 2px);
+1406 |       opacity: 0;
+1407 |       transition: opacity 0.3s ease;
+1408 |       z-index: -1;
+1409 |     }
+1410 |     
+1411 |     .input-focus-ring.focused::before {
+1412 |       opacity: 0.1;
+1413 |     }
+1414 |     
+1415 |     .streaming-cursor {
+1416 |       display: inline-block;
+1417 |       background: var(--accent-color);
+1418 |       color: transparent;
+1419 |       margin-left: 2px;
+1420 |       animation: blink 1.2s ease-in-out infinite;
+1421 |     }
+1422 |     
+1423 |     @keyframes blink {
+1424 |       0%, 50% { opacity: 1; }
+1425 |       51%, 100% { opacity: 0; }
+1426 |     }
+1427 |     
+1428 |     .streaming-message {
+1429 |       position: relative;
+1430 |     }
+1431 |     
+1432 |     .streaming-message::after {
+1433 |       content: '';
+1434 |       position: absolute;
+1435 |       bottom: 0;
+1436 |       left: 0;
+1437 |       right: 0;
+1438 |       height: 2px;
+1439 |       background: linear-gradient(90deg, 
+1440 |         transparent 0%, 
+1441 |         var(--accent-color) 30%, 
+1442 |         transparent 70%);
+1443 |       animation: streamingProgress 2s ease-in-out infinite;
+1444 |     }
+1445 |     
+1446 |     @keyframes streamingProgress {
+1447 |       0% { transform: translateX(-100%); }
+1448 |       100% { transform: translateX(100%); }
+1449 |     }
+1450 |     
+1451 |     .streaming-status {
+1452 |       font-size: 0.75rem;
+1453 |       opacity: 0.7;
+1454 |       margin-left: var(--space-2);
+1455 |       font-family: var(--font-mono);
+1456 |     }
+1457 |     
+1458 |     .streaming-error {
+1459 |       background: rgba(239, 68, 68, 0.05);
+1460 |       border: 1px solid rgba(239, 68, 68, 0.2);
+1461 |       border-radius: var(--radius);
+1462 |       padding: var(--space-3);
+1463 |       margin: var(--space-2) 0;
+1464 |     }
+1465 |     
+1466 |     .streaming-error-message {
+1467 |       border-left: 3px solid var(--error-color);
+1468 |     }
+1469 |     
+1470 |     .streaming-debug {
+1471 |       margin-top: var(--space-3);
+1472 |       font-size: 0.875rem;
+1473 |     }
+1474 |     
+1475 |     .streaming-debug details {
+1476 |       background: rgba(0, 0, 0, 0.1);
+1477 |       border-radius: var(--radius);
+1478 |       padding: var(--space-2);
+1479 |     }
+1480 |     
+1481 |     .streaming-debug summary {
+1482 |       cursor: pointer;
+1483 |       font-weight: var(--font-weight-semibold);
+1484 |       padding: var(--space-1);
+1485 |     }
+1486 |     
+1487 |     .streaming-debug pre {
+1488 |       background: rgba(0, 0, 0, 0.2);
+1489 |       padding: var(--space-2);
+1490 |       border-radius: var(--radius);
+1491 |       overflow-x: auto;
+1492 |       font-size: 0.75rem;
+1493 |       margin-top: var(--space-2);
+1494 |     }
+1495 |     
+1496 |     /* Flex Code Snippet Professional Styling */
+1497 |     .flex-code-snippet {
+1498 |       background: linear-gradient(135deg, 
+1499 |         rgba(0, 122, 204, 0.03) 0%, 
+1500 |         rgba(0, 122, 204, 0.01) 100%);
+1501 |       border: 2px solid rgba(0, 122, 204, 0.2);
+1502 |       border-radius: var(--radius-lg);
+1503 |       margin: var(--space-4) 0;
+1504 |       box-shadow: 0 4px 20px rgba(0, 122, 204, 0.1);
+1505 |       overflow: hidden;
+1506 |       transition: all 0.3s ease;
+1507 |       position: relative;
+1508 |     }
+1509 |     
+1510 |     .flex-code-snippet:hover {
+1511 |       border-color: rgba(0, 122, 204, 0.4);
+1512 |       box-shadow: 0 8px 32px rgba(0, 122, 204, 0.15);
+1513 |       transform: translateY(-2px);
+1514 |     }
+1515 |     
+1516 |     .flex-code-snippet.expanded {
+1517 |       position: fixed;
+1518 |       top: var(--space-3);
+1519 |       left: var(--space-3);
+1520 |       right: var(--space-3);
+1521 |       bottom: var(--space-3);
+1522 |       z-index: 1000;
+1523 |       background: var(--bg-secondary);
+1524 |       border-color: var(--accent-color);
+1525 |       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+1526 |     }
+1527 |     
+1528 |     /* Snippet Header */
+1529 |     .flex-snippet-header {
+1530 |       background: linear-gradient(135deg, 
+1531 |         rgba(0, 122, 204, 0.08) 0%, 
+1532 |         rgba(0, 122, 204, 0.04) 100%);
+1533 |       padding: var(--space-3) var(--space-4);
+1534 |       border-bottom: 1px solid rgba(0, 122, 204, 0.2);
+1535 |       display: flex;
+1536 |       justify-content: space-between;
+1537 |       align-items: center;
+1538 |       backdrop-filter: blur(10px);
+1539 |     }
+1540 |     
+1541 |     .flex-snippet-metadata {
+1542 |       display: flex;
+1543 |       align-items: center;
+1544 |       gap: var(--space-3);
+1545 |     }
+1546 |     
+1547 |     .flex-snippet-language {
+1548 |       display: flex;
+1549 |       align-items: center;
+1550 |       gap: var(--space-2);
+1551 |       font-weight: var(--font-weight-bold);
+1552 |       color: var(--accent-color);
+1553 |       font-size: 1rem;
+1554 |     }
+1555 |     
+1556 |     .flex-icon {
+1557 |       font-size: 1.2em;
+1558 |       filter: drop-shadow(0 0 4px currentColor);
+1559 |     }
+1560 |     
+1561 |     .flex-snippet-stats {
+1562 |       font-size: 0.875rem;
+1563 |       color: var(--text-secondary);
+1564 |       font-family: var(--font-mono);
+1565 |       background: rgba(0, 122, 204, 0.1);
+1566 |       padding: var(--space-1) var(--space-2);
+1567 |       border-radius: var(--radius);
+1568 |       border: 1px solid rgba(0, 122, 204, 0.2);
+1569 |     }
+1570 |     
+1571 |     .flex-snippet-controls {
+1572 |       display: flex;
+1573 |       gap: var(--space-2);
+1574 |     }
+1575 |     
+1576 |     .flex-copy-button, .flex-expand-button {
+1577 |       display: flex;
+1578 |       align-items: center;
+1579 |       gap: var(--space-2);
+1580 |       padding: var(--space-2) var(--space-3);
+1581 |       background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+1582 |       color: white;
+1583 |       border: none;
+1584 |       border-radius: var(--radius);
+1585 |       font-size: 0.875rem;
+1586 |       font-weight: var(--font-weight-medium);
+1587 |       cursor: pointer;
+1588 |       transition: all 0.2s ease;
+1589 |       box-shadow: 0 2px 8px rgba(0, 122, 204, 0.3);
+1590 |     }
+1591 |     
+1592 |     .flex-copy-button:hover, .flex-expand-button:hover {
+1593 |       transform: translateY(-1px);
+1594 |       box-shadow: 0 4px 16px rgba(0, 122, 204, 0.4);
+1595 |       background: linear-gradient(135deg, var(--accent-hover), var(--accent-color));
+1596 |     }
+1597 |     
+1598 |     .flex-copy-button:active, .flex-expand-button:active {
+1599 |       transform: translateY(0);
+1600 |       box-shadow: 0 1px 4px rgba(0, 122, 204, 0.3);
+1601 |     }
+1602 |     
+1603 |     .flex-copy-button.copy-success {
+1604 |       background: linear-gradient(135deg, var(--success-color), #10b981);
+1605 |     }
+1606 |     
+1607 |     .flex-copy-button.copy-error {
+1608 |       background: linear-gradient(135deg, var(--error-color), #dc2626);
+1609 |     }
+1610 |     
+1611 |     .flex-expand-button {
+1612 |       padding: var(--space-2);
+1613 |       min-width: auto;
+1614 |     }
+1615 |     
+1616 |     /* Code Container */
+1617 |     .flex-snippet-code-container {
+1618 |       display: flex;
+1619 |       background: var(--bg-primary);
+1620 |       max-height: 400px;
+1621 |       overflow: hidden;
+1622 |     }
+1623 |     
+1624 |     .flex-code-snippet.expanded .flex-snippet-code-container {
+1625 |       max-height: none;
+1626 |       flex: 1;
+1627 |       overflow-y: auto;
+1628 |     }
+1629 |     
+1630 |     .flex-snippet-line-numbers {
+1631 |       background: rgba(0, 122, 204, 0.05);
+1632 |       border-right: 1px solid rgba(0, 122, 204, 0.2);
+1633 |       padding: var(--space-3) var(--space-2);
+1634 |       font-family: var(--font-mono);
+1635 |       font-size: 0.875rem;
+1636 |       color: var(--text-muted);
+1637 |       user-select: none;
+1638 |       min-width: 60px;
+1639 |       text-align: right;
+1640 |     }
+1641 |     
+1642 |     .flex-snippet-line-numbers .line-number {
+1643 |       display: block;
+1644 |       line-height: 1.5;
+1645 |       transition: color 0.2s ease;
+1646 |     }
+1647 |     
+1648 |     .flex-snippet-line-numbers .line-number:hover {
+1649 |       color: var(--accent-color);
+1650 |     }
+1651 |     
+1652 |     .flex-snippet-code-content {
+1653 |       flex: 1;
+1654 |       padding: var(--space-3);
+1655 |       font-family: var(--font-mono);
+1656 |       font-size: 0.875rem;
+1657 |       line-height: 1.5;
+1658 |       overflow-x: auto;
+1659 |       white-space: pre;
+1660 |       color: var(--text-primary);
+1661 |       background: var(--bg-primary);
+1662 |     }
+1663 |     
+1664 |     /* Enhanced Flex syntax highlighting in snippets */
+1665 |     .flex-snippet-code-content .flex-keyword-franco {
+1666 |       color: #ff6b9d;
+1667 |       font-weight: var(--font-weight-bold);
+1668 |       text-shadow: 0 0 2px rgba(255, 107, 157, 0.3);
+1669 |     }
+1670 |     
+1671 |     .flex-snippet-code-content .flex-keyword-english {
+1672 |       color: #4ecdc4;
+1673 |       font-weight: var(--font-weight-bold);
+1674 |     }
+1675 |     
+1676 |     .flex-snippet-code-content .flex-string {
+1677 |       color: #45b7d1;
+1678 |     }
+1679 |     
+1680 |     .flex-snippet-code-content .flex-number {
+1681 |       color: #f9ca24;
+1682 |     }
+1683 |     
+1684 |     .flex-snippet-code-content .flex-comment {
+1685 |       color: var(--text-muted);
+1686 |       font-style: italic;
+1687 |     }
+1688 |     
+1689 |     .flex-snippet-code-content .flex-function {
+1690 |       color: #6c5ce7;
+1691 |       font-weight: var(--font-weight-medium);
+1692 |     }
+1693 |     
+1694 |     .flex-snippet-code-content .flex-operator {
+1695 |       color: #fd79a8;
+1696 |     }
+1697 |     
+1698 |     .flex-snippet-code-content .flex-variable {
+1699 |       color: #00b894;
+1700 |     }
+1701 |     
+1702 |     /* Snippet Footer */
+1703 |     .flex-snippet-footer {
+1704 |       background: rgba(0, 122, 204, 0.03);
+1705 |       border-top: 1px solid rgba(0, 122, 204, 0.1);
+1706 |       padding: var(--space-2) var(--space-4);
+1707 |       font-size: 0.875rem;
+1708 |     }
+1709 |     
+1710 |     .flex-hint {
+1711 |       color: var(--text-secondary);
+1712 |       display: flex;
+1713 |       align-items: center;
+1714 |       gap: var(--space-2);
+1715 |     }
+1716 |     
+1717 |     .flex-hint code {
+1718 |       background: rgba(0, 122, 204, 0.1);
+1719 |       color: var(--accent-color);
+1720 |       padding: var(--space-1);
+1721 |       border-radius: var(--radius-sm);
+1722 |       font-family: var(--font-mono);
+1723 |       font-size: 0.8em;
+1724 |     }
+1725 |     
+1726 |     /* Responsive design for mobile */
+1727 |     @media (max-width: 768px) {
+1728 |       .flex-code-snippet.expanded {
+1729 |         top: 0;
+1730 |         left: 0;
+1731 |         right: 0;
+1732 |         bottom: 0;
+1733 |       }
+1734 |       
+1735 |       .flex-snippet-header {
+1736 |         padding: var(--space-2) var(--space-3);
+1737 |         flex-direction: column;
+1738 |         gap: var(--space-2);
+1739 |       }
+1740 |       
+1741 |       .flex-snippet-metadata {
+1742 |         flex-direction: column;
+1743 |         gap: var(--space-1);
+1744 |         align-items: flex-start;
+1745 |       }
+1746 |       
+1747 |       .flex-copy-button .copy-text {
+1748 |         display: none;
+1749 |       }
+1750 |       
+1751 |       .flex-snippet-line-numbers {
+1752 |         min-width: 40px;
+1753 |         padding: var(--space-2) var(--space-1);
+1754 |       }
+1755 |       
+1756 |       .flex-snippet-code-content {
+1757 |         padding: var(--space-2);
+1758 |         font-size: 0.8rem;
+1759 |       }
+1760 |     }
+1761 |     
+1762 |     /* Scrollbar styling for code content */
+1763 |     .flex-snippet-code-content::-webkit-scrollbar {
+1764 |       height: 6px;
+1765 |     }
+1766 |     
+1767 |     .flex-snippet-code-content::-webkit-scrollbar-thumb {
+1768 |       background: rgba(0, 122, 204, 0.3);
+1769 |       border-radius: 3px;
+1770 |     }
+1771 |     
+1772 |     .flex-snippet-code-content::-webkit-scrollbar-thumb:hover {
+1773 |       background: rgba(0, 122, 204, 0.5);
+1774 |     }
+1775 |     
+1776 |     /* Animation for snippet appearance */
+1777 |     @keyframes flexSnippetAppear {
+1778 |       0% {
+1779 |         opacity: 0;
+1780 |         transform: translateY(30px) scale(0.95);
+1781 |       }
+1782 |       100% {
+1783 |         opacity: 1;
+1784 |         transform: translateY(0) scale(1);
+1785 |       }
+1786 |     }
+1787 |     
+1788 |     .flex-code-snippet {
+1789 |       animation: flexSnippetAppear 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+1790 |     }
+1791 |   `;
+1792 | 
+1793 |   document.head.appendChild(style);
+1794 | 
+1795 |   // Add global debugging function for streaming
+1796 |   window.exportStreamingDebugLog = function() {
+1797 |     const debugData = {
+1798 |       timestamp: new Date().toISOString(),
+1799 |       streamingDebugLog,
+1800 |       currentState: {
+1801 |         streamingMessage: !!streamingMessage,
+1802 |         streamingContent: streamingContent.length,
+1803 |         chunkCount,
+1804 |         streamingStartTime,
+1805 |         hasHealthCheck: !!streamingHealthCheck
+1806 |       },
+1807 |       memoryUsage: performance.memory ? {
+1808 |         usedJSHeapSize: performance.memory.usedJSHeapSize,
+1809 |         totalJSHeapSize: performance.memory.totalJSHeapSize,
+1810 |         jsHeapSizeLimit: performance.memory.jsHeapSizeLimit
+1811 |       } : 'Not available'
+1812 |     };
+1813 |     
+1814 |     console.log('Streaming Debug Export:', debugData);
+1815 |     
+1816 |     // Also copy to clipboard if available
+1817 |     if (navigator.clipboard) {
+1818 |       navigator.clipboard.writeText(JSON.stringify(debugData, null, 2))
+1819 |         .then(() => console.log('Debug data copied to clipboard'))
+1820 |         .catch(err => console.warn('Could not copy to clipboard:', err));
+1821 |     }
+1822 |     
+1823 |     return debugData;
+1824 |   };
+1825 | 
+1826 |   // Initialize the chat interface
+1827 |   initializeChat();
+1828 | }());
 ```
 
 assets/webview/js/highlighter.js
@@ -13611,1398 +13094,6 @@ assets/webview/js/highlighter.js
 55 |     // Expose globally
 56 |     window.processContent = processContent;
 57 | })(); 
-```
-
-assets/webview/js/main.js
-```
-1 | (() => {
-2 |   "use strict";
-3 |   var e = {
-4 |       d: (t, r) => {
-5 |         for (var n in r)
-6 |           e.o(r, n) &&
-7 |             !e.o(t, n) &&
-8 |             Object.defineProperty(t, n, { enumerable: !0, get: r[n] });
-9 |       },
-10 |       o: (e, t) => Object.prototype.hasOwnProperty.call(e, t),
-11 |       r: (e) => {
-12 |         "undefined" != typeof Symbol &&
-13 |           Symbol.toStringTag &&
-14 |           Object.defineProperty(e, Symbol.toStringTag, { value: "Module" }),
-15 |           Object.defineProperty(e, "__esModule", { value: !0 });
-16 |       }
-17 |     },
-18 |     t = {};
-19 |   e.r(t),
-20 |     e.d(t, {
-21 |       APIConnectionError: () => x,
-22 |       APIConnectionTimeoutError: () => E,
-23 |       APIError: () => b,
-24 |       APIUserAbortError: () => R,
-25 |       AuthenticationError: () => v,
-26 |       BadRequestError: () => S,
-27 |       ConflictError: () => q,
-28 |       GroqError: () => w,
-29 |       InternalServerError: () => L,
-30 |       NotFoundError: () => k,
-31 |       PermissionDeniedError: () => A,
-32 |       RateLimitError: () => I,
-33 |       UnprocessableEntityError: () => P
-34 |     });
-35 |   const r = "0.4.0";
-36 |   let n,
-37 |     s,
-38 |     o,
-39 |     i,
-40 |     a,
-41 |     u,
-42 |     c,
-43 |     l,
-44 |     d,
-45 |     p = !1,
-46 |     h = null,
-47 |     f = null,
-48 |     m = null,
-49 |     y = null;
-50 |   class g {
-51 |     constructor(e) {
-52 |       this.body = e;
-53 |     }
-54 |     get [Symbol.toStringTag]() {
-55 |       return "MultipartBody";
-56 |     }
-57 |   }
-58 |   n ||
-59 |     (function (e, t = { auto: !1 }) {
-60 |       if (p)
-61 |         throw new Error(
-62 |           `you must \`import 'groq-sdk/shims/${e.kind}'\` before importing anything else from groq-sdk`
-63 |         );
-64 |       if (n)
-65 |         throw new Error(
-66 |           `can't \`import 'groq-sdk/shims/${e.kind}'\` after \`import 'groq-sdk/shims/${n}'\``
-67 |         );
-68 |       (p = t.auto),
-69 |         (n = e.kind),
-70 |         (s = e.fetch),
-71 |         (h = e.Request),
-72 |         (f = e.Response),
-73 |         (m = e.Headers),
-74 |         (o = e.FormData),
-75 |         (y = e.Blob),
-76 |         (i = e.File),
-77 |         (a = e.ReadableStream),
-78 |         (u = e.getMultipartRequestOptions),
-79 |         (c = e.getDefaultAgent),
-80 |         (l = e.fileFromPath),
-81 |         (d = e.isFsReadStream);
-82 |     })(
-83 |       (function ({ manuallyImported: e } = {}) {
-84 |         const t = e
-85 |           ? "You may need to use polyfills"
-86 |           : "Add one of these imports before your first `import … from 'groq-sdk'`:\n- `import 'groq-sdk/shims/node'` (if you're running on Node)\n- `import 'groq-sdk/shims/web'` (otherwise)\n";
-87 |         let r, n, s, o;
-88 |         try {
-89 |           (r = fetch), (n = Request), (s = Response), (o = Headers);
-90 |         } catch (e) {
-91 |           throw new Error(
-92 |             `this environment is missing the following Web Fetch API type: ${e.message}. ${t}`
-93 |           );
-94 |         }
-95 |         return {
-96 |           kind: "web",
-97 |           fetch: r,
-98 |           Request: n,
-99 |           Response: s,
-100 |           Headers: o,
-101 |           FormData:
-102 |             "undefined" != typeof FormData
-103 |               ? FormData
-104 |               : class {
-105 |                   constructor() {
-106 |                     throw new Error(
-107 |                       `file uploads aren't supported in this environment yet as 'FormData' is undefined. ${t}`
-108 |                     );
-109 |                   }
-110 |                 },
-111 |           Blob:
-112 |             "undefined" != typeof Blob
-113 |               ? Blob
-114 |               : class {
-115 |                   constructor() {
-116 |                     throw new Error(
-117 |                       `file uploads aren't supported in this environment yet as 'Blob' is undefined. ${t}`
-118 |                     );
-119 |                   }
-120 |                 },
-121 |           File:
-122 |             "undefined" != typeof File
-123 |               ? File
-124 |               : class {
-125 |                   constructor() {
-126 |                     throw new Error(
-127 |                       `file uploads aren't supported in this environment yet as 'File' is undefined. ${t}`
-128 |                     );
-129 |                   }
-130 |                 },
-131 |           ReadableStream:
-132 |             "undefined" != typeof ReadableStream
-133 |               ? ReadableStream
-134 |               : class {
-135 |                   constructor() {
-136 |                     throw new Error(
-137 |                       `streaming isn't supported in this environment yet as 'ReadableStream' is undefined. ${t}`
-138 |                     );
-139 |                   }
-140 |                 },
-141 |           getMultipartRequestOptions: async (e, t) => ({
-142 |             ...t,
-143 |             body: new g(e)
-144 |           }),
-145 |           getDefaultAgent: (e) => {},
-146 |           fileFromPath: () => {
-147 |             throw new Error(
-148 |               "The `fileFromPath` function is only supported in Node. See the README for more details: https://www.github.com/groq/groq-typescript#file-uploads"
-149 |             );
-150 |           },
-151 |           isFsReadStream: (e) => !1
-152 |         };
-153 |       })(),
-154 |       { auto: !0 }
-155 |     );
-156 |   class w extends Error {}
-157 |   class b extends w {
-158 |     constructor(e, t, r, n) {
-159 |       super(`${b.makeMessage(e, t, r)}`),
-160 |         (this.status = e),
-161 |         (this.headers = n),
-162 |         (this.error = t);
-163 |     }
-164 |     static makeMessage(e, t, r) {
-165 |       const n = t?.message
-166 |         ? "string" == typeof t.message
-167 |           ? t.message
-168 |           : JSON.stringify(t.message)
-169 |         : t
-170 |         ? JSON.stringify(t)
-171 |         : r;
-172 |       return e && n
-173 |         ? `${e} ${n}`
-174 |         : e
-175 |         ? `${e} status code (no body)`
-176 |         : n || "(no status code or body)";
-177 |     }
-178 |     static generate(e, t, r, n) {
-179 |       if (!e) return new x({ cause: oe(t) });
-180 |       const s = t;
-181 |       return 400 === e
-182 |         ? new S(e, s, r, n)
-183 |         : 401 === e
-184 |         ? new v(e, s, r, n)
-185 |         : 403 === e
-186 |         ? new A(e, s, r, n)
-187 |         : 404 === e
-188 |         ? new k(e, s, r, n)
-189 |         : 409 === e
-190 |         ? new q(e, s, r, n)
-191 |         : 422 === e
-192 |         ? new P(e, s, r, n)
-193 |         : 429 === e
-194 |         ? new I(e, s, r, n)
-195 |         : e >= 500
-196 |         ? new L(e, s, r, n)
-197 |         : new b(e, s, r, n);
-198 |     }
-199 |   }
-200 |   class R extends b {
-201 |     constructor({ message: e } = {}) {
-202 |       super(void 0, void 0, e || "Request was aborted.", void 0),
-203 |         (this.status = void 0);
-204 |     }
-205 |   }
-206 |   class x extends b {
-207 |     constructor({ message: e, cause: t }) {
-208 |       super(void 0, void 0, e || "Connection error.", void 0),
-209 |         (this.status = void 0),
-210 |         t && (this.cause = t);
-211 |     }
-212 |   }
-213 |   class E extends x {
-214 |     constructor({ message: e } = {}) {
-215 |       super({ message: e ?? "Request timed out." });
-216 |     }
-217 |   }
-218 |   class S extends b {
-219 |     constructor() {
-220 |       super(...arguments), (this.status = 400);
-221 |     }
-222 |   }
-223 |   class v extends b {
-224 |     constructor() {
-225 |       super(...arguments), (this.status = 401);
-226 |     }
-227 |   }
-228 |   class A extends b {
-229 |     constructor() {
-230 |       super(...arguments), (this.status = 403);
-231 |     }
-232 |   }
-233 |   class k extends b {
-234 |     constructor() {
-235 |       super(...arguments), (this.status = 404);
-236 |     }
-237 |   }
-238 |   class q extends b {
-239 |     constructor() {
-240 |       super(...arguments), (this.status = 409);
-241 |     }
-242 |   }
-243 |   class P extends b {
-244 |     constructor() {
-245 |       super(...arguments), (this.status = 422);
-246 |     }
-247 |   }
-248 |   class I extends b {
-249 |     constructor() {
-250 |       super(...arguments), (this.status = 429);
-251 |     }
-252 |   }
-253 |   class L extends b {}
-254 |   class $ {
-255 |     constructor(e, t) {
-256 |       (this.iterator = e), (this.controller = t);
-257 |     }
-258 |     static fromSSEResponse(e, t) {
-259 |       let r = !1;
-260 |       const n = new O();
-261 |       return new $(async function* () {
-262 |         if (r)
-263 |           throw new Error(
-264 |             "Cannot iterate over a consumed stream, use `.tee()` to split the stream."
-265 |           );
-266 |         r = !0;
-267 |         let s = !1;
-268 |         try {
-269 |           for await (const r of (async function* () {
-270 |             if (!e.body)
-271 |               throw (
-272 |                 (t.abort(),
-273 |                 new w("Attempted to iterate over a response with no body"))
-274 |               );
-275 |             const r = new C(),
-276 |               s = U(e.body);
-277 |             for await (const e of s)
-278 |               for (const t of r.decode(e)) {
-279 |                 const e = n.decode(t);
-280 |                 e && (yield e);
-281 |               }
-282 |             for (const e of r.flush()) {
-283 |               const t = n.decode(e);
-284 |               t && (yield t);
-285 |             }
-286 |           })())
-287 |             if (!s)
-288 |               if (r.data.startsWith("[DONE]")) s = !0;
-289 |               else if (null === r.event) {
-290 |                 let e;
-291 |                 try {
-292 |                   e = JSON.parse(r.data);
-293 |                 } catch (e) {
-294 |                   throw (
-295 |                     (console.error(
-296 |                       "Could not parse message into JSON:",
-297 |                       r.data
-298 |                     ),
-299 |                     console.error("From chunk:", r.raw),
-300 |                     e)
-301 |                   );
-302 |                 }
-303 |                 if (e && e.error) throw new b(void 0, e.error, void 0, void 0);
-304 |                 yield e;
-305 |               }
-306 |           s = !0;
-307 |         } catch (e) {
-308 |           if (e instanceof Error && "AbortError" === e.name) return;
-309 |           throw e;
-310 |         } finally {
-311 |           s || t.abort();
-312 |         }
-313 |       }, t);
-314 |     }
-315 |     static fromReadableStream(e, t) {
-316 |       let r = !1;
-317 |       return new $(async function* () {
-318 |         if (r)
-319 |           throw new Error(
-320 |             "Cannot iterate over a consumed stream, use `.tee()` to split the stream."
-321 |           );
-322 |         r = !0;
-323 |         let n = !1;
-324 |         try {
-325 |           for await (const t of (async function* () {
-326 |             const t = new C(),
-327 |               r = U(e);
-328 |             for await (const e of r) for (const r of t.decode(e)) yield r;
-329 |             for (const e of t.flush()) yield e;
-330 |           })())
-331 |             n || (t && (yield JSON.parse(t)));
-332 |           n = !0;
-333 |         } catch (e) {
-334 |           if (e instanceof Error && "AbortError" === e.name) return;
-335 |           throw e;
-336 |         } finally {
-337 |           n || t.abort();
-338 |         }
-339 |       }, t);
-340 |     }
-341 |     [Symbol.asyncIterator]() {
-342 |       return this.iterator();
-343 |     }
-344 |     tee() {
-345 |       const e = [],
-346 |         t = [],
-347 |         r = this.iterator(),
-348 |         n = (n) => ({
-349 |           next: () => {
-350 |             if (0 === n.length) {
-351 |               const n = r.next();
-352 |               e.push(n), t.push(n);
-353 |             }
-354 |             return n.shift();
-355 |           }
-356 |         });
-357 |       return [
-358 |         new $(() => n(e), this.controller),
-359 |         new $(() => n(t), this.controller)
-360 |       ];
-361 |     }
-362 |     toReadableStream() {
-363 |       const e = this;
-364 |       let t;
-365 |       const r = new TextEncoder();
-366 |       return new a({
-367 |         async start() {
-368 |           t = e[Symbol.asyncIterator]();
-369 |         },
-370 |         async pull(e) {
-371 |           try {
-372 |             const { value: n, done: s } = await t.next();
-373 |             if (s) return e.close();
-374 |             const o = r.encode(JSON.stringify(n) + "\n");
-375 |             e.enqueue(o);
-376 |           } catch (t) {
-377 |             e.error(t);
-378 |           }
-379 |         },
-380 |         async cancel() {
-381 |           await t.return?.();
-382 |         }
-383 |       });
-384 |     }
-385 |   }
-386 |   class O {
-387 |     constructor() {
-388 |       (this.event = null), (this.data = []), (this.chunks = []);
-389 |     }
-390 |     decode(e) {
-391 |       if ((e.endsWith("\r") && (e = e.substring(0, e.length - 1)), !e)) {
-392 |         if (!this.event && !this.data.length) return null;
-393 |         const e = {
-394 |           event: this.event,
-395 |           data: this.data.join("\n"),
-396 |           raw: this.chunks
-397 |         };
-398 |         return (this.event = null), (this.data = []), (this.chunks = []), e;
-399 |       }
-400 |       if ((this.chunks.push(e), e.startsWith(":"))) return null;
-401 |       let [t, r, n] = (function (e, t) {
-402 |         const r = e.indexOf(":");
-403 |         return -1 !== r
-404 |           ? [e.substring(0, r), ":", e.substring(r + 1)]
-405 |           : [e, "", ""];
-406 |       })(e);
-407 |       return (
-408 |         n.startsWith(" ") && (n = n.substring(1)),
-409 |         "event" === t ? (this.event = n) : "data" === t && this.data.push(n),
-410 |         null
-411 |       );
-412 |     }
-413 |   }
-414 |   class C {
-415 |     constructor() {
-416 |       (this.buffer = []), (this.trailingCR = !1);
-417 |     }
-418 |     decode(e) {
-419 |       let t = this.decodeText(e);
-420 |       if (
-421 |         (this.trailingCR && ((t = "\r" + t), (this.trailingCR = !1)),
-422 |         t.endsWith("\r") && ((this.trailingCR = !0), (t = t.slice(0, -1))),
-423 |         !t)
-424 |       )
-425 |         return [];
-426 |       const r = C.NEWLINE_CHARS.has(t[t.length - 1] || "");
-427 |       let n = t.split(C.NEWLINE_REGEXP);
-428 |       return 1 !== n.length || r
-429 |         ? (this.buffer.length > 0 &&
-430 |             ((n = [this.buffer.join("") + n[0], ...n.slice(1)]),
-431 |             (this.buffer = [])),
-432 |           r || (this.buffer = [n.pop() || ""]),
-433 |           n)
-434 |         : (this.buffer.push(n[0]), []);
-435 |     }
-436 |     decodeText(e) {
-437 |       if (null == e) return "";
-438 |       if ("string" == typeof e) return e;
-439 |       if ("undefined" != typeof Buffer) {
-440 |         if (e instanceof Buffer) return e.toString();
-441 |         if (e instanceof Uint8Array) return Buffer.from(e).toString();
-442 |         throw new w(
-443 |           `Unexpected: received non-Uint8Array (${e.constructor.name}) stream chunk in an environment with a global "Buffer" defined, which this library assumes to be Node. Please report this error.`
-444 |         );
-445 |       }
-446 |       if ("undefined" != typeof TextDecoder) {
-447 |         if (e instanceof Uint8Array || e instanceof ArrayBuffer)
-448 |           return (
-449 |             this.textDecoder ?? (this.textDecoder = new TextDecoder("utf8")),
-450 |             this.textDecoder.decode(e)
-451 |           );
-452 |         throw new w(
-453 |           `Unexpected: received non-Uint8Array/ArrayBuffer (${e.constructor.name}) in a web platform. Please report this error.`
-454 |         );
-455 |       }
-456 |       throw new w(
-457 |         "Unexpected: neither Buffer nor TextDecoder are available as globals. Please report this error."
-458 |       );
-459 |     }
-460 |     flush() {
-461 |       if (!this.buffer.length && !this.trailingCR) return [];
-462 |       const e = [this.buffer.join("")];
-463 |       return (this.buffer = []), (this.trailingCR = !1), e;
-464 |     }
-465 |   }
-466 |   function U(e) {
-467 |     if (e[Symbol.asyncIterator]) return e;
-468 |     const t = e.getReader();
-469 |     return {
-470 |       async next() {
-471 |         try {
-472 |           const e = await t.read();
-473 |           return e?.done && t.releaseLock(), e;
-474 |         } catch (e) {
-475 |           throw (t.releaseLock(), e);
-476 |         }
-477 |       },
-478 |       async return() {
-479 |         const e = t.cancel();
-480 |         return t.releaseLock(), await e, { done: !0, value: void 0 };
-481 |       },
-482 |       [Symbol.asyncIterator]() {
-483 |         return this;
-484 |       }
-485 |     };
-486 |   }
-487 |   (C.NEWLINE_CHARS = new Set([
-488 |     "\n",
-489 |     "\r",
-490 |     "\v",
-491 |     "\f",
-492 |     "",
-493 |     "",
-494 |     "",
-495 |     "",
-496 |     "\u2028",
-497 |     "\u2029"
-498 |   ])),
-499 |     (C.NEWLINE_REGEXP = /\r\n|[\n\r\x0b\x0c\x1c\x1d\x1e\x85\u2028\u2029]/g);
-500 |   const B = (e) =>
-501 |       null != e &&
-502 |       "object" == typeof e &&
-503 |       "string" == typeof e.url &&
-504 |       "function" == typeof e.blob,
-505 |     D = (e) =>
-506 |       null != e &&
-507 |       "object" == typeof e &&
-508 |       "string" == typeof e.name &&
-509 |       "number" == typeof e.lastModified &&
-510 |       _(e),
-511 |     _ = (e) =>
-512 |       null != e &&
-513 |       "object" == typeof e &&
-514 |       "number" == typeof e.size &&
-515 |       "string" == typeof e.type &&
-516 |       "function" == typeof e.text &&
-517 |       "function" == typeof e.slice &&
-518 |       "function" == typeof e.arrayBuffer;
-519 |   async function T(e, t, r) {
-520 |     if (
-521 |       ((e = await e),
-522 |       r ?? (r = D(e) ? { lastModified: e.lastModified, type: e.type } : {}),
-523 |       B(e))
-524 |     ) {
-525 |       const n = await e.blob();
-526 |       return (
-527 |         t ||
-528 |           (t = new URL(e.url).pathname.split(/[\\/]/).pop() ?? "unknown_file"),
-529 |         new i([n], t, r)
-530 |       );
-531 |     }
-532 |     const n = await (async function (e) {
-533 |       let t = [];
-534 |       if (
-535 |         "string" == typeof e ||
-536 |         ArrayBuffer.isView(e) ||
-537 |         e instanceof ArrayBuffer
-538 |       )
-539 |         t.push(e);
-540 |       else if (_(e)) t.push(await e.arrayBuffer());
-541 |       else {
-542 |         if (!X(e))
-543 |           throw new Error(
-544 |             `Unexpected data type: ${typeof e}; constructor: ${
-545 |               e?.constructor?.name
-546 |             }; props: ${(function (e) {
-547 |               return `[${Object.getOwnPropertyNames(e)
-548 |                 .map((e) => `"${e}"`)
-549 |                 .join(", ")}]`;
-550 |             })(e)}`
-551 |           );
-552 |         for await (const r of e) t.push(r);
-553 |       }
-554 |       return t;
-555 |     })(e);
-556 |     if (
-557 |       (t ||
-558 |         (t =
-559 |           (function (e) {
-560 |             return (
-561 |               j(e.name) || j(e.filename) || j(e.path)?.split(/[\\/]/).pop()
-562 |             );
-563 |           })(e) ?? "unknown_file"),
-564 |       !r.type)
-565 |     ) {
-566 |       const e = n[0]?.type;
-567 |       "string" == typeof e && (r = { ...r, type: e });
-568 |     }
-569 |     return new i(n, t, r);
-570 |   }
-571 |   const j = (e) =>
-572 |       "string" == typeof e
-573 |         ? e
-574 |         : "undefined" != typeof Buffer && e instanceof Buffer
-575 |         ? String(e)
-576 |         : void 0,
-577 |     X = (e) =>
-578 |       null != e &&
-579 |       "object" == typeof e &&
-580 |       "function" == typeof e[Symbol.asyncIterator],
-581 |     N = (e) =>
-582 |       e &&
-583 |       "object" == typeof e &&
-584 |       e.body &&
-585 |       "MultipartBody" === e[Symbol.toStringTag],
-586 |     F = async (e) => {
-587 |       const t = await M(e.body);
-588 |       return u(t, e);
-589 |     },
-590 |     M = async (e) => {
-591 |       const t = new o();
-592 |       return (
-593 |         await Promise.all(Object.entries(e || {}).map(([e, r]) => H(t, e, r))),
-594 |         t
-595 |       );
-596 |     },
-597 |     H = async (e, t, r) => {
-598 |       if (void 0 !== r) {
-599 |         if (null == r)
-600 |           throw new TypeError(
-601 |             `Received null for "${t}"; to pass null in FormData, you must use the string 'null'`
-602 |           );
-603 |         if (
-604 |           "string" == typeof r ||
-605 |           "number" == typeof r ||
-606 |           "boolean" == typeof r
-607 |         )
-608 |           e.append(t, String(r));
-609 |         else if (((e) => D(e) || B(e) || d(e))(r)) {
-610 |           const n = await T(r);
-611 |           e.append(t, n);
-612 |         } else if (Array.isArray(r))
-613 |           await Promise.all(r.map((r) => H(e, t + "[]", r)));
-614 |         else {
-615 |           if ("object" != typeof r)
-616 |             throw new TypeError(
-617 |               `Invalid value given to form, expected a string, number, boolean, object, Array, File or Blob but got ${r} instead`
-618 |             );
-619 |           await Promise.all(
-620 |             Object.entries(r).map(([r, n]) => H(e, `${t}[${r}]`, n))
-621 |           );
-622 |         }
-623 |       }
-624 |     };
-625 |   async function W(e) {
-626 |     const { response: t } = e;
-627 |     if (e.options.stream)
-628 |       return (
-629 |         ue("response", t.status, t.url, t.headers, t.body),
-630 |         e.options.__streamClass
-631 |           ? e.options.__streamClass.fromSSEResponse(t, e.controller)
-632 |           : $.fromSSEResponse(t, e.controller)
-633 |       );
-634 |     if (204 === t.status) return null;
-635 |     if (e.options.__binaryResponse) return t;
-636 |     const r = t.headers.get("content-type");
-637 |     if (
-638 |       r?.includes("application/json") ||
-639 |       r?.includes("application/vnd.api+json")
-640 |     ) {
-641 |       const e = await t.json();
-642 |       return ue("response", t.status, t.url, t.headers, e), e;
-643 |     }
-644 |     const n = await t.text();
-645 |     return ue("response", t.status, t.url, t.headers, n), n;
-646 |   }
-647 |   class G extends Promise {
-648 |     constructor(e, t = W) {
-649 |       super((e) => {
-650 |         e(null);
-651 |       }),
-652 |         (this.responsePromise = e),
-653 |         (this.parseResponse = t);
-654 |     }
-655 |     _thenUnwrap(e) {
-656 |       return new G(this.responsePromise, async (t) =>
-657 |         e(await this.parseResponse(t))
-658 |       );
-659 |     }
-660 |     asResponse() {
-661 |       return this.responsePromise.then((e) => e.response);
-662 |     }
-663 |     async withResponse() {
-664 |       const [e, t] = await Promise.all([this.parse(), this.asResponse()]);
-665 |       return { data: e, response: t };
-666 |     }
-667 |     parse() {
-668 |       return (
-669 |         this.parsedPromise ||
-670 |           (this.parsedPromise = this.responsePromise.then(this.parseResponse)),
-671 |         this.parsedPromise
-672 |       );
-673 |     }
-674 |     then(e, t) {
-675 |       return this.parse().then(e, t);
-676 |     }
-677 |     catch(e) {
-678 |       return this.parse().catch(e);
-679 |     }
-680 |     finally(e) {
-681 |       return this.parse().finally(e);
-682 |     }
-683 |   }
-684 |   class K {
-685 |     constructor({
-686 |       baseURL: e,
-687 |       maxRetries: t = 2,
-688 |       timeout: r = 6e4,
-689 |       httpAgent: n,
-690 |       fetch: o
-691 |     }) {
-692 |       (this.baseURL = e),
-693 |         (this.maxRetries = se("maxRetries", t)),
-694 |         (this.timeout = se("timeout", r)),
-695 |         (this.httpAgent = n),
-696 |         (this.fetch = o ?? s);
-697 |     }
-698 |     authHeaders(e) {
-699 |       return {};
-700 |     }
-701 |     defaultHeaders(e) {
-702 |       return {
-703 |         Accept: "application/json",
-704 |         "Content-Type": "application/json",
-705 |         "User-Agent": this.getUserAgent(),
-706 |         ...Z(),
-707 |         ...this.authHeaders(e)
-708 |       };
-709 |     }
-710 |     validateHeaders(e, t) {}
-711 |     defaultIdempotencyKey() {
-712 |       return `stainless-node-retry-${ce()}`;
-713 |     }
-714 |     get(e, t) {
-715 |       return this.methodRequest("get", e, t);
-716 |     }
-717 |     post(e, t) {
-718 |       return this.methodRequest("post", e, t);
-719 |     }
-720 |     patch(e, t) {
-721 |       return this.methodRequest("patch", e, t);
-722 |     }
-723 |     put(e, t) {
-724 |       return this.methodRequest("put", e, t);
-725 |     }
-726 |     delete(e, t) {
-727 |       return this.methodRequest("delete", e, t);
-728 |     }
-729 |     methodRequest(e, t, r) {
-730 |       return this.request(
-731 |         Promise.resolve(r).then((r) => ({ method: e, path: t, ...r }))
-732 |       );
-733 |     }
-734 |     getAPIList(e, t, r) {
-735 |       return this.requestAPIList(t, { method: "get", path: e, ...r });
-736 |     }
-737 |     calculateContentLength(e) {
-738 |       if ("string" == typeof e) {
-739 |         if ("undefined" != typeof Buffer)
-740 |           return Buffer.byteLength(e, "utf8").toString();
-741 |         if ("undefined" != typeof TextEncoder)
-742 |           return new TextEncoder().encode(e).length.toString();
-743 |       }
-744 |       return null;
-745 |     }
-746 |     buildRequest(e) {
-747 |       const { method: t, path: r, query: n, headers: s = {} } = e,
-748 |         o = N(e.body)
-749 |           ? e.body.body
-750 |           : e.body
-751 |           ? JSON.stringify(e.body, null, 2)
-752 |           : null,
-753 |         i = this.calculateContentLength(o),
-754 |         a = this.buildURL(r, n);
-755 |       "timeout" in e && se("timeout", e.timeout);
-756 |       const u = e.timeout ?? this.timeout,
-757 |         l = e.httpAgent ?? this.httpAgent ?? c(a),
-758 |         d = u + 1e3;
-759 |       return (
-760 |         "number" == typeof l?.options?.timeout &&
-761 |           d > (l.options.timeout ?? 0) &&
-762 |           (l.options.timeout = d),
-763 |         this.idempotencyHeader &&
-764 |           "get" !== t &&
-765 |           (e.idempotencyKey ||
-766 |             (e.idempotencyKey = this.defaultIdempotencyKey()),
-767 |           (s[this.idempotencyHeader] = e.idempotencyKey)),
-768 |         {
-769 |           req: {
-770 |             method: t,
-771 |             ...(o && { body: o }),
-772 |             headers: this.buildHeaders({
-773 |               options: e,
-774 |               headers: s,
-775 |               contentLength: i
-776 |             }),
-777 |             ...(l && { agent: l }),
-778 |             signal: e.signal ?? null
-779 |           },
-780 |           url: a,
-781 |           timeout: u
-782 |         }
-783 |       );
-784 |     }
-785 |     buildHeaders({ options: e, headers: t, contentLength: r }) {
-786 |       const s = {};
-787 |       return (
-788 |         r && (s["content-length"] = r),
-789 |         ae(s, this.defaultHeaders(e)),
-790 |         ae(s, t),
-791 |         N(e.body) && "node" !== n && delete s["content-type"],
-792 |         this.validateHeaders(s, t),
-793 |         s
-794 |       );
-795 |     }
-796 |     async prepareOptions(e) {}
-797 |     async prepareRequest(e, { url: t, options: r }) {}
-798 |     parseHeaders(e) {
-799 |       return e
-800 |         ? Symbol.iterator in e
-801 |           ? Object.fromEntries(Array.from(e).map((e) => [...e]))
-802 |           : { ...e }
-803 |         : {};
-804 |     }
-805 |     makeStatusError(e, t, r, n) {
-806 |       return b.generate(e, t, r, n);
-807 |     }
-808 |     request(e, t = null) {
-809 |       return new G(this.makeRequest(e, t));
-810 |     }
-811 |     async makeRequest(e, t) {
-812 |       const r = await e;
-813 |       null == t && (t = r.maxRetries ?? this.maxRetries),
-814 |         await this.prepareOptions(r);
-815 |       const { req: n, url: s, timeout: o } = this.buildRequest(r);
-816 |       if (
-817 |         (await this.prepareRequest(n, { url: s, options: r }),
-818 |         ue("request", s, r, n.headers),
-819 |         r.signal?.aborted)
-820 |       )
-821 |         throw new R();
-822 |       const i = new AbortController(),
-823 |         a = await this.fetchWithTimeout(s, n, o, i).catch(oe);
-824 |       if (a instanceof Error) {
-825 |         if (r.signal?.aborted) throw new R();
-826 |         if ("AbortError" === a.name) throw new E();
-827 |         throw new x({ cause: a });
-828 |       }
-829 |       const u = J(a.headers);
-830 |       if (!a.ok) {
-831 |         if (t && this.shouldRetry(a))
-832 |           return (
-833 |             ue(
-834 |               `response (error; retrying, ${t} attempts remaining)`,
-835 |               a.status,
-836 |               s,
-837 |               u
-838 |             ),
-839 |             this.retryRequest(r, t, u)
-840 |           );
-841 |         const e = await a.text().catch((e) => oe(e).message),
-842 |           n = ee(e),
-843 |           o = n ? void 0 : e;
-844 |         throw (
-845 |           (ue(
-846 |             `response (error; ${
-847 |               t ? "(error; no more retries left)" : "(error; not retryable)"
-848 |             })`,
-849 |             a.status,
-850 |             s,
-851 |             u,
-852 |             o
-853 |           ),
-854 |           this.makeStatusError(a.status, n, o, u))
-855 |         );
-856 |       }
-857 |       return { response: a, options: r, controller: i };
-858 |     }
-859 |     requestAPIList(e, t) {
-860 |       const r = this.makeRequest(t, null);
-861 |       return new V(this, r, e);
-862 |     }
-863 |     buildURL(e, t) {
-864 |       const r = re(e)
-865 |           ? new URL(e)
-866 |           : new URL(
-867 |               this.baseURL +
-868 |                 (this.baseURL.endsWith("/") && e.startsWith("/")
-869 |                   ? e.slice(1)
-870 |                   : e)
-871 |             ),
-872 |         n = this.defaultQuery();
-873 |       return (
-874 |         (function (e) {
-875 |           if (!e) return !0;
-876 |           for (const t in e) return !1;
-877 |           return !0;
-878 |         })(n) || (t = { ...n, ...t }),
-879 |         "object" == typeof t &&
-880 |           t &&
-881 |           !Array.isArray(t) &&
-882 |           (r.search = this.stringifyQuery(t)),
-883 |         r.toString()
-884 |       );
-885 |     }
-886 |     stringifyQuery(e) {
-887 |       return Object.entries(e)
-888 |         .filter(([e, t]) => void 0 !== t)
-889 |         .map(([e, t]) => {
-890 |           if (
-891 |             "string" == typeof t ||
-892 |             "number" == typeof t ||
-893 |             "boolean" == typeof t
-894 |           )
-895 |             return `${encodeURIComponent(e)}=${encodeURIComponent(t)}`;
-896 |           if (null === t) return `${encodeURIComponent(e)}=`;
-897 |           throw new w(
-898 |             `Cannot stringify type ${typeof t}; Expected string, number, boolean, or null. If you need to pass nested query parameters, you can manually encode them, e.g. { query: { 'foo[key1]': value1, 'foo[key2]': value2 } }, and please open a GitHub issue requesting better support for your use case.`
-899 |           );
-900 |         })
-901 |         .join("&");
-902 |     }
-903 |     async fetchWithTimeout(e, t, r, n) {
-904 |       const { signal: s, ...o } = t || {};
-905 |       s && s.addEventListener("abort", () => n.abort());
-906 |       const i = setTimeout(() => n.abort(), r);
-907 |       return this.getRequestClient()
-908 |         .fetch.call(void 0, e, { signal: n.signal, ...o })
-909 |         .finally(() => {
-910 |           clearTimeout(i);
-911 |         });
-912 |     }
-913 |     getRequestClient() {
-914 |       return { fetch: this.fetch };
-915 |     }
-916 |     shouldRetry(e) {
-917 |       const t = e.headers.get("x-should-retry");
-918 |       return (
-919 |         "true" === t ||
-920 |         ("false" !== t &&
-921 |           (408 === e.status ||
-922 |             409 === e.status ||
-923 |             429 === e.status ||
-924 |             e.status >= 500))
-925 |       );
-926 |     }
-927 |     async retryRequest(e, t, r) {
-928 |       let n;
-929 |       const s = r?.["retry-after-ms"];
-930 |       if (s) {
-931 |         const e = parseFloat(s);
-932 |         Number.isNaN(e) || (n = e);
-933 |       }
-934 |       const o = r?.["retry-after"];
-935 |       if (o && !n) {
-936 |         const e = parseFloat(o);
-937 |         n = Number.isNaN(e) ? Date.parse(o) - Date.now() : 1e3 * e;
-938 |       }
-939 |       if (!(n && 0 <= n && n < 6e4)) {
-940 |         const r = e.maxRetries ?? this.maxRetries;
-941 |         n = this.calculateDefaultRetryTimeoutMillis(t, r);
-942 |       }
-943 |       return await ne(n), this.makeRequest(e, t - 1);
-944 |     }
-945 |     calculateDefaultRetryTimeoutMillis(e, t) {
-946 |       const r = t - e;
-947 |       return (
-948 |         Math.min(0.5 * Math.pow(2, r), 8) * (1 - 0.25 * Math.random()) * 1e3
-949 |       );
-950 |     }
-951 |     getUserAgent() {
-952 |       return `${this.constructor.name}/JS ${r}`;
-953 |     }
-954 |   }
-955 |   new WeakMap(), Symbol.asyncIterator;
-956 |   class V extends G {
-957 |     constructor(e, t, r) {
-958 |       super(t, async (t) => new r(e, t.response, await W(t), t.options));
-959 |     }
-960 |     async *[Symbol.asyncIterator]() {
-961 |       const e = await this;
-962 |       for await (const t of e) yield t;
-963 |     }
-964 |   }
-965 |   const J = (e) =>
-966 |       new Proxy(Object.fromEntries(e.entries()), {
-967 |         get(e, t) {
-968 |           const r = t.toString();
-969 |           return e[r.toLowerCase()] || e[r];
-970 |         }
-971 |       }),
-972 |     Q = (e) =>
-973 |       "x32" === e
-974 |         ? "x32"
-975 |         : "x86_64" === e || "x64" === e
-976 |         ? "x64"
-977 |         : "arm" === e
-978 |         ? "arm"
-979 |         : "aarch64" === e || "arm64" === e
-980 |         ? "arm64"
-981 |         : e
-982 |         ? `other:${e}`
-983 |         : "unknown",
-984 |     Y = (e) =>
-985 |       (e = e.toLowerCase()).includes("ios")
-986 |         ? "iOS"
-987 |         : "android" === e
-988 |         ? "Android"
-989 |         : "darwin" === e
-990 |         ? "MacOS"
-991 |         : "win32" === e
-992 |         ? "Windows"
-993 |         : "freebsd" === e
-994 |         ? "FreeBSD"
-995 |         : "openbsd" === e
-996 |         ? "OpenBSD"
-997 |         : "linux" === e
-998 |         ? "Linux"
-999 |         : e
-1000 |         ? `Other:${e}`
-1001 |         : "Unknown";
-1002 |   let z;
-1003 |   const Z = () =>
-1004 |       z ??
-1005 |       (z = (() => {
-1006 |         if ("undefined" != typeof Deno && null != Deno.build)
-1007 |           return {
-1008 |             "X-Stainless-Lang": "js",
-1009 |             "X-Stainless-Package-Version": r,
-1010 |             "X-Stainless-OS": Y(Deno.build.os),
-1011 |             "X-Stainless-Arch": Q(Deno.build.arch),
-1012 |             "X-Stainless-Runtime": "deno",
-1013 |             "X-Stainless-Runtime-Version":
-1014 |               "string" == typeof Deno.version
-1015 |                 ? Deno.version
-1016 |                 : Deno.version?.deno ?? "unknown"
-1017 |           };
-1018 |         if ("undefined" != typeof EdgeRuntime)
-1019 |           return {
-1020 |             "X-Stainless-Lang": "js",
-1021 |             "X-Stainless-Package-Version": r,
-1022 |             "X-Stainless-OS": "Unknown",
-1023 |             "X-Stainless-Arch": `other:${EdgeRuntime}`,
-1024 |             "X-Stainless-Runtime": "edge",
-1025 |             "X-Stainless-Runtime-Version": process.version
-1026 |           };
-1027 |         if (
-1028 |           "[object process]" ===
-1029 |           Object.prototype.toString.call(
-1030 |             "undefined" != typeof process ? process : 0
-1031 |           )
-1032 |         )
-1033 |           return {
-1034 |             "X-Stainless-Lang": "js",
-1035 |             "X-Stainless-Package-Version": r,
-1036 |             "X-Stainless-OS": Y(process.platform),
-1037 |             "X-Stainless-Arch": Q(process.arch),
-1038 |             "X-Stainless-Runtime": "node",
-1039 |             "X-Stainless-Runtime-Version": process.version
-1040 |           };
-1041 |         const e = (function () {
-1042 |           if ("undefined" == typeof navigator || !navigator) return null;
-1043 |           const e = [
-1044 |             { key: "edge", pattern: /Edge(?:\W+(\d+)\.(\d+)(?:\.(\d+))?)?/ },
-1045 |             { key: "ie", pattern: /MSIE(?:\W+(\d+)\.(\d+)(?:\.(\d+))?)?/ },
-1046 |             {
-1047 |               key: "ie",
-1048 |               pattern: /Trident(?:.*rv\:(\d+)\.(\d+)(?:\.(\d+))?)?/
-1049 |             },
-1050 |             {
-1051 |               key: "chrome",
-1052 |               pattern: /Chrome(?:\W+(\d+)\.(\d+)(?:\.(\d+))?)?/
-1053 |             },
-1054 |             {
-1055 |               key: "firefox",
-1056 |               pattern: /Firefox(?:\W+(\d+)\.(\d+)(?:\.(\d+))?)?/
-1057 |             },
-1058 |             {
-1059 |               key: "safari",
-1060 |               pattern:
-1061 |                 /(?:Version\W+(\d+)\.(\d+)(?:\.(\d+))?)?(?:\W+Mobile\S*)?\W+Safari/
-1062 |             }
-1063 |           ];
-1064 |           for (const { key: t, pattern: r } of e) {
-1065 |             const e = r.exec(navigator.userAgent);
-1066 |             if (e)
-1067 |               return {
-1068 |                 browser: t,
-1069 |                 version: `${e[1] || 0}.${e[2] || 0}.${e[3] || 0}`
-1070 |               };
-1071 |           }
-1072 |           return null;
-1073 |         })();
-1074 |         return e
-1075 |           ? {
-1076 |               "X-Stainless-Lang": "js",
-1077 |               "X-Stainless-Package-Version": r,
-1078 |               "X-Stainless-OS": "Unknown",
-1079 |               "X-Stainless-Arch": "unknown",
-1080 |               "X-Stainless-Runtime": `browser:${e.browser}`,
-1081 |               "X-Stainless-Runtime-Version": e.version
-1082 |             }
-1083 |           : {
-1084 |               "X-Stainless-Lang": "js",
-1085 |               "X-Stainless-Package-Version": r,
-1086 |               "X-Stainless-OS": "Unknown",
-1087 |               "X-Stainless-Arch": "unknown",
-1088 |               "X-Stainless-Runtime": "unknown",
-1089 |               "X-Stainless-Runtime-Version": "unknown"
-1090 |             };
-1091 |       })()),
-1092 |     ee = (e) => {
-1093 |       try {
-1094 |         return JSON.parse(e);
-1095 |       } catch (e) {
-1096 |         return;
-1097 |       }
-1098 |     },
-1099 |     te = new RegExp("^(?:[a-z]+:)?//", "i"),
-1100 |     re = (e) => te.test(e),
-1101 |     ne = (e) => new Promise((t) => setTimeout(t, e)),
-1102 |     se = (e, t) => {
-1103 |       if ("number" != typeof t || !Number.isInteger(t))
-1104 |         throw new w(`${e} must be an integer`);
-1105 |       if (t < 0) throw new w(`${e} must be a positive integer`);
-1106 |       return t;
-1107 |     },
-1108 |     oe = (e) => (e instanceof Error ? e : new Error(e)),
-1109 |     ie = (e) =>
-1110 |       "undefined" != typeof process
-1111 |         ? process.env?.[e]?.trim() ?? void 0
-1112 |         : "undefined" != typeof Deno
-1113 |         ? Deno.env?.get?.(e)?.trim()
-1114 |         : void 0;
-1115 |   function ae(e, t) {
-1116 |     for (const s in t) {
-1117 |       if (((r = t), (n = s), !Object.prototype.hasOwnProperty.call(r, n)))
-1118 |         continue;
-1119 |       const o = s.toLowerCase();
-1120 |       if (!o) continue;
-1121 |       const i = t[s];
-1122 |       null === i ? delete e[o] : void 0 !== i && (e[o] = i);
-1123 |     }
-1124 |     var r, n;
-1125 |   }
-1126 |   function ue(e, ...t) {
-1127 |     "undefined" != typeof process &&
-1128 |       "true" === process?.env?.DEBUG &&
-1129 |       console.log(`Groq:DEBUG:${e}`, ...t);
-1130 |   }
-1131 |   const ce = () =>
-1132 |     "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (e) => {
-1133 |       const t = (16 * Math.random()) | 0;
-1134 |       return ("x" === e ? t : (3 & t) | 8).toString(16);
-1135 |     });
-1136 |   class le {
-1137 |     constructor(e) {
-1138 |       this._client = e;
-1139 |     }
-1140 |   }
-1141 |   class de extends le {}
-1142 |   de || (de = {});
-1143 |   class pe extends le {
-1144 |     create(e, t) {
-1145 |       return this._client.post("/openai/v1/chat/completions", {
-1146 |         body: e,
-1147 |         ...t,
-1148 |         stream: e.stream ?? !1
-1149 |       });
-1150 |     }
-1151 |   }
-1152 |   pe || (pe = {});
-1153 |   class he extends le {
-1154 |     constructor() {
-1155 |       super(...arguments), (this.completions = new pe(this._client));
-1156 |     }
-1157 |   }
-1158 |   !(function (e) {
-1159 |     e.Completions = pe;
-1160 |   })(he || (he = {}));
-1161 |   class fe extends le {
-1162 |     create(e, t) {
-1163 |       return this._client.post("/openai/v1/embeddings", { body: e, ...t });
-1164 |     }
-1165 |   }
-1166 |   fe || (fe = {});
-1167 |   class me extends le {
-1168 |     create(e, t) {
-1169 |       return this._client.post(
-1170 |         "/openai/v1/audio/transcriptions",
-1171 |         F({ body: e, ...t })
-1172 |       );
-1173 |     }
-1174 |   }
-1175 |   me || (me = {});
-1176 |   class ye extends le {
-1177 |     create(e, t) {
-1178 |       return this._client.post(
-1179 |         "/openai/v1/audio/translations",
-1180 |         F({ body: e, ...t })
-1181 |       );
-1182 |     }
-1183 |   }
-1184 |   ye || (ye = {});
-1185 |   class ge extends le {
-1186 |     constructor() {
-1187 |       super(...arguments),
-1188 |         (this.transcriptions = new me(this._client)),
-1189 |         (this.translations = new ye(this._client));
-1190 |     }
-1191 |   }
-1192 |   !(function (e) {
-1193 |     (e.Transcriptions = me), (e.Translations = ye);
-1194 |   })(ge || (ge = {}));
-1195 |   class we extends le {
-1196 |     retrieve(e, t) {
-1197 |       return this._client.get(`/openai/v1/models/${e}`, t);
-1198 |     }
-1199 |     list(e) {
-1200 |       return this._client.get("/openai/v1/models", e);
-1201 |     }
-1202 |     delete(e, t) {
-1203 |       return this._client.delete(`/openai/v1/models/${e}`, t);
-1204 |     }
-1205 |   }
-1206 |   var be;
-1207 |   we || (we = {});
-1208 |   class Re extends K {
-1209 |     constructor({
-1210 |       baseURL: e = ie("GROQ_BASE_URL"),
-1211 |       apiKey: t = ie("GROQ_API_KEY"),
-1212 |       ...r
-1213 |     } = {}) {
-1214 |       if (void 0 === t)
-1215 |         throw new w(
-1216 |           "The GROQ_API_KEY environment variable is missing or empty; either provide it, or instantiate the Groq client with an apiKey option, like new Groq({ apiKey: 'My API Key' })."
-1217 |         );
-1218 |       const n = { apiKey: t, ...r, baseURL: e || "https://api.groq.com" };
-1219 |       if (
-1220 |         !n.dangerouslyAllowBrowser &&
-1221 |         "undefined" != typeof window &&
-1222 |         void 0 !== window.document &&
-1223 |         "undefined" != typeof navigator
-1224 |       )
-1225 |         throw new w(
-1226 |           "It looks like you're running in a browser-like environment.\n\nThis is disabled by default, as it risks exposing your secret API credentials to attackers.\nIf you understand the risks and have appropriate mitigations in place,\nyou can set the `dangerouslyAllowBrowser` option to `true`, e.g.,\n\nnew Groq({ apiKey, dangerouslyAllowBrowser: true })"
-1227 |         );
-1228 |       super({
-1229 |         baseURL: n.baseURL,
-1230 |         timeout: n.timeout ?? 6e4,
-1231 |         httpAgent: n.httpAgent,
-1232 |         maxRetries: n.maxRetries,
-1233 |         fetch: n.fetch
-1234 |       }),
-1235 |         (this.completions = new de(this)),
-1236 |         (this.chat = new he(this)),
-1237 |         (this.embeddings = new fe(this)),
-1238 |         (this.audio = new ge(this)),
-1239 |         (this.models = new we(this)),
-1240 |         (this._options = n),
-1241 |         (this.apiKey = t);
-1242 |     }
-1243 |     defaultQuery() {
-1244 |       return this._options.defaultQuery;
-1245 |     }
-1246 |     defaultHeaders(e) {
-1247 |       return { ...super.defaultHeaders(e), ...this._options.defaultHeaders };
-1248 |     }
-1249 |     authHeaders(e) {
-1250 |       return { Authorization: `Bearer ${this.apiKey}` };
-1251 |     }
-1252 |   }
-1253 |   (be = Re),
-1254 |     (Re.Groq = be),
-1255 |     (Re.GroqError = w),
-1256 |     (Re.APIError = b),
-1257 |     (Re.APIConnectionError = x),
-1258 |     (Re.APIConnectionTimeoutError = E),
-1259 |     (Re.APIUserAbortError = R),
-1260 |     (Re.NotFoundError = k),
-1261 |     (Re.ConflictError = q),
-1262 |     (Re.RateLimitError = I),
-1263 |     (Re.BadRequestError = S),
-1264 |     (Re.AuthenticationError = v),
-1265 |     (Re.InternalServerError = L),
-1266 |     (Re.PermissionDeniedError = A),
-1267 |     (Re.UnprocessableEntityError = P),
-1268 |     (Re.toFile = T),
-1269 |     (Re.fileFromPath = l);
-1270 |   const {
-1271 |     GroqError: xe,
-1272 |     APIError: Ee,
-1273 |     APIConnectionError: Se,
-1274 |     APIConnectionTimeoutError: ve,
-1275 |     APIUserAbortError: Ae,
-1276 |     NotFoundError: ke,
-1277 |     ConflictError: qe,
-1278 |     RateLimitError: Pe,
-1279 |     BadRequestError: Ie,
-1280 |     AuthenticationError: Le,
-1281 |     InternalServerError: $e,
-1282 |     PermissionDeniedError: Oe,
-1283 |     UnprocessableEntityError: Ce
-1284 |   } = t;
-1285 |   !(function (e) {
-1286 |     (e.Completions = de),
-1287 |       (e.Chat = he),
-1288 |       (e.Embeddings = fe),
-1289 |       (e.Audio = ge),
-1290 |       (e.Models = we);
-1291 |   })(Re || (Re = {}));
-1292 |   const Ue = new Re({
-1293 |     apiKey: "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",
-1294 |     dangerouslyAllowBrowser: !0
-1295 |   });
-1296 |   document.addEventListener("DOMContentLoaded", () => {
-1297 |     const e = document.getElementById("chat-box"),
-1298 |       t = document.getElementById("user-input");
-1299 |     function r(e) {
-1300 |       return e
-1301 |         .replace(/```([\s\S]*?)```/g, '<div class="code-block">$1</div>')
-1302 |         .replace(/\n/g, "<br>");
-1303 |     }
-1304 |     function scrollChatToBottom() {
-1305 |       const chatBox = document.getElementById("chat-box");
-1306 |       chatBox.scrollTop = chatBox.scrollHeight;
-1307 |       setTimeout(() => {
-1308 |         chatBox.scrollTop = chatBox.scrollHeight;
-1309 |       }, 100);
-1310 |     }
-1311 |     document
-1312 |       .getElementById("send-button")
-1313 |       .addEventListener("click", async () => {
-1314 |         const n = t.value.trim();
-1315 |         if (n) {
-1316 |           (function (t, r, n) {
-1317 |             const s = document.createElement("div");
-1318 |             s.classList.add("message", "user-message");
-1319 |             s.innerHTML = `<div class="user-label">User:</div>${r}`;
-1320 |             e.appendChild(s);
-1321 |             scrollChatToBottom();
-1322 |           })(0, n);
-1323 |           t.value = "";
-1324 |           await (async function (t) {
-1325 |             try {
-1326 |               const n = await Ue.chat.completions.create({
-1327 |                   messages: [{ role: "user", content: t }],
-1328 |                   model: "llama3-8b-8192",
-1329 |                   temperature: 1,
-1330 |                   max_tokens: 1024,
-1331 |                   top_p: 1,
-1332 |                   stream: !0,
-1333 |                   stop: null
-1334 |                 }),
-1335 |                 s = document.createElement("div");
-1336 |               s.classList.add("message", "ai-message");
-1337 |               s.innerHTML = "<div class=\"bot-label\">bor3i:</div><div class=\"ai-content\"></div>";
-1338 |               e.appendChild(s);
-1339 |               scrollChatToBottom();
-1340 |               const aiContent = s.querySelector('.ai-content');
-1341 |               let o = "";
-1342 |               for await (const t of n) {
-1343 |                 o += t.choices[0]?.delta?.content || "";
-1344 |                 aiContent.innerHTML = r(o);
-1345 |                 scrollChatToBottom();
-1346 |               }
-1347 |               return o;
-1348 |             } catch (error) {
-1349 |               console.error("Error calling API:", error);
-1350 |               const errorDiv = document.createElement("div");
-1351 |               errorDiv.classList.add("message", "ai-message", "error");
-1352 |               errorDiv.innerHTML = "<div class=\"bot-label\">bor3i:</div><div class=\"ai-content\">Sorry, I encountered an error. Please try again later.</div>";
-1353 |               e.appendChild(errorDiv);
-1354 |               scrollChatToBottom();
-1355 |               return "Error occurred";
-1356 |             }
-1357 |           })(n);
-1358 |         }
-1359 |       });
-1360 |     document
-1361 |       .getElementById("user-input")
-1362 |       .addEventListener("keypress", function (event) {
-1363 |         if (event.key === "Enter") {
-1364 |           event.preventDefault();
-1365 |           document.getElementById("send-button").click();
-1366 |         }
-1367 |       });
-1368 |     window.addEventListener("load", function () {
-1369 |       document.getElementById("user-input").focus();
-1370 |     });
-1371 |     function adjustUIForScreenSize() {
-1372 |       const windowWidth = window.innerWidth;
-1373 |       const chatBox = document.getElementById("chat-box");
-1374 |       const upbox = document.getElementById("upbox");
-1375 |       if (windowWidth <= 600) {
-1376 |         chatBox.style.maxHeight = "calc(100vh - 180px)";
-1377 |         upbox.style.maxHeight = "180px";
-1378 |       } else {
-1379 |         chatBox.style.maxHeight = "none";
-1380 |         upbox.style.maxHeight = "230px";
-1381 |       }
-1382 |       scrollChatToBottom();
-1383 |     }
-1384 |     adjustUIForScreenSize();
-1385 |     window.addEventListener("resize", adjustUIForScreenSize);
-1386 |     scrollChatToBottom();
-1387 |   });
-1388 | })();
 ```
 
 src/test/suite/extension.test.ts

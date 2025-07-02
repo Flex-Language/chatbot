@@ -70,61 +70,173 @@ export class ApiService {
                 }
             );
 
+            let chunkCount = 0;
+            let totalBytes = 0;
+            let lastChunkTime = Date.now();
+            const MAX_RESPONSE_SIZE = 10 * 1024 * 1024; // 10MB limit
+            const CHUNK_TIMEOUT = 30000; // 30 seconds per chunk
+
             return new Promise((resolve, reject) => {
+                // Set up chunk timeout monitoring
+                const chunkTimer = setInterval(() => {
+                    const timeSinceLastChunk = Date.now() - lastChunkTime;
+                    if (timeSinceLastChunk > CHUNK_TIMEOUT) {
+                        debugManager.addDebugStep(sessionId, 'chunk_timeout', {
+                            timeSinceLastChunk,
+                            chunkCount,
+                            responseLength: fullResponse.length
+                        });
+                        clearInterval(chunkTimer);
+                        reject(new Error(`Streaming timeout: no data received for ${timeSinceLastChunk}ms`));
+                    }
+                }, 5000);
                 response.data.on('data', (chunk: Buffer) => {
-                    const lines = chunk.toString().split('\n');
-                    
-                    for (const line of lines) {
-                        if (line.startsWith('data: ')) {
-                            const data = line.slice(6);
+                    try {
+                        chunkCount++;
+                        totalBytes += chunk.length;
+                        lastChunkTime = Date.now();
+
+                        debugManager.addDebugStep(sessionId, 'chunk_received', {
+                            chunkNumber: chunkCount,
+                            chunkSize: chunk.length,
+                            totalBytes,
+                            responseLength: fullResponse.length
+                        });
+
+                        // Check for memory safety
+                        if (fullResponse.length > MAX_RESPONSE_SIZE) {
+                            clearInterval(chunkTimer);
+                            debugManager.addDebugStep(sessionId, 'response_too_large', {
+                                responseLength: fullResponse.length,
+                                maxSize: MAX_RESPONSE_SIZE
+                            });
+                            reject(new Error(`Response too large: ${fullResponse.length} bytes exceeds ${MAX_RESPONSE_SIZE} bytes`));
+                            return;
+                        }
+
+                        const chunkStr = chunk.toString('utf8');
+                        const lines = chunkStr.split('\n');
+                        
+                        for (let i = 0; i < lines.length; i++) {
+                            const lineRaw = lines[i];
+                            if (!lineRaw) continue;
+                            const line = lineRaw.trim();
                             
-                            if (data === '[DONE]') {
-                                const duration = Date.now() - startTime;
-                                debugManager.endDebugSession(sessionId, {
-                                    success: true,
-                                    duration,
-                                    responseLength: fullResponse.length
-                                });
-                                if (onComplete) onComplete();
-                                resolve(fullResponse);
-                                return;
-                            }
-                            
-                            try {
-                                const parsed = JSON.parse(data);
-                                const content = parsed.choices?.[0]?.delta?.content;
+                            if (line.startsWith('data: ')) {
+                                const data = line.slice(6).trim();
                                 
-                                if (content) {
-                                    fullResponse += content;
-                                    onChunk(content);
+                                if (data === '[DONE]') {
+                                    clearInterval(chunkTimer);
+                                    const duration = Date.now() - startTime;
+                                    debugManager.addDebugStep(sessionId, 'stream_completed', {
+                                        chunkCount,
+                                        totalBytes,
+                                        responseLength: fullResponse.length
+                                    });
+                                    debugManager.endDebugSession(sessionId, {
+                                        success: true,
+                                        duration,
+                                        responseLength: fullResponse.length,
+                                        chunks: chunkCount
+                                    });
+                                    if (onComplete) onComplete();
+                                    resolve(fullResponse);
+                                    return;
                                 }
-                            } catch (parseError) {
-                                // Ignore JSON parse errors for partial data
+                                
+                                if (data && data !== '') {
+                                    try {
+                                        const parsed = JSON.parse(data);
+                                        const content = parsed.choices?.[0]?.delta?.content;
+                                        
+                                        if (content && typeof content === 'string') {
+                                            fullResponse += content;
+                                            onChunk(content);
+                                            
+                                            // Log progress every 100 chunks
+                                            if (chunkCount % 100 === 0) {
+                                                debugManager.addDebugStep(sessionId, 'progress_update', {
+                                                    chunkCount,
+                                                    responseLength: fullResponse.length,
+                                                    avgChunkSize: totalBytes / chunkCount
+                                                });
+                                            }
+                                        }
+                                    } catch (parseError) {
+                                        debugManager.addDebugStep(sessionId, 'json_parse_error', {
+                                            error: (parseError as Error).message,
+                                            data: data.substring(0, 200), // First 200 chars for debugging
+                                            chunkNumber: chunkCount,
+                                            lineNumber: i
+                                        });
+                                        // Continue processing other lines instead of failing
+                                    }
+                                }
+                            } else if (line.startsWith('event:') || line.startsWith('id:')) {
+                                // SSE metadata, ignore but log
+                                debugManager.addDebugStep(sessionId, 'sse_metadata', { line });
                             }
                         }
+                    } catch (chunkError) {
+                        clearInterval(chunkTimer);
+                        debugManager.addDebugStep(sessionId, 'chunk_processing_error', {
+                            error: (chunkError as Error).message,
+                            chunkNumber: chunkCount,
+                            chunkSize: chunk?.length || 0
+                        });
+                        if (onError) onError(chunkError as Error);
+                        reject(chunkError);
                     }
                 });
 
                 response.data.on('error', (error: Error) => {
+                    clearInterval(chunkTimer);
+                    debugManager.addDebugStep(sessionId, 'stream_error', {
+                        error: error.message,
+                        chunkCount,
+                        responseLength: fullResponse.length,
+                        totalBytes
+                    });
                     debugManager.endDebugSession(sessionId, {
                         success: false,
                         error: error.message,
-                        duration: Date.now() - startTime
+                        duration: Date.now() - startTime,
+                        chunks: chunkCount
                     });
                     if (onError) onError(error);
                     reject(error);
                 });
 
                 response.data.on('end', () => {
-                    if (fullResponse) {
-                        const duration = Date.now() - startTime;
+                    clearInterval(chunkTimer);
+                    const duration = Date.now() - startTime;
+                    
+                    debugManager.addDebugStep(sessionId, 'stream_ended', {
+                        chunkCount,
+                        responseLength: fullResponse.length,
+                        totalBytes,
+                        hasResponse: !!fullResponse
+                    });
+                    
+                    if (fullResponse && fullResponse.length > 0) {
                         debugManager.endDebugSession(sessionId, {
                             success: true,
                             duration,
-                            responseLength: fullResponse.length
+                            responseLength: fullResponse.length,
+                            chunks: chunkCount
                         });
                         if (onComplete) onComplete();
                         resolve(fullResponse);
+                    } else {
+                        const error = new Error('Stream ended without complete response');
+                        debugManager.endDebugSession(sessionId, {
+                            success: false,
+                            error: error.message,
+                            duration,
+                            chunks: chunkCount
+                        });
+                        if (onError) onError(error);
+                        reject(error);
                     }
                 });
             });

@@ -541,40 +541,113 @@ body {
 
 .code-block.flex-code {
 	border-left: 3px solid var(--accent-color);
+	padding: var(--space-4) var(--space-5);
+	margin: var(--space-3) 0;
+	background: rgba(15, 23, 42, 0.6);
+	border-radius: var(--radius-lg);
+	backdrop-filter: blur(10px);
+	line-height: 1.6;
+	font-size: 0.875rem;
 }
 
-/* Professional Syntax Highlighting */
+/* Enhanced Professional Syntax Highlighting - Official Flex Token Categories */
+
+/* Function Keywords (highest priority) */
+.flex-function-keyword {
+	color: #c678dd;
+	font-weight: var(--font-weight-bold);
+	text-shadow: 0 0 8px rgba(198, 120, 221, 0.3);
+}
+
+/* Control Flow Keywords */
+.flex-control-keyword {
+	color: #e06c75;
+	font-weight: var(--font-weight-semibold);
+}
+
+/* Loop Keywords */
+.flex-loop-keyword {
+	color: #d19a66;
+	font-weight: var(--font-weight-semibold);
+}
+
+/* I/O Keywords */
+.flex-io-keyword {
+	color: #56b6c2;
+	font-weight: var(--font-weight-semibold);
+	text-decoration: underline;
+	text-decoration-style: dotted;
+	text-decoration-color: rgba(86, 182, 194, 0.5);
+}
+
+/* Data Type Keywords */
+.flex-datatype-keyword {
+	color: #61afef;
+	font-weight: var(--font-weight-semibold);
+	font-style: italic;
+}
+
+/* Literals (booleans, null) */
+.flex-literal {
+	color: #98c379;
+	font-weight: var(--font-weight-medium);
+}
+
+/* List Methods */
+.flex-list-method {
+	color: #e5c07b;
+	font-weight: var(--font-weight-medium);
+	background: rgba(229, 192, 123, 0.1);
+	padding: 1px 3px;
+	border-radius: 3px;
+}
+
+/* Legacy Franco Arabic Keywords */
 .flex-keyword-franco {
 	color: #ff6b6b;
 	font-weight: var(--font-weight-semibold);
 }
 
+/* Legacy English Keywords */
 .flex-keyword-english {
 	color: #4ecdc4;
 	font-weight: var(--font-weight-semibold);
 }
 
+/* String Literals */
 .flex-string {
 	color: #95e1d3;
+	background: rgba(149, 225, 211, 0.1);
+	padding: 1px 2px;
+	border-radius: 2px;
 }
 
+/* Numeric Literals */
 .flex-number {
 	color: #fce38a;
+	font-weight: var(--font-weight-medium);
 }
 
+/* Comments */
 .flex-comment {
 	color: var(--text-subtle);
 	font-style: italic;
+	opacity: 0.8;
 }
 
+/* Operators */
 .flex-operator {
 	color: #ff8a80;
+	font-weight: var(--font-weight-medium);
 }
 
+/* Functions */
 .flex-function {
 	color: #81c784;
+	font-weight: var(--font-weight-medium);
 }
 
+/* Variables */
 .flex-variable {
 	color: #64b5f6;
 }
