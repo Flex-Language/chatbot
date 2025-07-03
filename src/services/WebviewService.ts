@@ -37,6 +37,7 @@ export class WebviewService {
     const configValidation = ConfigService.validateConfig();
     const flexDatasetService = FlexDatasetService.getInstance();
     const isDatasetLoaded = flexDatasetService.isDatasetLoaded();
+    const datasetStats = flexDatasetService.getDatasetStats();
 
     return `<!DOCTYPE html>
     <html lang="en">
@@ -44,7 +45,7 @@ export class WebviewService {
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}'; img-src ${webview.cspSource} data: https:; connect-src https:; font-src ${webview.cspSource} https:;">
-      <title>Flex Programming Assistant</title>
+      <title>Flex Programming Assistant - Enhanced v3.0</title>
       <link rel="stylesheet" href="${resetStyleUri}" nonce="${nonce}">
       <link rel="stylesheet" href="${baseStyleUri}" nonce="${nonce}">
       <link rel="stylesheet" href="${headerStyleUri}" nonce="${nonce}">
@@ -52,22 +53,185 @@ export class WebviewService {
       <link rel="stylesheet" href="${inputStyleUri}" nonce="${nonce}">
       <link rel="stylesheet" href="${codeStyleUri}" nonce="${nonce}">
       <link rel="stylesheet" href="${responsiveStyleUri}" nonce="${nonce}">
+      <style nonce="${nonce}">
+        /* Enhanced Flex Language Specific Styles */
+        .flex-enhanced {
+          --flex-franco-color: #ff6b6b;
+          --flex-english-color: #4ecdc4;
+          --flex-accent-color: #ffa726;
+          --flex-warning-color: #f44336;
+          --flex-success-color: #4caf50;
+          --flex-safety-bg: rgba(244, 67, 54, 0.1);
+          --flex-example-bg: rgba(76, 175, 80, 0.1);
+        }
+        
+        .flex-language-indicator {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 0.7rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        
+        .flex-franco { 
+          background: var(--flex-franco-color); 
+          color: white; 
+        }
+        
+        .flex-english { 
+          background: var(--flex-english-color); 
+          color: white; 
+        }
+        
+        .flex-mixed { 
+          background: linear-gradient(90deg, var(--flex-franco-color) 50%, var(--flex-english-color) 50%); 
+          color: white; 
+        }
+        
+        .flex-safety-warning {
+          background: var(--flex-safety-bg);
+          border-left: 4px solid var(--flex-warning-color);
+          padding: 12px 16px;
+          margin: 12px 0;
+          border-radius: 8px;
+          font-weight: 500;
+        }
+        
+        .flex-safety-warning::before {
+          content: "⚠️ ";
+          font-weight: bold;
+        }
+        
+        .flex-code-example {
+          background: var(--flex-example-bg);
+          border-left: 4px solid var(--flex-success-color);
+          padding: 12px 16px;
+          margin: 12px 0;
+          border-radius: 8px;
+        }
+        
+        .flex-code-example::before {
+          content: "✅ ";
+          font-weight: bold;
+        }
+        
+        .flex-keyword-mapping {
+          display: inline-grid;
+          grid-template-columns: 1fr auto 1fr;
+          gap: 8px;
+          align-items: center;
+          background: rgba(255, 255, 255, 0.05);
+          padding: 8px 12px;
+          border-radius: 8px;
+          margin: 4px 2px;
+          font-family: var(--font-family-mono);
+          font-size: 0.85rem;
+        }
+        
+        .flex-franco-keyword {
+          color: var(--flex-franco-color);
+          font-weight: 600;
+        }
+        
+        .flex-english-keyword {
+          color: var(--flex-english-color);
+          font-weight: 600;
+        }
+        
+        .flex-arrow {
+          color: var(--text-muted);
+        }
+        
+        .syntax-comparison-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 16px 0;
+          background: rgba(255, 255, 255, 0.02);
+          border-radius: 8px;
+          overflow: hidden;
+        }
+        
+        .syntax-comparison-table th,
+        .syntax-comparison-table td {
+          padding: 12px;
+          text-align: left;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .syntax-comparison-table th {
+          background: rgba(255, 255, 255, 0.05);
+          font-weight: 600;
+          color: var(--flex-accent-color);
+        }
+        
+        .dataset-info {
+          font-size: 0.75rem;
+          color: var(--text-muted);
+          padding: 4px 8px;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 4px;
+          margin-left: 8px;
+        }
+        
+        .flex-features {
+          display: flex;
+          gap: 8px;
+          margin: 8px 0;
+          justify-content: center;
+        }
+        
+        .dataset-summary {
+          margin-top: 8px;
+          font-size: 0.8rem;
+          color: var(--text-muted);
+        }
+        
+        .input-hints {
+          display: flex;
+          gap: 12px;
+          margin-top: 8px;
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+        
+        .hint-item {
+          font-size: 0.75rem;
+          color: var(--text-muted);
+          background: rgba(255, 255, 255, 0.05);
+          padding: 4px 8px;
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        
+        .hint-item:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: var(--text-primary);
+        }
+      </style>
     </head>
-    <body data-config-status="${configValidation.isValid ? 'valid' : 'invalid'}">
+    <body data-config-status="${configValidation.isValid ? 'valid' : 'invalid'}" class="flex-enhanced">
       <div id="maincont">
         <div id="header-bar">
           <div class="header-left">
             <img src="${flexLogoUri}" alt="Flex" class="header-logo">
             <span class="header-title">Flex Assistant</span>
+            <span class="dataset-info">v${datasetStats.version} • ${datasetStats.totalKeywords} keywords</span>
             <div class="status-indicators">
               <span class="status-dot ${configValidation.isValid ? 'success' : 'warning'}" title="${configValidation.isValid ? 'Configuration Ready' : 'Check Settings'}"></span>
-              <span class="status-dot ${isDatasetLoaded ? 'success' : 'loading'}" title="${isDatasetLoaded ? 'Dataset Loaded' : 'Loading Dataset'}"></span>
+              <span class="status-dot ${isDatasetLoaded ? 'success' : 'loading'}" title="${isDatasetLoaded ? 'Enhanced Dataset Loaded' : 'Loading Dataset'}"></span>
+              <span class="status-dot ${datasetStats.repositoryAligned ? 'success' : 'warning'}" title="Repository Aligned v3.0"></span>
             </div>
           </div>
           <div class="header-right">
             <div class="model-display">${config.model || 'Default'}</div>
-            <button id="change-model" class="icon-button" title="Change Model">⚙️</button>
+            <button id="syntax-toggle" class="icon-button" title="Toggle Franco/English Examples">🔄</button>
             <button id="clear-button" class="icon-button" title="Clear Chat">🗑️</button>
+            <button id="change-model" class="icon-button" title="Change Model">⚙️</button>
           </div>
         </div>
         <div id="chat-box">
@@ -76,8 +240,16 @@ export class WebviewService {
               <img src="${robotGifUri}" alt="Flex Assistant">
             </div>
             <div class="welcome-content">
-              <h3>Welcome to Flex Programming Assistant! 🚀</h3>
-              <p>I'm here to help you with Flex syntax, Franco-Arabic programming concepts, and best practices.</p>
+              <h3>Welcome to Enhanced Flex Programming Assistant! 🚀</h3>
+              <p>I'm powered by the latest Flex-Language/Flex repository specifications with comprehensive Franco-Arabic and English syntax support.</p>
+              <div class="flex-features">
+                <span class="flex-language-indicator flex-franco">Franco</span>
+                <span class="flex-language-indicator flex-english">English</span>
+                <span class="flex-language-indicator flex-mixed">Mixed</span>
+              </div>
+              <div class="dataset-summary">
+                <small>Dataset: ${datasetStats.totalKeywords} keywords • ${datasetStats.totalExamples} examples • ${datasetStats.safetyWarnings} safety warnings</small>
+              </div>
             </div>
           </div>
         </div>
@@ -86,13 +258,18 @@ export class WebviewService {
             <div class="input-wrapper">
               <textarea 
                 id="user-input" 
-                placeholder="Ask me anything about Flex programming..."
+                placeholder="Ask me anything about Flex programming... (Franco: 'karr l7d 10 { etb3(i) }' or English: 'for(i=0; i<10; i++) { print(i) }')"
                 rows="1"
                 maxlength="4000"
               ></textarea>
               <button id="send-button" class="send-button">
                 <span class="send-icon">📤</span>
               </button>
+            </div>
+            <div class="input-hints">
+              <span class="hint-item">💡 Try: "Show me a safe loop in Franco"</span>
+              <span class="hint-item">🔍 Ask: "What's the difference between 'lw' and 'if'?"</span>
+              <span class="hint-item">⚠️ Safety: "How to avoid l7d loop errors?"</span>
             </div>
           </div>
         </div>

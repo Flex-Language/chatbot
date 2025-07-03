@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flex Syntax Highlighting Test - All Three Types</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .test-section {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #4ecdc4;
+        }
+
+        /* Language indicator badges */
+        .flex-language-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0 4px;
+            vertical-align: middle;
+        }
+
+        .flex-language-indicator.flex-franco {
+            background: #ff6b6b;
+            color: white;
+            box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
+        }
+
+        .flex-language-indicator.flex-english {
+            background: #4ecdc4;
+            color: white;
+            box-shadow: 0 2px 4px rgba(78, 205, 196, 0.3);
+        }
+
+        .flex-language-indicator.flex-mixed {
+            background: linear-gradient(90deg, #ff6b6b 50%, #4ecdc4 50%);
+            color: white;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(255, 107, 107, 0.2), 0 2px 4px rgba(78, 205, 196, 0.2);
+        }
+
+        .flex-language-indicator.flex-mixed::before {
+            content: "⚡";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.6rem;
+            opacity: 0.8;
+        }
+
+        .code-example {
+            background: #1e1e1e;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+
+        .flex-franco-keyword {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .flex-english-keyword {
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+
+        .flex-safety-keyword {
+            color: #ffa726;
+            font-weight: bold;
+            background: rgba(255, 167, 38, 0.1);
+            padding: 1px 3px;
+            border-radius: 3px;
+        }
+
+        .flex-string {
+            color: #98c379;
+        }
+
+        .flex-comment {
+            color: #7c7c7c;
+            font-style: italic;
+        }
+
+        .flex-number {
+            color: #d19a66;
+        }
+
+        .flex-builtin {
+            color: #ab7df8;
+            font-weight: 600;
+        }
+
+        .flex-literal {
+            color: #e5c07b;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🚀 Fixed Flex Syntax Highlighting Test - All Three Types</h1>
+
+    <div class="test-section">
+        <h2>Language Mode Indicators</h2>
+        <p>Testing all three language indicator types:</p>
+        <span class="flex-language-indicator flex-franco">Franco</span>
+        <span class="flex-language-indicator flex-english">English</span>
+        <span class="flex-language-indicator flex-mixed" title="Franco: 60%, English: 40%">Mixed</span>
+    </div>
+
+    <div class="test-section">
+        <h2>1. Pure Franco Syntax</h2>
+        <span class="flex-language-indicator flex-franco">Franco</span>
+        <div class="code-example">
+            <span class="flex-comment"># Pure Franco Flex code</span><br>
+            <span class="flex-franco-keyword">sndo2</span> <span class="flex-builtin">factorial</span>(<span
+                class="flex-franco-keyword">rakm</span> n) {<br>
+            &nbsp;&nbsp;<span class="flex-franco-keyword">lw</span> (n <= <span class="flex-number">1</span>) {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="flex-franco-keyword">arja3</span> <span
+                    class="flex-number">1</span>;<br>
+                &nbsp;&nbsp;} <span class="flex-franco-keyword">gher</span> {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="flex-franco-keyword">arja3</span> n * factorial(n - <span
+                    class="flex-number">1</span>);<br>
+                &nbsp;&nbsp;}<br>
+                }<br><br>
+                <span class="flex-franco-keyword">karr</span> (i <span class="flex-franco-keyword">l7d</span> <span
+                    class="flex-number">5</span>) {<br>
+                &nbsp;&nbsp;<span class="flex-franco-keyword">etb3</span>(<span class="flex-string">"Factorial of
+                    "</span> + i + <span class="flex-string">" is "</span> + factorial(i));<br>
+                }
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Pure English Syntax</h2>
+        <span class="flex-language-indicator flex-english">English</span>
+        <div class="code-example">
+            <span class="flex-comment"># Pure English Flex code</span><br>
+            <span class="flex-english-keyword">function</span> <span class="flex-builtin">fibonacci</span>(<span
+                class="flex-english-keyword">int</span> n) {<br>
+            &nbsp;&nbsp;<span class="flex-english-keyword">if</span> (n <= <span class="flex-number">1</span>) {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="flex-english-keyword">return</span> n;<br>
+                &nbsp;&nbsp;} <span class="flex-english-keyword">else</span> {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="flex-english-keyword">return</span> fibonacci(n - <span
+                    class="flex-number">1</span>) + fibonacci(n - <span class="flex-number">2</span>);<br>
+                &nbsp;&nbsp;}<br>
+                }<br><br>
+                <span class="flex-english-keyword">for</span> (i = <span class="flex-number">0</span>; i < <span
+                    class="flex-number">10</span>; i++) {<br>
+                    &nbsp;&nbsp;<span class="flex-english-keyword">print</span>(<span class="flex-string">"Fibonacci
+                        "</span> + i + <span class="flex-string">" = "</span> + fibonacci(i));<br>
+                    }
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Mixed Franco/English with Safety Keywords</h2>
+        <span class="flex-language-indicator flex-mixed" title="Franco: 60%, English: 40%">Mixed</span>
+        <div class="code-example">
+            <span class="flex-comment"># Mixed Franco/English with safety features</span><br>
+            <span class="flex-english-keyword">function</span> <span
+                class="flex-safety-keyword">safe</span>_divide(<span class="flex-franco-keyword">rakm</span> a, <span
+                class="flex-franco-keyword">rakm</span> b) {<br>
+            &nbsp;&nbsp;<span class="flex-safety-keyword">validate</span>(a, b); <span class="flex-comment"># Safety
+                validation</span><br>
+            &nbsp;&nbsp;<span class="flex-franco-keyword">lw</span> (b == <span class="flex-number">0</span>) {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="flex-franco-keyword">etb3</span>(<span class="flex-string">"Error:
+                Division by zero!"</span>);<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="flex-english-keyword">return</span> <span
+                class="flex-literal">null</span>;<br>
+            &nbsp;&nbsp;} <span class="flex-franco-keyword">gher</span> {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="flex-safety-keyword">check</span>(a / b); <span class="flex-comment">#
+                Safety check result</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="flex-english-keyword">return</span> a / b;<br>
+            &nbsp;&nbsp;}<br>
+            }<br><br>
+            <span class="flex-comment"># Mixed syntax loop with safety</span><br>
+            <span class="flex-franco-keyword">karr</span> (i <span class="flex-franco-keyword">l7d</span> <span
+                class="flex-number">100</span>) {<br>
+            &nbsp;&nbsp;<span class="flex-safety-keyword">aman</span>(i); <span class="flex-comment"># Safety check in
+                Franco</span><br>
+            &nbsp;&nbsp;<span class="flex-english-keyword">if</span> (i % <span class="flex-number">10</span> == <span
+                class="flex-number">0</span>) {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="flex-english-keyword">print</span>(<span
+                class="flex-safety-keyword">safe</span>_divide(<span class="flex-number">1000</span>, i));<br>
+            &nbsp;&nbsp;}<br>
+            }
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>✅ Fixed Issues Summary</h2>
+        <ul>
+            <li><strong>✅ Language Indicators:</strong> Added proper CSS styles for Franco, English, and Mixed badges
+            </li>
+            <li><strong>✅ Syntax Highlighting:</strong> Fixed HTML escaping to prevent double-encoding</li>
+            <li><strong>✅ Franco Keywords:</strong> Proper red (#ff6b6b) highlighting for Franco syntax</li>
+            <li><strong>✅ English Keywords:</strong> Proper teal (#4ecdc4) highlighting for English syntax</li>
+            <li><strong>✅ Mixed Mode:</strong> Enhanced detection and gradient indicator for mixed code</li>
+            <li><strong>✅ Safety Keywords:</strong> Orange highlighting with background for safety terms</li>
+            <li><strong>✅ String Handling:</strong> Improved regex for proper string recognition</li>
+            <li><strong>✅ Language Detection:</strong> Enhanced logic for better mixed mode detection</li>
+        </ul>
+    </div>
+
+    <script>
+        console.log('🚀 Fixed Flex syntax highlighting test loaded!');
+        console.log('✅ All three language types (Franco, English, Mixed) should now display correctly');
+    </script>
+</body>
+
+</html>

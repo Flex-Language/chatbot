@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Line Break Preservation Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .test-section {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #4ecdc4;
+        }
+
+        .code-display {
+            background: #1e1e1e;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+
+        .code-display-br {
+            background: #1e1e1e;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+
+        button {
+            background: #3b82f6;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            padding: 8px 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔧 Line Break Preservation Test</h1>
+
+    <div class="test-section">
+        <h2>Test: Simulating AI Response with Line Breaks</h2>
+        <p>Testing how code is displayed with and without proper line break preservation:</p>
+
+        <h3>1. Code with \\n characters (should preserve breaks with pre-wrap):</h3>
+        <div class="code-display" id="code-with-newlines">
+            <!-- Will be filled by JavaScript -->
+        </div>
+
+        <h3>2. Code with &lt;br&gt; tags (should work in regular HTML):</h3>
+        <div class="code-display-br" id="code-with-br">
+            <!-- Will be filled by JavaScript -->
+        </div>
+
+        <button onclick="simulateStreamingDisplay()">Simulate Streaming Display</button>
+        <button onclick="simulateCompleteDisplay()">Simulate Complete Display</button>
+    </div>
+
+    <script>
+        const sampleFlexCode = `list board = [" ", " ", " ", " ", " ", " ", " ", " ", " "]
+int currentPlayer = 1
+
+fun printBoard() {
+    print("{board[0]} | {board[1]} | {board[2]}")
+    print("---+---+---")
+    print("{board[3]} | {board[4]} | {board[5]}")
+    print("---+---+---")
+    print("{board[6]} | {board[7]} | {board[8]}")
+}
+
+fun checkWin(player) {
+    # Rows
+    if (board[0] == player and board[1] == player and board[2] == player) return true
+    if (board[3] == player and board[4] == player and board[5] == player) return true
+    if (board[6] == player and board[7] == player and board[8] == player) return true
+    return false
+}
+
+fun main() {
+    int move
+    string playerSymbol
+    while(true) {
+        printBoard()
+        playerSymbol = if(currentPlayer == 1) "X" else "O"
+        print("Player {playerSymbol}, enter move (1-9):")
+        move = scan()
+        move = move - 1
+        if (move < 0 or move > 8 or board[move] != " ") {
+            print("Invalid move.")
+            continue
+        }
+        board[move] = playerSymbol
+        if (checkWin(playerSymbol)) {
+            printBoard()
+            print("Player {playerSymbol} wins!")
+            break
+        }
+    }
+}
+
+main()`;
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function simulateStreamingDisplay() {
+            // This simulates how the streaming display works
+            const escaped = escapeHtml(sampleFlexCode);
+            const withBr = escaped.replace(/\\n/g, '<br>');
+
+            document.getElementById('code-with-newlines').textContent = sampleFlexCode;
+            document.getElementById('code-with-br').innerHTML = withBr;
+
+            console.log('✅ Simulated streaming display with line break preservation');
+        }
+
+        function simulateCompleteDisplay() {
+            // This simulates the complete display with proper formatting
+            const codeInMarkdown = `Here is a simple XO game implemented in Flex:
+
+\`\`\`flex
+${sampleFlexCode}
+\`\`\`
+
+This code should display with proper formatting and syntax highlighting.`;
+
+            console.log('📝 Markdown with code block:');
+            console.log(codeInMarkdown);
+
+            // Show how it would be processed
+            alert('Complete display would process this as a proper Flex code block with syntax highlighting and proper formatting. Check the console for the markdown version.');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            simulateStreamingDisplay();
+            console.log('🚀 Line break preservation test initialized');
+            console.log('📊 Original code has', sampleFlexCode.split('\\n').length, 'lines');
+        });
+    </script>
+</body>
+
+</html>

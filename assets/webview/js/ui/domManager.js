@@ -36,6 +36,7 @@ class DOMManager {
     createMessageContent(html) {
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
+        // Verify that innerHTML assignment works correctly with updated SyntaxHighlighter output
         contentDiv.innerHTML = html;
         return contentDiv;
     }
@@ -91,6 +92,7 @@ class DOMManager {
             const snippetId = placeholder.getAttribute('data-snippet-id');
             const snippet = flexSnippets.find(s => s.id === snippetId);
             if (snippet) {
+                // Ensure snippet replacement maintains code integrity and doesn't introduce additional HTML entity encoding
                 const snippetElement = this.syntaxHighlighter.createFlexCodeSnippet(snippet, this);
                 placeholder.parentNode.replaceChild(snippetElement, placeholder);
             }
@@ -167,10 +169,19 @@ class DOMManager {
         this.streamingContent += chunk;
         const contentDiv = this.streamingMessage.querySelector('.message-content');
         if (contentDiv) {
-            // Basic markdown for now. Full formatting on complete.
-            const formattedChunk = this.syntaxHighlighter.escapeHtml(this.streamingContent)
+            // Apply enhanced HTML escaping logic to prevent entity corruption
+            // Decode any pre-existing entities first, then apply proper escaping
+            const decodedContent = this.streamingContent
+                .replace(/&quot;/g, '"')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&amp;/g, '&')
+                .replace(/&#039;/g, "'");
+            
+            const formattedChunk = this.syntaxHighlighter.escapeHtml(decodedContent)
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>');
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\n/g, '<br>'); // Preserve line breaks during streaming
             contentDiv.innerHTML = `${formattedChunk}<span class="streaming-cursor"></span>`;
         }
         this.scrollChatToBottom();
@@ -181,16 +192,37 @@ class DOMManager {
 
         const contentDiv = this.streamingMessage.querySelector('.message-content');
         if (contentDiv) {
+            // Ensure the final formatting call works correctly with updated highlighting pipeline
             const { formatted, flexSnippets } = this.syntaxHighlighter.formatText(this.streamingContent);
             contentDiv.innerHTML = formatted;
             
-            // Replace snippet placeholders with actual rendered snippets
+            // Validate that snippet placeholders maintain code integrity
             this.replaceSnippetPlaceholders(contentDiv, flexSnippets);
         }
 
         this.streamingMessage = null;
         this.streamingContent = '';
         this.scrollChatToBottom();
+    }
+
+    clearChat() {
+        // Clear all messages except the welcome message
+        const messages = this.chatBox.querySelectorAll('.message');
+        messages.forEach(message => {
+            message.remove();
+        });
+        
+        // Reset streaming state
+        this.streamingMessage = null;
+        this.streamingContent = '';
+        this.chunkCount = 0;
+        
+        // Show welcome message again
+        if (this.welcomeMessage) {
+            this.welcomeMessage.style.display = 'block';
+        }
+        
+        console.log('Chat cleared successfully');
     }
 
     // ... other DOM manipulation methods

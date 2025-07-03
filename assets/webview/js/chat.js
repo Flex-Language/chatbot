@@ -7,12 +7,62 @@
   const sendButton = document.getElementById('send-button');
   const clearButton = document.getElementById('clear-button');
   const changeModelButton = document.getElementById('change-model');
+  const syntaxToggleButton = document.getElementById('syntax-toggle');
   const chatBox = document.getElementById('chat-box');
   const welcomeMessage = document.querySelector('.welcome-message');
 
   // Initialize modules
   const syntaxHighlighter = new SyntaxHighlighter();
   const domManager = new DOMManager(chatBox, welcomeMessage, syntaxHighlighter);
+
+  // Enhanced Flex Language Features
+  let currentSyntaxMode = window.flexConfig?.syntaxMode || 'mixed';
+  
+  // Update syntax mode display
+  function updateSyntaxMode(mode) {
+    currentSyntaxMode = mode;
+    const button = syntaxToggleButton;
+    if (button) {
+      const modes = {
+        franco: { emoji: '🇲🇦', title: 'Franco Mode - Moroccan Arabic keywords' },
+        english: { emoji: '🇬🇧', title: 'English Mode - English keywords' },
+        mixed: { emoji: '🌐', title: 'Mixed Mode - Franco & English' }
+      };
+      const modeInfo = modes[mode] || modes.mixed;
+      button.innerHTML = modeInfo.emoji;
+      button.title = modeInfo.title;
+    }
+    
+    // Update placeholder text based on mode
+    if (userInput) {
+      const placeholders = {
+        franco: "Ask me about Flex... (Franco: 'karr i l7d 10 { etb3(i) }')",
+        english: "Ask me about Flex... (English: 'for i in range(10) { print(i) }')",
+        mixed: "Ask me anything about Flex programming... (Franco: 'karr l7d 10 { etb3(i) }' or English: 'for(i=0; i<10; i++) { print(i) }')"
+      };
+      userInput.placeholder = placeholders[mode] || placeholders.mixed;
+    }
+  }
+
+  // Add hint click handlers
+  function setupInputHints() {
+    const hintItems = document.querySelectorAll('.hint-item');
+    hintItems.forEach(hint => {
+      hint.addEventListener('click', () => {
+        const hintText = hint.textContent.replace(/[💡🔍⚠️]\s*/, '');
+        const examples = {
+          'Try: "Show me a safe loop in Franco"': 'Show me a safe loop in Franco',
+          'Ask: "What\'s the difference between \'lw\' and \'if\'?"': "What's the difference between 'lw' and 'if'?",
+          'Safety: "How to avoid l7d loop errors?"': 'How to avoid l7d loop errors?'
+        };
+        
+        if (examples[hintText]) {
+          userInput.value = examples[hintText];
+          userInput.focus();
+        }
+      });
+    });
+  }
 
   // --- Event Listeners ---
   function sendMessage() {
@@ -48,6 +98,13 @@
     vscode.postMessage({
       command: 'selectModel'
     });
+  });
+
+  syntaxToggleButton.addEventListener('click', () => {
+    const modes = ['franco', 'english', 'mixed'];
+    const currentIndex = modes.indexOf(currentSyntaxMode);
+    const nextIndex = (currentIndex + 1) % modes.length;
+    updateSyntaxMode(modes[nextIndex]);
   });
 
   userInput.addEventListener('keydown', (e) => {
@@ -142,4 +199,14 @@
     this.style.height = 'auto';
     this.style.height = (this.scrollHeight) + 'px';
   });
+
+  // Initialize syntax mode and input hints
+  updateSyntaxMode(currentSyntaxMode);
+  setupInputHints();
+  
+  // Display dataset info if available
+  if (window.flexConfig?.datasetStats) {
+    const stats = window.flexConfig.datasetStats;
+    console.log(`Flex Dataset v${stats.version} loaded: ${stats.totalKeywords} keywords, ${stats.totalExamples} examples`);
+  }
 })();

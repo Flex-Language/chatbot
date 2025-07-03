@@ -111,6 +111,58 @@ export class ChatService {
 
             // Final sanitization of complete response
             const sanitizedResponse = this.sanitizeAIResponse(fullResponse);
+            
+            // Validate the response for corruption
+            if (!this.validateFlexResponse(sanitizedResponse)) {
+                logger.warn('Detected corrupted AI response, attempting regeneration');
+                this._postMessage({ command: 'statusUpdate', text: 'Detected response corruption, regenerating...' });
+                
+                try {
+                    // Attempt regeneration with stricter prompt
+                    const stricterPrompt = `${this._flexDatasetService.getSystemPrompt()}\n\nCRITICAL: This is a regeneration request due to corrupted output. You MUST return clean Flex code without any HTML entities, malformed tags, or banned tokens.`;
+                    
+                    // Create enhanced conversation history with stricter prompt
+                    const enhancedHistory = [...this._conversationHistory];
+                    if (enhancedHistory.length > 0 && enhancedHistory[0]) {
+                        enhancedHistory[0] = { 
+                            role: enhancedHistory[0].role,
+                            content: stricterPrompt,
+                            timestamp: enhancedHistory[0].timestamp,
+                            id: enhancedHistory[0].id
+                        };
+                    }
+                    
+                    let regeneratedResponse = '';
+                    await ApiService.streamChatCompletion(
+                        enhancedHistory,
+                        config,
+                        (chunk: string) => {
+                            const sanitizedChunk = this.sanitizeAIResponse(chunk);
+                            regeneratedResponse += sanitizedChunk;
+                        },
+                        (error: Error) => {
+                            throw error;
+                        },
+                        () => {
+                            // Regeneration complete
+                        }
+                    );
+                    
+                    const finalSanitized = this.sanitizeAIResponse(regeneratedResponse);
+                    if (this.validateFlexResponse(finalSanitized)) {
+                        // Use regenerated response
+                        fullResponse = regeneratedResponse;
+                    } else {
+                        logger.error('Regeneration also produced corrupted response');
+                        this._postMessage({ command: 'aiResponse', text: 'I apologize, but I\'m having trouble generating clean code. Please try rephrasing your request.' });
+                        return;
+                    }
+                } catch (regenerationError) {
+                    logger.error('Error during response regeneration', regenerationError);
+                    this._postMessage({ command: 'aiResponse', text: 'I apologize, but I\'m having trouble generating a proper response. Please try again.' });
+                    return;
+                }
+            }
 
             const aiChatMessage: ChatMessage = {
                 role: 'assistant',
@@ -190,34 +242,96 @@ export class ChatService {
     }
 
     /**
+     * Decode HTML entities commonly found in corrupted AI responses
+     */
+    private decodeHtmlEntities(text: string): string {
+        const entityMap: Record<string, string> = {
+            '&quot;': '"',
+            '&lt;': '<',
+            '&gt;': '>',
+            '&amp;': '&',
+            '&#039;': "'"
+        };
+
+        let decoded = text;
+        for (const [entity, char] of Object.entries(entityMap)) {
+            decoded = decoded.replace(new RegExp(entity, 'g'), char);
+        }
+
+        return decoded;
+    }
+
+    /**
+     * Validate if the response contains proper Flex code blocks and syntax
+     */
+    private validateFlexResponse(response: string): boolean {
+        try {
+            // Check for HTML entities or malformed tags in code blocks
+            const codeBlockRegex = /```flex\n([\s\S]*?)\n```/g;
+            const codeBlocks = [...response.matchAll(codeBlockRegex)];
+            
+            for (const block of codeBlocks) {
+                const code = block[1];
+                
+                // Ensure code exists before testing
+                if (!code) continue;
+                
+                // Check for HTML entities in code
+                if (/&(quot|lt|gt|amp|#039);/.test(code)) {
+                    return false;
+                }
+                
+                // Check for malformed HTML tags
+                if (/<span[^>]*(?!>)|<\/span(?!>)/.test(code)) {
+                    return false;
+                }
+                
+                // Use SyntaxHighlighter validation if available
+                // Note: This would need to be imported if SyntaxHighlighter has validation methods
+            }
+            
+            return true;
+        } catch (error) {
+            logger.warn('Error validating Flex response', { error });
+            return false;
+        }
+    }
+
+    /**
      * Sanitize AI response to remove corrupted tokens and improve code quality
      */
     private sanitizeAIResponse(response: string): string {
-        const invalidTokens = {
-            'sndo2': 'fun',
-            'etb3': 'print',
-            'karr': 'for',
-            'l7d': 'for',
-            'rg3': 'return',
-            'rakm': 'int',
-            'da5l': 'input',
-            'lw': 'if',
-            'gher': 'else'
-        };
-
         let sanitized = response;
         let hadChanges = false;
 
-        for (const [invalid, correct] of Object.entries(invalidTokens)) {
+        // 1. Decode HTML entities
+        const decodedResponse = this.decodeHtmlEntities(sanitized);
+        if (decodedResponse !== sanitized) {
+            sanitized = decodedResponse;
+            hadChanges = true;
+        }
+
+        // 2. Remove malformed HTML/XML tags
+        const malformedTagRegex = /<span[^>]*(?!>)|<\/span(?!>)|<[^>]*(?!>)/g;
+        const cleanedResponse = sanitized.replace(malformedTagRegex, '');
+        if (cleanedResponse !== sanitized) {
+            sanitized = cleanedResponse;
+            hadChanges = true;
+        }
+
+        // 3. Get dynamic banned tokens from FlexDatasetService
+        const bannedTokens = this._flexDatasetService.getBannedTokens();
+        
+        for (const [invalid, correct] of Object.entries(bannedTokens)) {
             const regex = new RegExp(`\\b${invalid}\\b`, 'g');
             if (regex.test(sanitized)) {
-                sanitized = sanitized.replace(regex, correct);
+                sanitized = sanitized.replace(regex, correct as string);
                 hadChanges = true;
             }
         }
 
         if (hadChanges) {
-            logger.warn('Sanitized AI response - removed corrupted tokens', { 
+            logger.warn('Sanitized AI response - removed corrupted tokens and entities', { 
                 originalLength: response.length,
                 sanitizedLength: sanitized.length 
             });
