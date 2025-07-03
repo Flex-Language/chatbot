@@ -3,7 +3,7 @@ Project Structure:
 ├── README.md
 ├── assets
 ├── codefetch
-│   └── codebase.md
+│   ├── codebase.md
 ├── docs
 │   ├── CHANGELOG.md
 │   └── README.md
@@ -369,111 +369,143 @@ src/customSidebarViewProvider.ts
 19 |   private _configWatcher?: vscode.Disposable;
 20 |   private _availableModels: ModelInfo[] = [];
 21 |   private _isModelListLoaded = false;
-22 | 
-23 |   constructor(private readonly _extensionUri: vscode.Uri) {
-24 |     logger.logExtensionEvent('activate', { component: 'CustomSidebarViewProvider' });
-25 |     this._configWatcher = ConfigService.onConfigurationChanged(() => this.onConfigurationChanged());
-26 |     this.initializeModels();
-27 |   }
-28 | 
-29 |   public dispose(): void {
-30 |     this._configWatcher?.dispose();
-31 |     logger.logExtensionEvent('deactivate', { component: 'CustomSidebarViewProvider' });
-32 |   }
-33 | 
-34 |   public async getAvailableModels(): Promise<ModelInfo[]> {
-35 |     if (!this._isModelListLoaded) {
-36 |       await this.initializeModels();
-37 |     }
-38 |     return this._availableModels;
-39 |   }
-40 | 
-41 |   public resetChat(): void {
-42 |     logger.logUserAction('resetChat');
-43 |     this._chatService?.resetChat();
-44 |   }
-45 | 
-46 |   public refreshWebview(): void {
-47 |     if (this._view && this._webviewService) {
-48 |       this._view.webview.html = this._webviewService.getHtmlContent(this._view.webview);
-49 |       logger.debug('Webview refreshed');
-50 |     }
-51 |   }
-52 | 
-53 |   private async initializeModels(): Promise<void> {
-54 |     const config = ConfigService.getConfig();
-55 |     if (!config.apiKey) {
-56 |       logger.warn('API key not configured, skipping model initialization');
-57 |       return;
-58 |     }
-59 |     try {
-60 |       this._availableModels = await ApiService.fetchAvailableModels(config.apiKey);
-61 |       this._isModelListLoaded = true;
-62 |       logger.info(`Loaded ${this._availableModels.length} models`);
-63 |       if (this._view) {
-64 |         this.refreshWebview();
-65 |       }
-66 |     } catch (error) {
-67 |       logger.error('Failed to initialize models', error);
-68 |     }
-69 |   }
-70 | 
-71 |   private onConfigurationChanged(): void {
-72 |     const config = ConfigService.getConfig();
-73 |     if (config.apiKey && !this._isModelListLoaded) {
-74 |       this.initializeModels();
-75 |     }
-76 |     this.refreshWebview();
-77 |   }
-78 | 
-79 |   resolveWebviewView(
-80 |     webviewView: vscode.WebviewView,
-81 |     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-82 |     context: vscode.WebviewViewResolveContext,
-83 |     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-84 |     _token: vscode.CancellationToken,
-85 |   ): void | Thenable<void> {
-86 |     this._view = webviewView;
-87 |     this._webviewService = new WebviewService(this._extensionUri);
-88 | 
-89 |     const postMessage = (message: WebviewMessage) => {
-90 |       if (this._view) {
-91 |         this._view.webview.postMessage(message);
-92 |       }
-93 |     };
-94 |     this._chatService = new ChatService(postMessage, this._extensionUri);
-95 | 
-96 |     webviewView.webview.options = {
-97 |       enableScripts: true,
-98 |       localResourceRoots: [this._extensionUri],
-99 |     };
-100 | 
-101 |     webviewView.webview.html = this._webviewService.getHtmlContent(webviewView.webview);
-102 | 
-103 |     webviewView.webview.onDidReceiveMessage(async (message: WebviewMessage) => {
-104 |       await this.handleWebviewMessage(message);
-105 |     });
-106 | 
-107 |     logger.info('Webview resolved and services initialized');
-108 |   }
-109 | 
-110 |   private async handleWebviewMessage(message: WebviewMessage): Promise<void> {
-111 |     switch (message.command) {
-112 |       case 'sendMessage':
-113 |         await this._chatService?.handleSendMessage(message.text || '');
-114 |         break;
-115 |       case 'clearChat':
-116 |         this.resetChat();
-117 |         break;
-118 |       case 'selectModel':
-119 |         await vscode.commands.executeCommand('flexChatbot.selectModel');
-120 |         break;
-121 |       default:
-122 |         logger.warn(`Unknown message command: ${message.command}`);
-123 |     }
+22 |   private _context: vscode.ExtensionContext;
+23 | 
+24 |   constructor(private readonly _extensionUri: vscode.Uri, context: vscode.ExtensionContext) {
+25 |     this._context = context;
+26 |     logger.logExtensionEvent('activate', { component: 'CustomSidebarViewProvider' });
+27 |     this._configWatcher = ConfigService.onConfigurationChanged(() => this.onConfigurationChanged());
+28 |     this.initializeModels();
+29 |   }
+30 | 
+31 |   public dispose(): void {
+32 |     this._configWatcher?.dispose();
+33 |     logger.logExtensionEvent('deactivate', { component: 'CustomSidebarViewProvider' });
+34 |   }
+35 | 
+36 |   public async getAvailableModels(): Promise<ModelInfo[]> {
+37 |     if (!this._isModelListLoaded) {
+38 |       await this.initializeModels();
+39 |     }
+40 |     return this._availableModels;
+41 |   }
+42 | 
+43 |   public resetChat(): void {
+44 |     logger.logUserAction('resetChat');
+45 |     this._chatService?.resetChat();
+46 |   }
+47 | 
+48 |   public refreshWebview(): void {
+49 |     if (this._view && this._webviewService) {
+50 |       this._view.webview.html = this._webviewService.getHtmlContent(this._view.webview);
+51 |       logger.debug('Webview refreshed');
+52 |     }
+53 |   }
+54 | 
+55 |   public updateModelDisplay(): void {
+56 |     if (this._view) {
+57 |       const config = ConfigService.getConfig();
+58 |       this._view.webview.postMessage({
+59 |         command: 'modelUpdated',
+60 |         model: config.model
+61 |       });
+62 |       logger.debug('Model display updated', { model: config.model });
+63 |     }
+64 |   }
+65 | 
+66 |   private async initializeModels(): Promise<void> {
+67 |     const config = ConfigService.getConfig();
+68 |     if (!config.apiKey) {
+69 |       logger.warn('API key not configured, skipping model initialization');
+70 |       return;
+71 |     }
+72 |     try {
+73 |       this._availableModels = await ApiService.fetchAvailableModels(config.apiKey);
+74 |       this._isModelListLoaded = true;
+75 |       logger.info(`Loaded ${this._availableModels.length} models`);
+76 |       if (this._view) {
+77 |         this.refreshWebview();
+78 |       }
+79 |     } catch (error) {
+80 |       logger.error('Failed to initialize models', error);
+81 |     }
+82 |   }
+83 | 
+84 |   private onConfigurationChanged(): void {
+85 |     const config = ConfigService.getConfig();
+86 |     if (config.apiKey && !this._isModelListLoaded) {
+87 |       this.initializeModels();
+88 |     }
+89 |     this.refreshWebview();
+90 |   }
+91 | 
+92 |   resolveWebviewView(
+93 |     webviewView: vscode.WebviewView,
+94 |     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+95 |     context: vscode.WebviewViewResolveContext,
+96 |     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+97 |     _token: vscode.CancellationToken,
+98 |   ): void | Thenable<void> {
+99 |     this._view = webviewView;
+100 |     this._webviewService = new WebviewService(this._extensionUri);
+101 | 
+102 |     const postMessage = (message: WebviewMessage) => {
+103 |       if (this._view) {
+104 |         this._view.webview.postMessage(message);
+105 |       }
+106 |     };
+107 |     this._chatService = new ChatService(postMessage, this._extensionUri, this._context);
+108 | 
+109 |     webviewView.webview.options = {
+110 |       enableScripts: true,
+111 |       localResourceRoots: [this._extensionUri],
+112 |     };
+113 | 
+114 |     webviewView.webview.html = this._webviewService.getHtmlContent(webviewView.webview);
+115 | 
+116 |     webviewView.webview.onDidReceiveMessage(async (message: WebviewMessage) => {
+117 |       await this.handleWebviewMessage(message);
+118 |     });
+119 | 
+120 |     // Restore chat history after webview is ready
+121 |     this.restoreChatHistory();
+122 | 
+123 |     logger.info('Webview resolved and services initialized');
 124 |   }
-125 | }
-126 | 
+125 | 
+126 |   /**
+127 |    * Restore chat history in the webview
+128 |    */
+129 |   private restoreChatHistory(): void {
+130 |     if (this._chatService && this._view) {
+131 |       const history = this._chatService.getChatHistory();
+132 |       if (history.length > 0) {
+133 |         this._view.webview.postMessage({
+134 |           command: 'hydrateChatHistory',
+135 |           history: history
+136 |         });
+137 |         logger.info(`Restored ${history.length} messages to webview`);
+138 |       }
+139 |     }
+140 |   }
+141 | 
+142 |   private async handleWebviewMessage(message: WebviewMessage): Promise<void> {
+143 |     switch (message.command) {
+144 |       case 'sendMessage':
+145 |         await this._chatService?.handleSendMessage(message.text || '');
+146 |         break;
+147 |       case 'clearChat':
+148 |         this.resetChat();
+149 |         break;
+150 |       case 'selectModel':
+151 |         await vscode.commands.executeCommand('flexChatbot.selectModel');
+152 |         break;
+153 |       default:
+154 |         logger.warn(`Unknown message command: ${message.command}`);
+155 |     }
+156 |   }
+157 | }
+158 | 
 ```
 
 src/extension.ts
@@ -500,7 +532,7 @@ src/extension.ts
 20 | 	try {
 21 | 		// Initialize services
 22 | 		FlexDatasetService.getInstance(context.extensionPath);
-23 | 		const provider = new CustomSidebarViewProvider(context.extensionUri);
+23 | 		const provider = new CustomSidebarViewProvider(context.extensionUri, context);
 24 | 		devTools.initialize(context.extensionUri);
 25 | 
 26 | 		// Register webview provider
@@ -678,79 +710,334 @@ src/extension.ts
 198 | 			await ConfigService.set('model', selectedItem.label);
 199 | 			vscode.window.showInformationMessage(`Model set to: ${selectedItem.label}`);
 200 | 
-201 | 			provider.refreshWebview();
-202 | 			logger.info('Model changed', { model: selectedItem.label });
-203 | 		}
-204 | 	} catch (error) {
-205 | 		logger.error('Error in model selection', error);
-206 | 		vscode.window.showErrorMessage(`Failed to load models: ${error}`);
-207 | 	} finally {
-208 | 		timer.end();
-209 | 	}
-210 | }
-211 | 
-212 | /**
-213 |  * Check initial configuration and show warnings if needed
-214 |  */
-215 | function checkInitialConfiguration(): void {
-216 | 	const config = ConfigService.getConfig();
-217 | 	const validation = ConfigService.validateConfig();
-218 | 
-219 | 	if (!validation.isValid) {
-220 | 		logger.warn('Configuration issues detected', validation.errors);
-221 | 
-222 | 		// Show warning for critical issues
-223 | 		if (!config.apiKey) {
-224 | 			setTimeout(() => {
-225 | 				vscode.window.showWarningMessage(
-226 | 					'Flex Chatbot requires an OpenRouter API key to function. Click to configure.',
-227 | 					'Configure Now',
-228 | 					'Later'
-229 | 				).then(action => {
-230 | 					if (action === 'Configure Now') {
-231 | 						ConfigService.showConfigurationDialog();
-232 | 					}
-233 | 				});
-234 | 			}, 2000); // Delay to avoid overwhelming the user on startup
-235 | 		}
-236 | 	}
-237 | }
-238 | 
-239 | /**
-240 |  * Show dataset information
-241 |  */
-242 | function showDatasetInfo(): void {
-243 | 	const flexDataset = FlexDatasetService.getInstance();
-244 | 	const stats = flexDataset.getDatasetStats();
-245 | 	const isLoaded = flexDataset.isDatasetLoaded();
-246 | 
-247 | 	const info = `
-248 | 📊 **Flex Dataset Information**
-249 | 
-250 | **Status:** ${isLoaded ? '✅ Loaded' : '❌ Not Loaded'}
-251 | **Code Examples:** ${stats.codeExamples || 0}
-252 | **Common Patterns:** ${stats.commonPatterns || 0}
-253 | **Syntax Patterns:** ${stats.syntaxPatterns || 0}
-254 | **Tokens:** ${stats.tokens || 0}
-255 | 
-256 | ${!isLoaded ? '⚠️ Using fallback documentation. Check that flex_language_spec.json exists in the dataset folder.' : ''}
-257 | 	`.trim();
-258 | 
-259 | 	vscode.window.showInformationMessage(info, { modal: false });
-260 | 	logger.info('Dataset info displayed', stats);
-261 | }
-262 | 
-263 | /**
-264 |  * Extension deactivation function
-265 |  */
-266 | export function deactivate(): void {
-267 | 	logger.logExtensionEvent('deactivate');
-268 | 
-269 | 	// Dispose of debugging and development resources
-270 | 	debugManager.dispose();
-271 | 	errorHandler.dispose();
-272 | 	devTools.dispose();
-273 | }
+201 | 			// Update the model display in the webview without full refresh
+202 | 			provider.updateModelDisplay();
+203 | 			logger.info('Model changed', { model: selectedItem.label });
+204 | 		}
+205 | 	} catch (error) {
+206 | 		logger.error('Error in model selection', error);
+207 | 		vscode.window.showErrorMessage(`Failed to load models: ${error}`);
+208 | 	} finally {
+209 | 		timer.end();
+210 | 	}
+211 | }
+212 | 
+213 | /**
+214 |  * Check initial configuration and show warnings if needed
+215 |  */
+216 | function checkInitialConfiguration(): void {
+217 | 	const config = ConfigService.getConfig();
+218 | 	const validation = ConfigService.validateConfig();
+219 | 
+220 | 	if (!validation.isValid) {
+221 | 		logger.warn('Configuration issues detected', validation.errors);
+222 | 
+223 | 		// Show warning for critical issues
+224 | 		if (!config.apiKey) {
+225 | 			setTimeout(() => {
+226 | 				vscode.window.showWarningMessage(
+227 | 					'Flex Chatbot requires an OpenRouter API key to function. Click to configure.',
+228 | 					'Configure Now',
+229 | 					'Later'
+230 | 				).then(action => {
+231 | 					if (action === 'Configure Now') {
+232 | 						ConfigService.showConfigurationDialog();
+233 | 					}
+234 | 				});
+235 | 			}, 2000); // Delay to avoid overwhelming the user on startup
+236 | 		}
+237 | 	}
+238 | }
+239 | 
+240 | /**
+241 |  * Show dataset information
+242 |  */
+243 | function showDatasetInfo(): void {
+244 | 	const flexDataset = FlexDatasetService.getInstance();
+245 | 	const stats = flexDataset.getDatasetStats();
+246 | 	const isLoaded = flexDataset.isDatasetLoaded();
+247 | 
+248 | 	const info = `
+249 | 📊 **Flex Dataset Information**
+250 | 
+251 | **Status:** ${isLoaded ? '✅ Loaded' : '❌ Not Loaded'}
+252 | **Code Examples:** ${stats.codeExamples || 0}
+253 | **Common Patterns:** ${stats.commonPatterns || 0}
+254 | **Syntax Patterns:** ${stats.syntaxPatterns || 0}
+255 | **Tokens:** ${stats.tokens || 0}
+256 | 
+257 | ${!isLoaded ? '⚠️ Using fallback documentation. Check that flex_language_spec.json exists in the dataset folder.' : ''}
+258 | 	`.trim();
+259 | 
+260 | 	vscode.window.showInformationMessage(info, { modal: false });
+261 | 	logger.info('Dataset info displayed', stats);
+262 | }
+263 | 
+264 | /**
+265 |  * Extension deactivation function
+266 |  */
+267 | export function deactivate(): void {
+268 | 	logger.logExtensionEvent('deactivate');
+269 | 
+270 | 	// Dispose of debugging and development resources
+271 | 	debugManager.dispose();
+272 | 	errorHandler.dispose();
+273 | 	devTools.dispose();
+274 | }
+```
+
+.cursor/rules/layout.mdc
+```
+1 | ---
+2 | description: 
+3 | globs: 
+4 | alwaysApply: true
+5 | ---
+6 | # 📁 Flex Chatbot Project Layout Documentation
+7 | 
+8 | ## 📋 Project Overview
+9 | This document tracks the complete project structure of the Flex Chatbot VS Code extension, including all files, their purposes, and recent changes during the adaptive UI redesign.
+10 | 
+11 | ## 🔄 Recent Critical Updates (Latest Session)
+12 | 
+13 | ### ✅ **ADAPTIVE UI REDESIGN COMPLETED** 
+14 | **Date**: Current session  
+15 | **Status**: SUCCESSFULLY IMPLEMENTED AND TESTED
+16 | 
+17 | #### 🎨 **UI Enhancements Applied**:
+18 | 
+19 | 1. **Removed Blue Header Box**:
+20 |    - ✅ Eliminated the prominent blue header box for cleaner design
+21 |    - ✅ Replaced with minimalist header bar
+22 |    - ✅ Better space utilization for chat content
+23 |    - ✅ Professional, streamlined appearance
+24 | 
+25 | 2. **Enhanced Header Layout**:
+26 |    ```
+27 |    📱 Header Bar (Optimized)
+28 |    ├── 🏷️ Flex Assistant logo and title
+29 |    ├── 🔴🟡🟢 Status indicators (Config/Dataset)
+30 |    ├── 📊 Message counter (live updates)
+31 |    ├── 📱 Model display (NEW - shows current model)
+32 |    ├── ⚙️ Settings button (model selection)
+33 |    └── 🗑️ Clear chat button
+34 |    ```
+35 | 
+36 | 3. **Improved Input Section**:
+37 |    ```
+38 |    ⌨️ Input Area (Redesigned)
+39 |    ├── 🚀 Quick action buttons (4 prompts)
+40 |    ├── 📝 Auto-expanding text input (left)
+41 |    └── 📤 Send button (beside input - right)
+42 |    ```
+43 | 
+44 | 4. **Mobile-First Responsive Design**:
+45 |    - **Desktop (>768px)**: Full layout with all elements visible
+46 |    - **Tablet (<=768px)**: Compact model display, optimized spacing
+47 |    - **Mobile (<=480px)**: Ultra-compact model display, stacked layout
+48 |    - **Auto-adaptive**: Seamless transitions between screen sizes
+49 | 
+50 | #### 📊 **Current Status**:
+51 | - ✅ TypeScript compilation: **PASSED**
+52 | - ✅ Extension packaging: **SUCCESSFUL** (`flex-chatbot-1.0.0.vsix`)
+53 | - ✅ Model display: **IMPLEMENTED** (beside settings icon)
+54 | - ✅ Send button positioning: **FIXED** (beside text input)
+55 | - ✅ Responsive design: **COMPLETE**
+56 | - 🚀 Status: **PRODUCTION READY - ADAPTIVE**
+57 | 
+58 | ### 🎯 **Key UI Improvements Implemented**:
+59 | 
+60 | #### **Model Display Enhancement**:
+61 | - ✅ **Positioned**: Directly beside the settings icon in header
+62 | - ✅ **Styling**: Professional gradient background with border
+63 | - ✅ **Responsive**: Adapts size on different screen sizes
+64 | - ✅ **Overflow Handling**: Text ellipsis for long model names
+65 | - ✅ **Visual Hierarchy**: Clear distinction from other elements
+66 | 
+67 | #### **Send Button Optimization**:
+68 | - ✅ **Positioning**: Placed beside (to the right of) text input
+69 | - ✅ **Layout**: Same row as text input, not above or below
+70 | - ✅ **Sizing**: Compact design that doesn't overwhelm the input
+71 | - ✅ **Responsiveness**: Maintains position across all screen sizes
+72 | - ✅ **Accessibility**: Proper focus states and touch targets
+73 | 
+74 | #### **Responsive Breakpoints**:
+75 | - **Desktop**: Model display max-width 120px, full feature set
+76 | - **Tablet**: Model display max-width 80px, compact layout
+77 | - **Mobile**: Model display max-width 60px, minimal design
+78 | 
+79 | ### 🔧 **Technical Implementation**:
+80 | - **CSS Architecture**: Mobile-first responsive design with progressive enhancement
+81 | - **Layout System**: Flexbox for precise positioning and alignment
+82 | - **Typography**: Adaptive font sizes across breakpoints
+83 | - **Spacing**: Consistent spacing system with CSS custom properties
+84 | - **Performance**: Optimized CSS with efficient selectors
+85 | 
+86 | ## 📝 File Descriptions (Updated)
+87 | 
+88 | ### 📄 Main Files Modified
+89 | 
+90 | #### `src/customSidebarViewProvider.ts` 🚀 **ENHANCED**
+91 | - **Purpose**: Main webview provider with adaptive UI
+92 | - **New Features**: Model display in header, optimized layout structure
+93 | - **Enhancement**: Clean HTML structure for better maintainability
+94 | - **Status**: ✅ PRODUCTION READY
+95 | 
+96 | #### `assets/webview/css/main.css` 🎨 **FULLY RESPONSIVE**
+97 | - **Purpose**: Complete adaptive styling system
+98 | - **New Styles**: Model display styling, responsive breakpoints
+99 | - **Enhancement**: Mobile-first CSS with desktop enhancements
+100 | - **Status**: ✅ COMPLETE RESPONSIVE SYSTEM
+101 | 
+102 | ## 🎯 Implementation Results
+103 | 
+104 | ### ✅ **User Requirements Met**:
+105 | 1. **Model Display**: ✅ Current model shown beside settings icon
+106 | 2. **Send Button Position**: ✅ Located beside (not above/below) text input
+107 | 3. **Responsive Design**: ✅ Adapts to all screen sizes
+108 | 4. **Clean Interface**: ✅ Removed blue header box for better UX
+109 | 
+110 | ### 🚀 **Additional Improvements Achieved**:
+111 | - Professional visual hierarchy with proper spacing
+112 | - Touch-friendly interface for mobile devices
+113 | - Smooth transitions and hover effects
+114 | - Accessibility-compliant focus management
+115 | - Performance-optimized CSS architecture
+116 | 
+117 | ## 📱 **Cross-Device Compatibility**:
+118 | - **Desktop**: Full-featured interface with optimal spacing
+119 | - **Tablet**: Compact design maintaining all functionality
+120 | - **Mobile**: Touch-optimized layout with smart text sizing
+121 | - **Responsive**: Seamless adaptation between all screen sizes
+122 | 
+123 | **🎉 Result**: The Flex Chatbot now features a fully adaptive, professional interface with the model name displayed beside the settings icon and the send button properly positioned beside the text input, creating an optimal user experience across all devices.
+```
+
+.windsurf/rules/layout.md
+```
+1 | ---
+2 | trigger: always_on
+3 | description: 
+4 | globs: 
+5 | ---
+6 | # 📁 Flex Chatbot Project Layout Documentation
+7 | 
+8 | ## 📋 Project Overview
+9 | This document tracks the complete project structure of the Flex Chatbot VS Code extension, including all files, their purposes, and recent changes during the adaptive UI redesign.
+10 | 
+11 | ## 🔄 Recent Critical Updates (Latest Session)
+12 | 
+13 | ### ✅ **ADAPTIVE UI REDESIGN COMPLETED** 
+14 | **Date**: Current session  
+15 | **Status**: SUCCESSFULLY IMPLEMENTED AND TESTED
+16 | 
+17 | #### 🎨 **UI Enhancements Applied**:
+18 | 
+19 | 1. **Removed Blue Header Box**:
+20 |    - ✅ Eliminated the prominent blue header box for cleaner design
+21 |    - ✅ Replaced with minimalist header bar
+22 |    - ✅ Better space utilization for chat content
+23 |    - ✅ Professional, streamlined appearance
+24 | 
+25 | 2. **Enhanced Header Layout**:
+26 |    ```
+27 |    📱 Header Bar (Optimized)
+28 |    ├── 🏷️ Flex Assistant logo and title
+29 |    ├── 🔴🟡🟢 Status indicators (Config/Dataset)
+30 |    ├── 📊 Message counter (live updates)
+31 |    ├── 📱 Model display (NEW - shows current model)
+32 |    ├── ⚙️ Settings button (model selection)
+33 |    └── 🗑️ Clear chat button
+34 |    ```
+35 | 
+36 | 3. **Improved Input Section**:
+37 |    ```
+38 |    ⌨️ Input Area (Redesigned)
+39 |    ├── 🚀 Quick action buttons (4 prompts)
+40 |    ├── 📝 Auto-expanding text input (left)
+41 |    └── 📤 Send button (beside input - right)
+42 |    ```
+43 | 
+44 | 4. **Mobile-First Responsive Design**:
+45 |    - **Desktop (>768px)**: Full layout with all elements visible
+46 |    - **Tablet (<=768px)**: Compact model display, optimized spacing
+47 |    - **Mobile (<=480px)**: Ultra-compact model display, stacked layout
+48 |    - **Auto-adaptive**: Seamless transitions between screen sizes
+49 | 
+50 | #### 📊 **Current Status**:
+51 | - ✅ TypeScript compilation: **PASSED**
+52 | - ✅ Extension packaging: **SUCCESSFUL** (`flex-chatbot-1.0.0.vsix`)
+53 | - ✅ Model display: **IMPLEMENTED** (beside settings icon)
+54 | - ✅ Send button positioning: **FIXED** (beside text input)
+55 | - ✅ Responsive design: **COMPLETE**
+56 | - 🚀 Status: **PRODUCTION READY - ADAPTIVE**
+57 | 
+58 | ### 🎯 **Key UI Improvements Implemented**:
+59 | 
+60 | #### **Model Display Enhancement**:
+61 | - ✅ **Positioned**: Directly beside the settings icon in header
+62 | - ✅ **Styling**: Professional gradient background with border
+63 | - ✅ **Responsive**: Adapts size on different screen sizes
+64 | - ✅ **Overflow Handling**: Text ellipsis for long model names
+65 | - ✅ **Visual Hierarchy**: Clear distinction from other elements
+66 | 
+67 | #### **Send Button Optimization**:
+68 | - ✅ **Positioning**: Placed beside (to the right of) text input
+69 | - ✅ **Layout**: Same row as text input, not above or below
+70 | - ✅ **Sizing**: Compact design that doesn't overwhelm the input
+71 | - ✅ **Responsiveness**: Maintains position across all screen sizes
+72 | - ✅ **Accessibility**: Proper focus states and touch targets
+73 | 
+74 | #### **Responsive Breakpoints**:
+75 | - **Desktop**: Model display max-width 120px, full feature set
+76 | - **Tablet**: Model display max-width 80px, compact layout
+77 | - **Mobile**: Model display max-width 60px, minimal design
+78 | 
+79 | ### 🔧 **Technical Implementation**:
+80 | - **CSS Architecture**: Mobile-first responsive design with progressive enhancement
+81 | - **Layout System**: Flexbox for precise positioning and alignment
+82 | - **Typography**: Adaptive font sizes across breakpoints
+83 | - **Spacing**: Consistent spacing system with CSS custom properties
+84 | - **Performance**: Optimized CSS with efficient selectors
+85 | 
+86 | ## 📝 File Descriptions (Updated)
+87 | 
+88 | ### 📄 Main Files Modified
+89 | 
+90 | #### `src/customSidebarViewProvider.ts` 🚀 **ENHANCED**
+91 | - **Purpose**: Main webview provider with adaptive UI
+92 | - **New Features**: Model display in header, optimized layout structure
+93 | - **Enhancement**: Clean HTML structure for better maintainability
+94 | - **Status**: ✅ PRODUCTION READY
+95 | 
+96 | #### `assets/webview/css/main.css` 🎨 **FULLY RESPONSIVE**
+97 | - **Purpose**: Complete adaptive styling system
+98 | - **New Styles**: Model display styling, responsive breakpoints
+99 | - **Enhancement**: Mobile-first CSS with desktop enhancements
+100 | - **Status**: ✅ COMPLETE RESPONSIVE SYSTEM
+101 | 
+102 | ## 🎯 Implementation Results
+103 | 
+104 | ### ✅ **User Requirements Met**:
+105 | 1. **Model Display**: ✅ Current model shown beside settings icon
+106 | 2. **Send Button Position**: ✅ Located beside (not above/below) text input
+107 | 3. **Responsive Design**: ✅ Adapts to all screen sizes
+108 | 4. **Clean Interface**: ✅ Removed blue header box for better UX
+109 | 
+110 | ### 🚀 **Additional Improvements Achieved**:
+111 | - Professional visual hierarchy with proper spacing
+112 | - Touch-friendly interface for mobile devices
+113 | - Smooth transitions and hover effects
+114 | - Accessibility-compliant focus management
+115 | - Performance-optimized CSS architecture
+116 | 
+117 | ## 📱 **Cross-Device Compatibility**:
+118 | - **Desktop**: Full-featured interface with optimal spacing
+119 | - **Tablet**: Compact design maintaining all functionality
+120 | - **Mobile**: Touch-optimized layout with smart text sizing
+121 | - **Responsive**: Seamless adaptation between all screen sizes
+122 | 
+123 | **🎉 Result**: The Flex Chatbot now features a fully adaptive, professional interface with the model name displayed beside the settings icon and the send button properly positioned beside the text input, creating an optimal user experience across all devices.
 ```
 
 assets/datasets/flex_language_spec.json
@@ -3815,260 +4102,6 @@ assets/datasets/flex_language_spec.json
 3058 | }
 ```
 
-.cursor/rules/layout.mdc
-```
-1 | ---
-2 | description: 
-3 | globs: 
-4 | alwaysApply: true
-5 | ---
-6 | # 📁 Flex Chatbot Project Layout Documentation
-7 | 
-8 | ## 📋 Project Overview
-9 | This document tracks the complete project structure of the Flex Chatbot VS Code extension, including all files, their purposes, and recent changes during the adaptive UI redesign.
-10 | 
-11 | ## 🔄 Recent Critical Updates (Latest Session)
-12 | 
-13 | ### ✅ **ADAPTIVE UI REDESIGN COMPLETED** 
-14 | **Date**: Current session  
-15 | **Status**: SUCCESSFULLY IMPLEMENTED AND TESTED
-16 | 
-17 | #### 🎨 **UI Enhancements Applied**:
-18 | 
-19 | 1. **Removed Blue Header Box**:
-20 |    - ✅ Eliminated the prominent blue header box for cleaner design
-21 |    - ✅ Replaced with minimalist header bar
-22 |    - ✅ Better space utilization for chat content
-23 |    - ✅ Professional, streamlined appearance
-24 | 
-25 | 2. **Enhanced Header Layout**:
-26 |    ```
-27 |    📱 Header Bar (Optimized)
-28 |    ├── 🏷️ Flex Assistant logo and title
-29 |    ├── 🔴🟡🟢 Status indicators (Config/Dataset)
-30 |    ├── 📊 Message counter (live updates)
-31 |    ├── 📱 Model display (NEW - shows current model)
-32 |    ├── ⚙️ Settings button (model selection)
-33 |    └── 🗑️ Clear chat button
-34 |    ```
-35 | 
-36 | 3. **Improved Input Section**:
-37 |    ```
-38 |    ⌨️ Input Area (Redesigned)
-39 |    ├── 🚀 Quick action buttons (4 prompts)
-40 |    ├── 📝 Auto-expanding text input (left)
-41 |    └── 📤 Send button (beside input - right)
-42 |    ```
-43 | 
-44 | 4. **Mobile-First Responsive Design**:
-45 |    - **Desktop (>768px)**: Full layout with all elements visible
-46 |    - **Tablet (<=768px)**: Compact model display, optimized spacing
-47 |    - **Mobile (<=480px)**: Ultra-compact model display, stacked layout
-48 |    - **Auto-adaptive**: Seamless transitions between screen sizes
-49 | 
-50 | #### 📊 **Current Status**:
-51 | - ✅ TypeScript compilation: **PASSED**
-52 | - ✅ Extension packaging: **SUCCESSFUL** (`flex-chatbot-1.0.0.vsix`)
-53 | - ✅ Model display: **IMPLEMENTED** (beside settings icon)
-54 | - ✅ Send button positioning: **FIXED** (beside text input)
-55 | - ✅ Responsive design: **COMPLETE**
-56 | - 🚀 Status: **PRODUCTION READY - ADAPTIVE**
-57 | 
-58 | ### 🎯 **Key UI Improvements Implemented**:
-59 | 
-60 | #### **Model Display Enhancement**:
-61 | - ✅ **Positioned**: Directly beside the settings icon in header
-62 | - ✅ **Styling**: Professional gradient background with border
-63 | - ✅ **Responsive**: Adapts size on different screen sizes
-64 | - ✅ **Overflow Handling**: Text ellipsis for long model names
-65 | - ✅ **Visual Hierarchy**: Clear distinction from other elements
-66 | 
-67 | #### **Send Button Optimization**:
-68 | - ✅ **Positioning**: Placed beside (to the right of) text input
-69 | - ✅ **Layout**: Same row as text input, not above or below
-70 | - ✅ **Sizing**: Compact design that doesn't overwhelm the input
-71 | - ✅ **Responsiveness**: Maintains position across all screen sizes
-72 | - ✅ **Accessibility**: Proper focus states and touch targets
-73 | 
-74 | #### **Responsive Breakpoints**:
-75 | - **Desktop**: Model display max-width 120px, full feature set
-76 | - **Tablet**: Model display max-width 80px, compact layout
-77 | - **Mobile**: Model display max-width 60px, minimal design
-78 | 
-79 | ### 🔧 **Technical Implementation**:
-80 | - **CSS Architecture**: Mobile-first responsive design with progressive enhancement
-81 | - **Layout System**: Flexbox for precise positioning and alignment
-82 | - **Typography**: Adaptive font sizes across breakpoints
-83 | - **Spacing**: Consistent spacing system with CSS custom properties
-84 | - **Performance**: Optimized CSS with efficient selectors
-85 | 
-86 | ## 📝 File Descriptions (Updated)
-87 | 
-88 | ### 📄 Main Files Modified
-89 | 
-90 | #### `src/customSidebarViewProvider.ts` 🚀 **ENHANCED**
-91 | - **Purpose**: Main webview provider with adaptive UI
-92 | - **New Features**: Model display in header, optimized layout structure
-93 | - **Enhancement**: Clean HTML structure for better maintainability
-94 | - **Status**: ✅ PRODUCTION READY
-95 | 
-96 | #### `assets/webview/css/main.css` 🎨 **FULLY RESPONSIVE**
-97 | - **Purpose**: Complete adaptive styling system
-98 | - **New Styles**: Model display styling, responsive breakpoints
-99 | - **Enhancement**: Mobile-first CSS with desktop enhancements
-100 | - **Status**: ✅ COMPLETE RESPONSIVE SYSTEM
-101 | 
-102 | ## 🎯 Implementation Results
-103 | 
-104 | ### ✅ **User Requirements Met**:
-105 | 1. **Model Display**: ✅ Current model shown beside settings icon
-106 | 2. **Send Button Position**: ✅ Located beside (not above/below) text input
-107 | 3. **Responsive Design**: ✅ Adapts to all screen sizes
-108 | 4. **Clean Interface**: ✅ Removed blue header box for better UX
-109 | 
-110 | ### 🚀 **Additional Improvements Achieved**:
-111 | - Professional visual hierarchy with proper spacing
-112 | - Touch-friendly interface for mobile devices
-113 | - Smooth transitions and hover effects
-114 | - Accessibility-compliant focus management
-115 | - Performance-optimized CSS architecture
-116 | 
-117 | ## 📱 **Cross-Device Compatibility**:
-118 | - **Desktop**: Full-featured interface with optimal spacing
-119 | - **Tablet**: Compact design maintaining all functionality
-120 | - **Mobile**: Touch-optimized layout with smart text sizing
-121 | - **Responsive**: Seamless adaptation between all screen sizes
-122 | 
-123 | **🎉 Result**: The Flex Chatbot now features a fully adaptive, professional interface with the model name displayed beside the settings icon and the send button properly positioned beside the text input, creating an optimal user experience across all devices.
-```
-
-.windsurf/rules/layout.md
-```
-1 | ---
-2 | trigger: always_on
-3 | description: 
-4 | globs: 
-5 | ---
-6 | # 📁 Flex Chatbot Project Layout Documentation
-7 | 
-8 | ## 📋 Project Overview
-9 | This document tracks the complete project structure of the Flex Chatbot VS Code extension, including all files, their purposes, and recent changes during the adaptive UI redesign.
-10 | 
-11 | ## 🔄 Recent Critical Updates (Latest Session)
-12 | 
-13 | ### ✅ **ADAPTIVE UI REDESIGN COMPLETED** 
-14 | **Date**: Current session  
-15 | **Status**: SUCCESSFULLY IMPLEMENTED AND TESTED
-16 | 
-17 | #### 🎨 **UI Enhancements Applied**:
-18 | 
-19 | 1. **Removed Blue Header Box**:
-20 |    - ✅ Eliminated the prominent blue header box for cleaner design
-21 |    - ✅ Replaced with minimalist header bar
-22 |    - ✅ Better space utilization for chat content
-23 |    - ✅ Professional, streamlined appearance
-24 | 
-25 | 2. **Enhanced Header Layout**:
-26 |    ```
-27 |    📱 Header Bar (Optimized)
-28 |    ├── 🏷️ Flex Assistant logo and title
-29 |    ├── 🔴🟡🟢 Status indicators (Config/Dataset)
-30 |    ├── 📊 Message counter (live updates)
-31 |    ├── 📱 Model display (NEW - shows current model)
-32 |    ├── ⚙️ Settings button (model selection)
-33 |    └── 🗑️ Clear chat button
-34 |    ```
-35 | 
-36 | 3. **Improved Input Section**:
-37 |    ```
-38 |    ⌨️ Input Area (Redesigned)
-39 |    ├── 🚀 Quick action buttons (4 prompts)
-40 |    ├── 📝 Auto-expanding text input (left)
-41 |    └── 📤 Send button (beside input - right)
-42 |    ```
-43 | 
-44 | 4. **Mobile-First Responsive Design**:
-45 |    - **Desktop (>768px)**: Full layout with all elements visible
-46 |    - **Tablet (<=768px)**: Compact model display, optimized spacing
-47 |    - **Mobile (<=480px)**: Ultra-compact model display, stacked layout
-48 |    - **Auto-adaptive**: Seamless transitions between screen sizes
-49 | 
-50 | #### 📊 **Current Status**:
-51 | - ✅ TypeScript compilation: **PASSED**
-52 | - ✅ Extension packaging: **SUCCESSFUL** (`flex-chatbot-1.0.0.vsix`)
-53 | - ✅ Model display: **IMPLEMENTED** (beside settings icon)
-54 | - ✅ Send button positioning: **FIXED** (beside text input)
-55 | - ✅ Responsive design: **COMPLETE**
-56 | - 🚀 Status: **PRODUCTION READY - ADAPTIVE**
-57 | 
-58 | ### 🎯 **Key UI Improvements Implemented**:
-59 | 
-60 | #### **Model Display Enhancement**:
-61 | - ✅ **Positioned**: Directly beside the settings icon in header
-62 | - ✅ **Styling**: Professional gradient background with border
-63 | - ✅ **Responsive**: Adapts size on different screen sizes
-64 | - ✅ **Overflow Handling**: Text ellipsis for long model names
-65 | - ✅ **Visual Hierarchy**: Clear distinction from other elements
-66 | 
-67 | #### **Send Button Optimization**:
-68 | - ✅ **Positioning**: Placed beside (to the right of) text input
-69 | - ✅ **Layout**: Same row as text input, not above or below
-70 | - ✅ **Sizing**: Compact design that doesn't overwhelm the input
-71 | - ✅ **Responsiveness**: Maintains position across all screen sizes
-72 | - ✅ **Accessibility**: Proper focus states and touch targets
-73 | 
-74 | #### **Responsive Breakpoints**:
-75 | - **Desktop**: Model display max-width 120px, full feature set
-76 | - **Tablet**: Model display max-width 80px, compact layout
-77 | - **Mobile**: Model display max-width 60px, minimal design
-78 | 
-79 | ### 🔧 **Technical Implementation**:
-80 | - **CSS Architecture**: Mobile-first responsive design with progressive enhancement
-81 | - **Layout System**: Flexbox for precise positioning and alignment
-82 | - **Typography**: Adaptive font sizes across breakpoints
-83 | - **Spacing**: Consistent spacing system with CSS custom properties
-84 | - **Performance**: Optimized CSS with efficient selectors
-85 | 
-86 | ## 📝 File Descriptions (Updated)
-87 | 
-88 | ### 📄 Main Files Modified
-89 | 
-90 | #### `src/customSidebarViewProvider.ts` 🚀 **ENHANCED**
-91 | - **Purpose**: Main webview provider with adaptive UI
-92 | - **New Features**: Model display in header, optimized layout structure
-93 | - **Enhancement**: Clean HTML structure for better maintainability
-94 | - **Status**: ✅ PRODUCTION READY
-95 | 
-96 | #### `assets/webview/css/main.css` 🎨 **FULLY RESPONSIVE**
-97 | - **Purpose**: Complete adaptive styling system
-98 | - **New Styles**: Model display styling, responsive breakpoints
-99 | - **Enhancement**: Mobile-first CSS with desktop enhancements
-100 | - **Status**: ✅ COMPLETE RESPONSIVE SYSTEM
-101 | 
-102 | ## 🎯 Implementation Results
-103 | 
-104 | ### ✅ **User Requirements Met**:
-105 | 1. **Model Display**: ✅ Current model shown beside settings icon
-106 | 2. **Send Button Position**: ✅ Located beside (not above/below) text input
-107 | 3. **Responsive Design**: ✅ Adapts to all screen sizes
-108 | 4. **Clean Interface**: ✅ Removed blue header box for better UX
-109 | 
-110 | ### 🚀 **Additional Improvements Achieved**:
-111 | - Professional visual hierarchy with proper spacing
-112 | - Touch-friendly interface for mobile devices
-113 | - Smooth transitions and hover effects
-114 | - Accessibility-compliant focus management
-115 | - Performance-optimized CSS architecture
-116 | 
-117 | ## 📱 **Cross-Device Compatibility**:
-118 | - **Desktop**: Full-featured interface with optimal spacing
-119 | - **Tablet**: Compact design maintaining all functionality
-120 | - **Mobile**: Touch-optimized layout with smart text sizing
-121 | - **Responsive**: Seamless adaptation between all screen sizes
-122 | 
-123 | **🎉 Result**: The Flex Chatbot now features a fully adaptive, professional interface with the model name displayed beside the settings icon and the send button properly positioned beside the text input, creating an optimal user experience across all devices.
-```
-
 src/core/DebugManager.ts
 ```
 1 | import * as vscode from 'vscode';
@@ -5560,7 +5593,7 @@ src/dev/DevTools.ts
 40 |     return DevTools.instance;
 41 |   }
 42 | 
-43 |   public initialize(extensionUri: vscode.Uri) {
+43 |   public initialize(extensionUri: vscode.Uri): void {
 44 |     this.extensionUri = extensionUri;
 45 |   }
 46 | 
@@ -6070,136 +6103,231 @@ src/services/ChatService.ts
 8 | export class ChatService {
 9 |     private _conversationHistory: ChatMessage[] = [];
 10 |     private readonly maxConversationHistory = 20;
-11 |     private _isProcessingMessage = false;
-12 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-13 |     private _postMessage: (message: any) => void;
-14 |     private _flexDatasetService: FlexDatasetService;
-15 | 
-16 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-17 |     constructor(postMessageCallback: (message: any) => void, extensionUri: vscode.Uri) {
-18 |         this._postMessage = postMessageCallback;
-19 |         this._flexDatasetService = FlexDatasetService.getInstance(extensionUri.fsPath);
-20 |     }
-21 | 
-22 |     public async handleSendMessage(userMessage: string): Promise<void> {
-23 |         if (!userMessage.trim()) {
-24 |             return;
-25 |         }
+11 |     private readonly maxStoredMessages = 50; // Limit for persistence
+12 |     private readonly maxStorageDays = 30; // Days to keep history
+13 |     private _isProcessingMessage = false;
+14 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+15 |     private _postMessage: (message: any) => void;
+16 |     private _flexDatasetService: FlexDatasetService;
+17 |     private _context: vscode.ExtensionContext;
+18 | 
+19 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+20 |     constructor(postMessageCallback: (message: any) => void, extensionUri: vscode.Uri, context: vscode.ExtensionContext) {
+21 |         this._postMessage = postMessageCallback;
+22 |         this._flexDatasetService = FlexDatasetService.getInstance(extensionUri.fsPath);
+23 |         this._context = context;
+24 |         this.loadChatHistory();
+25 |     }
 26 | 
-27 |         if (this._isProcessingMessage) {
-28 |             this._postMessage({ command: 'aiResponse', text: 'Please wait for the current message to be processed.' });
+27 |     public async handleSendMessage(userMessage: string): Promise<void> {
+28 |         if (!userMessage.trim()) {
 29 |             return;
 30 |         }
-31 |         this._isProcessingMessage = true;
-32 | 
-33 |         const processingTimeout = setTimeout(() => {
-34 |             this._isProcessingMessage = false;
-35 |             this._postMessage({ command: 'aiResponse', text: 'Request processing timeout. Please try again.' });
-36 |         }, 600000); // 10 minutes max
+31 | 
+32 |         if (this._isProcessingMessage) {
+33 |             this._postMessage({ command: 'aiResponse', text: 'Please wait for the current message to be processed.' });
+34 |             return;
+35 |         }
+36 |         this._isProcessingMessage = true;
 37 | 
-38 |         logger.logUserAction('sendMessage', { messageLength: userMessage.length });
-39 | 
-40 |         const config = ConfigService.getConfig();
-41 |         const configValidation = ConfigService.validateConfig();
+38 |         const processingTimeout = setTimeout(() => {
+39 |             this._isProcessingMessage = false;
+40 |             this._postMessage({ command: 'aiResponse', text: 'Request processing timeout. Please try again.' });
+41 |         }, 600000); // 10 minutes max
 42 | 
-43 |         if (!configValidation.isValid) {
-44 |             this._isProcessingMessage = false;
-45 |             this._postMessage({
-46 |                 command: 'aiResponse',
-47 |                 text: `Configuration error: ${configValidation.errors.join(', ')}. Please check your settings.`
-48 |             });
-49 |             return;
-50 |         }
-51 | 
-52 |         try {
-53 |             const isWebSearch = userMessage.toLowerCase().includes('[web]');
-54 |             const webSearchResults = '';
-55 | 
-56 |             if (isWebSearch && config.enableWebSearch) {
-57 |                 // Web search logic remains here...
-58 |             }
-59 | 
-60 |             let messageForAI = userMessage;
-61 |             if (webSearchResults) {
-62 |                 messageForAI = `The user asked: ${userMessage.replace(/\[web\]/gi, '').trim()}\n\nHere are some search results that might help:\n${webSearchResults}\n\nPlease synthesize this information to provide a helpful answer.`;
+43 |         logger.logUserAction('sendMessage', { messageLength: userMessage.length });
+44 | 
+45 |         const config = ConfigService.getConfig();
+46 |         const configValidation = ConfigService.validateConfig();
+47 | 
+48 |         if (!configValidation.isValid) {
+49 |             this._isProcessingMessage = false;
+50 |             this._postMessage({
+51 |                 command: 'aiResponse',
+52 |                 text: `Configuration error: ${configValidation.errors.join(', ')}. Please check your settings.`
+53 |             });
+54 |             return;
+55 |         }
+56 | 
+57 |         try {
+58 |             const isWebSearch = userMessage.toLowerCase().includes('[web]');
+59 |             const webSearchResults = '';
+60 | 
+61 |             if (isWebSearch && config.enableWebSearch) {
+62 |                 // Web search logic remains here...
 63 |             }
 64 | 
-65 |             const userChatMessage: ChatMessage = {
-66 |                 role: 'user',
-67 |                 content: userMessage,
-68 |                 timestamp: new Date()
-69 |             };
-70 |             this._conversationHistory.push(userChatMessage);
-71 | 
-72 |             if (this._conversationHistory.length > this.maxConversationHistory) {
-73 |                 this._conversationHistory = this._conversationHistory.slice(-this.maxConversationHistory);
-74 |             }
-75 | 
-76 |             this._postMessage({ command: 'statusUpdate', text: 'Flex Assistant is thinking...' });
-77 | 
-78 |             const systemPrompt = this._flexDatasetService.getSystemPrompt();
-79 |             const messages: ChatMessage[] = [
-80 |                 { role: 'system', content: systemPrompt },
-81 |                 ...this._conversationHistory.slice(0, -1),
-82 |                 { role: 'user', content: messageForAI, timestamp: new Date() }
-83 |             ];
-84 | 
-85 |             let fullResponse = '';
-86 |             this._postMessage({ command: 'aiStreamStart' });
-87 | 
-88 |             await ApiService.streamChatCompletion(
-89 |                 messages,
-90 |                 config,
-91 |                 (chunk: string) => {
-92 |                     fullResponse += chunk;
-93 |                     this._postMessage({ command: 'aiStreamChunk', text: chunk });
-94 |                 },
-95 |                 (error: Error) => {
-96 |                     this._postMessage({ command: 'aiResponse', text: `Streaming error: ${error.message}` });
-97 |                 },
-98 |                 () => {
-99 |                     this._postMessage({ command: 'aiStreamComplete' });
-100 |                 }
-101 |             );
-102 | 
-103 |             const aiChatMessage: ChatMessage = {
-104 |                 role: 'assistant',
-105 |                 content: fullResponse,
-106 |                 timestamp: new Date()
-107 |             };
-108 |             this._conversationHistory.push(aiChatMessage);
-109 | 
-110 |             logger.info('Message processed successfully', {
-111 |                 userMessageLength: userMessage.length,
-112 |                 responseLength: fullResponse.length,
-113 |                 historyLength: this._conversationHistory.length
-114 |             });
-115 | 
-116 |             clearTimeout(processingTimeout);
-117 | 
-118 |         } catch (error) {
-119 |             logger.error('Error processing message', error);
-120 |             clearTimeout(processingTimeout);
-121 |             this._postMessage({ command: 'statusUpdate', text: '' });
-122 | 
-123 |             let errorMessage = 'Sorry, I encountered an error. ';
-124 |             if (error instanceof Error) {
-125 |                 // ... error message formatting ...
-126 |             } else {
-127 |                 errorMessage += 'Unknown error occurred. Please try again.';
-128 |             }
-129 |             this._postMessage({ command: 'aiResponse', text: errorMessage });
-130 |         } finally {
-131 |             this._isProcessingMessage = false;
-132 |         }
-133 |     }
-134 | 
-135 |     public resetChat(): void {
-136 |         logger.logUserAction('resetChat');
-137 |         this._conversationHistory = [];
-138 |         this._postMessage({ command: 'chatCleared' });
-139 |     }
-140 | } 
+65 |             let messageForAI = userMessage;
+66 |             if (webSearchResults) {
+67 |                 messageForAI = `The user asked: ${userMessage.replace(/\[web\]/gi, '').trim()}\n\nHere are some search results that might help:\n${webSearchResults}\n\nPlease synthesize this information to provide a helpful answer.`;
+68 |             }
+69 | 
+70 |             const userChatMessage: ChatMessage = {
+71 |                 role: 'user',
+72 |                 content: userMessage,
+73 |                 timestamp: new Date()
+74 |             };
+75 |             this._conversationHistory.push(userChatMessage);
+76 | 
+77 |             // Save history after adding user message
+78 |             this.saveChatHistory();
+79 | 
+80 |             if (this._conversationHistory.length > this.maxConversationHistory) {
+81 |                 this._conversationHistory = this._conversationHistory.slice(-this.maxConversationHistory);
+82 |             }
+83 | 
+84 |             this._postMessage({ command: 'statusUpdate', text: 'Flex Assistant is thinking...' });
+85 | 
+86 |             const systemPrompt = this._flexDatasetService.getSystemPrompt();
+87 |             const messages: ChatMessage[] = [
+88 |                 { role: 'system', content: systemPrompt },
+89 |                 ...this._conversationHistory.slice(0, -1),
+90 |                 { role: 'user', content: messageForAI, timestamp: new Date() }
+91 |             ];
+92 | 
+93 |             let fullResponse = '';
+94 |             this._postMessage({ command: 'aiStreamStart' });
+95 | 
+96 |             await ApiService.streamChatCompletion(
+97 |                 messages,
+98 |                 config,
+99 |                 (chunk: string) => {
+100 |                     const sanitizedChunk = this.sanitizeAIResponse(chunk);
+101 |                     fullResponse += sanitizedChunk;
+102 |                     this._postMessage({ command: 'aiStreamChunk', text: sanitizedChunk });
+103 |                 },
+104 |                 (error: Error) => {
+105 |                     this._postMessage({ command: 'aiResponse', text: `Streaming error: ${error.message}` });
+106 |                 },
+107 |                 () => {
+108 |                     this._postMessage({ command: 'aiStreamComplete' });
+109 |                 }
+110 |             );
+111 | 
+112 |             // Final sanitization of complete response
+113 |             const sanitizedResponse = this.sanitizeAIResponse(fullResponse);
+114 | 
+115 |             const aiChatMessage: ChatMessage = {
+116 |                 role: 'assistant',
+117 |                 content: sanitizedResponse,
+118 |                 timestamp: new Date()
+119 |             };
+120 |             this._conversationHistory.push(aiChatMessage);
+121 | 
+122 |             // Save chat history after each exchange
+123 |             this.saveChatHistory();
+124 | 
+125 |             logger.info('Message processed successfully', {
+126 |                 userMessageLength: userMessage.length,
+127 |                 responseLength: fullResponse.length,
+128 |                 historyLength: this._conversationHistory.length
+129 |             });
+130 | 
+131 |             clearTimeout(processingTimeout);
+132 | 
+133 |         } catch (error) {
+134 |             logger.error('Error processing message', error);
+135 |             clearTimeout(processingTimeout);
+136 |             this._postMessage({ command: 'statusUpdate', text: '' });
+137 | 
+138 |             let errorMessage = 'Sorry, I encountered an error. ';
+139 |             if (error instanceof Error) {
+140 |                 // ... error message formatting ...
+141 |             } else {
+142 |                 errorMessage += 'Unknown error occurred. Please try again.';
+143 |             }
+144 |             this._postMessage({ command: 'aiResponse', text: errorMessage });
+145 |         } finally {
+146 |             this._isProcessingMessage = false;
+147 |         }
+148 |     }
+149 | 
+150 |     public resetChat(): void {
+151 |         logger.logUserAction('resetChat');
+152 |         this._conversationHistory = [];
+153 |         this.saveChatHistory(); // Persist the empty state
+154 |         this._postMessage({ command: 'chatCleared' });
+155 |     }
+156 | 
+157 |     /**
+158 |      * Load chat history from VSCode global state
+159 |      */
+160 |     private loadChatHistory(): void {
+161 |         try {
+162 |             const stored = this._context.globalState.get<ChatMessage[]>('flexChatHistory', []);
+163 |             const cutoffDate = new Date();
+164 |             cutoffDate.setDate(cutoffDate.getDate() - this.maxStorageDays);
+165 | 
+166 |             // Filter out old messages and limit to max stored messages
+167 |             this._conversationHistory = stored
+168 |                 .filter(msg => !msg.timestamp || new Date(msg.timestamp) > cutoffDate)
+169 |                 .slice(-this.maxStoredMessages);
+170 | 
+171 |             logger.info(`Loaded ${this._conversationHistory.length} messages from chat history`);
+172 |         } catch (error) {
+173 |             logger.error('Error loading chat history', error);
+174 |             this._conversationHistory = [];
+175 |         }
+176 |     }
+177 | 
+178 |     /**
+179 |      * Save chat history to VSCode global state
+180 |      */
+181 |     private saveChatHistory(): void {
+182 |         try {
+183 |             // Only save recent messages to prevent excessive storage usage
+184 |             const messagesToSave = this._conversationHistory.slice(-this.maxStoredMessages);
+185 |             this._context.globalState.update('flexChatHistory', messagesToSave);
+186 |             logger.debug(`Saved ${messagesToSave.length} messages to chat history`);
+187 |         } catch (error) {
+188 |             logger.error('Error saving chat history', error);
+189 |         }
+190 |     }
+191 | 
+192 |     /**
+193 |      * Sanitize AI response to remove corrupted tokens and improve code quality
+194 |      */
+195 |     private sanitizeAIResponse(response: string): string {
+196 |         const invalidTokens = {
+197 |             'sndo2': 'fun',
+198 |             'etb3': 'print',
+199 |             'karr': 'for',
+200 |             'l7d': 'for',
+201 |             'rg3': 'return',
+202 |             'rakm': 'int',
+203 |             'da5l': 'input',
+204 |             'lw': 'if',
+205 |             'gher': 'else'
+206 |         };
+207 | 
+208 |         let sanitized = response;
+209 |         let hadChanges = false;
+210 | 
+211 |         for (const [invalid, correct] of Object.entries(invalidTokens)) {
+212 |             const regex = new RegExp(`\\b${invalid}\\b`, 'g');
+213 |             if (regex.test(sanitized)) {
+214 |                 sanitized = sanitized.replace(regex, correct);
+215 |                 hadChanges = true;
+216 |             }
+217 |         }
+218 | 
+219 |         if (hadChanges) {
+220 |             logger.warn('Sanitized AI response - removed corrupted tokens', { 
+221 |                 originalLength: response.length,
+222 |                 sanitizedLength: sanitized.length 
+223 |             });
+224 |         }
+225 | 
+226 |         return sanitized;
+227 |     }
+228 | 
+229 |     /**
+230 |      * Get chat history for restoration
+231 |      */
+232 |     public getChatHistory(): ChatMessage[] {
+233 |         return [...this._conversationHistory];
+234 |     }
+235 | }
 ```
 
 src/services/WebviewService.ts
@@ -6890,56 +7018,43 @@ src/services/apiService.ts
 574 |         }
 575 |     }
 576 | 
-577 |     /**
-578 |      * Extract error message from various error types
-579 |      */
-580 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-581 |     private static getErrorMessage(error: any): string {
-582 |         if (error?.response?.data?.error?.message) {
-583 |             return error.response.data.error.message;
-584 |         }
-585 |         if (error?.message) {
-586 |             return error.message;
-587 |         }
-588 |         return 'Unknown error occurred';
-589 |     }
-590 | 
-591 |     /**
-592 |      * Sleep utility for retry delays
-593 |      */
-594 |     private static sleep(ms: number): Promise<void> {
-595 |         return new Promise(resolve => setTimeout(resolve, ms));
-596 |     }
-597 | 
-598 |     /**
-599 |      * Get model pricing information formatted for display
-600 |      */
-601 |     public static formatModelPricing(model: ModelInfo): string {
-602 |         if (!model.pricing) {
-603 |             return 'Pricing N/A';
-604 |         }
-605 | 
-606 |         const promptPrice = (parseFloat(model.pricing.prompt) * 1000).toFixed(6);
-607 |         const completionPrice = (parseFloat(model.pricing.completion) * 1000).toFixed(6);
-608 | 
-609 |         return `$${promptPrice}/$${completionPrice} per 1K tokens`;
-610 |     }
-611 | 
-612 |     /**
-613 |      * Get recommended models for Flex programming
-614 |      */
-615 |     public static getRecommendedModels(): string[] {
-616 |         return [
-617 |             'openai/gpt-4o-mini',
-618 |             'openai/gpt-4o',
-619 |             'openai/gpt-4-turbo',
-620 |             'anthropic/claude-3.5-sonnet',
-621 |             'anthropic/claude-3-haiku',
-622 |             'google/gemini-flash-1.5',
-623 |             'mistralai/mistral-small'
-624 |         ];
-625 |     }
-626 | } 
+577 | 
+578 |     /**
+579 |      * Sleep utility for retry delays
+580 |      */
+581 |     private static sleep(ms: number): Promise<void> {
+582 |         return new Promise(resolve => setTimeout(resolve, ms));
+583 |     }
+584 | 
+585 |     /**
+586 |      * Get model pricing information formatted for display
+587 |      */
+588 |     public static formatModelPricing(model: ModelInfo): string {
+589 |         if (!model.pricing) {
+590 |             return 'Pricing N/A';
+591 |         }
+592 | 
+593 |         const promptPrice = (parseFloat(model.pricing.prompt) * 1000).toFixed(6);
+594 |         const completionPrice = (parseFloat(model.pricing.completion) * 1000).toFixed(6);
+595 | 
+596 |         return `$${promptPrice}/$${completionPrice} per 1K tokens`;
+597 |     }
+598 | 
+599 |     /**
+600 |      * Get recommended models for Flex programming
+601 |      */
+602 |     public static getRecommendedModels(): string[] {
+603 |         return [
+604 |             'openai/gpt-4.1-mini',
+605 |             'openai/gpt-4o-mini',
+606 |             'openai/gpt-4o',
+607 |             'anthropic/claude-3.5-sonnet',
+608 |             'anthropic/claude-3-haiku',
+609 |             'google/gemini-flash-1.5',
+610 |             'mistralai/mistral-small'
+611 |         ];
+612 |     }
+613 | } 
 ```
 
 src/services/configService.ts
@@ -6958,279 +7073,274 @@ src/services/configService.ts
 12 |      */
 13 |     public static getConfig(): ExtensionConfig {
 14 |         const config = vscode.workspace.getConfiguration(this.configSection);
-15 |         let model = config.get<string>('model', 'openai/gpt-4o-mini');
+15 |         const model = config.get<string>('model', 'openai/gpt-4o-mini');
 16 | 
-17 |         // Fix common invalid model names
-18 |         const modelFixes: Record<string, string> = {
-19 |             'openai/gpt-4.1-mini': 'openai/gpt-4o-mini',
-20 |             'openai/gpt-4.1': 'openai/gpt-4o',
-21 |             'openai/gpt-4.1-nano': 'openai/gpt-4o-mini',
-22 |             'openai/gpt-4.5-preview': 'openai/gpt-4o'
-23 |         };
-24 | 
-25 |         if (modelFixes[model]) {
-26 |             const newModel = modelFixes[model];
-27 |             if (newModel) {
-28 |                 console.warn(`⚠️ Fixing invalid model: ${model} → ${newModel}`);
-29 |                 // Auto-update the configuration
-30 |                 this.set('model', newModel).catch(console.error);
-31 |                 model = newModel;
-32 |             }
-33 |         }
-34 | 
-35 |         return {
-36 |             apiKey: config.get<string>('apiKey', ''),
-37 |             model: model,
-38 |             temperature: config.get<number>('temperature', 0.7),
-39 |             enableWebSearch: config.get<boolean>('enableWebSearch', false),
-40 |             maxTokens: config.get<number>('maxTokens', 0), // 0 means unlimited
-41 |             timeout: config.get<number>('timeout', 30000)
-42 |         };
-43 |     }
-44 | 
-45 |     /**
-46 |      * Get specific configuration value
-47 |      */
-48 |     public static get<T>(key: keyof ExtensionConfig, defaultValue?: T): T {
-49 |         const config = vscode.workspace.getConfiguration(this.configSection);
-50 |         return config.get<T>(key, defaultValue as T);
-51 |     }
-52 | 
-53 |     /**
-54 |      * Set configuration value
-55 |      */
-56 |     public static async set<T>(
-57 |         key: keyof ExtensionConfig,
-58 |         value: T,
-59 |         target: vscode.ConfigurationTarget = vscode.ConfigurationTarget.Global
-60 |     ): Promise<void> {
-61 |         const config = vscode.workspace.getConfiguration(this.configSection);
-62 |         await config.update(key, value, target);
-63 |     }
-64 | 
-65 |     /**
-66 |      * Check if API key is configured
-67 |      */
-68 |     public static isApiKeyConfigured(): boolean {
-69 |         const apiKey = this.get<string>('apiKey', '');
-70 |         return apiKey.trim().length > 0;
-71 |     }
-72 | 
-73 |     /**
-74 |      * Validate configuration
-75 |      */
-76 |     public static validateConfig(): { isValid: boolean; errors: string[] } {
-77 |         const config = this.getConfig();
-78 |         const errors: string[] = [];
-79 | 
-80 |         // Validate API key
-81 |         if (!config.apiKey || config.apiKey.trim().length === 0) {
-82 |             errors.push('API key is required');
-83 |         } else if (config.apiKey.length < 20) {
-84 |             errors.push('API key appears to be invalid (too short)');
+17 |         // Log when users select models that might not exist, but preserve their choice
+18 |         const commonModels = [
+19 |             'openai/gpt-4o-mini',
+20 |             'openai/gpt-4o',
+21 |             'openai/gpt-3.5-turbo',
+22 |             'anthropic/claude-3-sonnet',
+23 |             'anthropic/claude-3-haiku'
+24 |         ];
+25 | 
+26 |         if (!commonModels.includes(model)) {
+27 |             console.info(`ℹ️ User selected custom model: ${model}. This model may not exist or may have limited functionality.`);
+28 |         }
+29 | 
+30 |         return {
+31 |             apiKey: config.get<string>('apiKey', ''),
+32 |             model: model,
+33 |             temperature: config.get<number>('temperature', 0.7),
+34 |             enableWebSearch: config.get<boolean>('enableWebSearch', false),
+35 |             maxTokens: config.get<number>('maxTokens', 0), // 0 means unlimited
+36 |             timeout: config.get<number>('timeout', 30000)
+37 |         };
+38 |     }
+39 | 
+40 |     /**
+41 |      * Get specific configuration value
+42 |      */
+43 |     public static get<T>(key: keyof ExtensionConfig, defaultValue?: T): T {
+44 |         const config = vscode.workspace.getConfiguration(this.configSection);
+45 |         return config.get<T>(key, defaultValue as T);
+46 |     }
+47 | 
+48 |     /**
+49 |      * Set configuration value
+50 |      */
+51 |     public static async set<T>(
+52 |         key: keyof ExtensionConfig,
+53 |         value: T,
+54 |         target: vscode.ConfigurationTarget = vscode.ConfigurationTarget.Global
+55 |     ): Promise<void> {
+56 |         const config = vscode.workspace.getConfiguration(this.configSection);
+57 |         await config.update(key, value, target);
+58 |     }
+59 | 
+60 |     /**
+61 |      * Check if API key is configured
+62 |      */
+63 |     public static isApiKeyConfigured(): boolean {
+64 |         const apiKey = this.get<string>('apiKey', '');
+65 |         return apiKey.trim().length > 0;
+66 |     }
+67 | 
+68 |     /**
+69 |      * Validate configuration
+70 |      */
+71 |     public static validateConfig(): { isValid: boolean; errors: string[] } {
+72 |         const config = this.getConfig();
+73 |         const errors: string[] = [];
+74 | 
+75 |         // Validate API key
+76 |         if (!config.apiKey || config.apiKey.trim().length === 0) {
+77 |             errors.push('API key is required');
+78 |         } else if (config.apiKey.length < 20) {
+79 |             errors.push('API key appears to be invalid (too short)');
+80 |         }
+81 | 
+82 |         // Validate model
+83 |         if (!config.model || config.model.trim().length === 0) {
+84 |             errors.push('Model selection is required');
 85 |         }
 86 | 
-87 |         // Validate model
-88 |         if (!config.model || config.model.trim().length === 0) {
-89 |             errors.push('Model selection is required');
+87 |         // Validate temperature
+88 |         if (config.temperature < 0 || config.temperature > 2) {
+89 |             errors.push('Temperature must be between 0 and 2');
 90 |         }
 91 | 
-92 |         // Validate temperature
-93 |         if (config.temperature < 0 || config.temperature > 2) {
-94 |             errors.push('Temperature must be between 0 and 2');
+92 |         // Validate max tokens
+93 |         if (config.maxTokens < 1 || config.maxTokens > 32000) {
+94 |             errors.push('Max tokens must be between 1 and 32000');
 95 |         }
 96 | 
-97 |         // Validate max tokens
-98 |         if (config.maxTokens < 1 || config.maxTokens > 32000) {
-99 |             errors.push('Max tokens must be between 1 and 32000');
+97 |         // Validate timeout
+98 |         if (config.timeout < 5000 || config.timeout > 300000) {
+99 |             errors.push('Timeout must be between 5 and 300 seconds');
 100 |         }
 101 | 
-102 |         // Validate timeout
-103 |         if (config.timeout < 5000 || config.timeout > 300000) {
-104 |             errors.push('Timeout must be between 5 and 300 seconds');
-105 |         }
-106 | 
-107 |         return {
-108 |             isValid: errors.length === 0,
-109 |             errors
-110 |         };
-111 |     }
-112 | 
-113 |     /**
-114 |      * Get default configuration
-115 |      */
-116 |     public static getDefaultConfig(): ExtensionConfig {
-117 |         return {
-118 |             apiKey: '',
-119 |             model: 'openai/gpt-4o-mini',
-120 |             temperature: 0.7,
-121 |             enableWebSearch: true,
-122 |             maxTokens: 4000,
-123 |             timeout: 30000
-124 |         };
-125 |     }
-126 | 
-127 |     /**
-128 |      * Reset configuration to defaults
-129 |      */
-130 |     public static async resetToDefaults(): Promise<void> {
-131 |         const defaultConfig = this.getDefaultConfig();
-132 |         const config = vscode.workspace.getConfiguration(this.configSection);
-133 | 
-134 |         for (const [key, value] of Object.entries(defaultConfig)) {
-135 |             if (key !== 'apiKey') { // Don't reset API key
-136 |                 await config.update(key, value, vscode.ConfigurationTarget.Global);
-137 |             }
-138 |         }
-139 |     }
-140 | 
-141 |     /**
-142 |      * Show configuration dialog
-143 |      */
-144 |     public static async showConfigurationDialog(): Promise<void> {
-145 |         const actions = [
-146 |             'Open Settings',
-147 |             'Set API Key',
-148 |             'Select Model',
-149 |             'Test Connection'
-150 |         ];
-151 | 
-152 |         const selectedAction = await vscode.window.showQuickPick(actions, {
-153 |             placeHolder: 'Choose configuration action'
-154 |         });
+102 |         return {
+103 |             isValid: errors.length === 0,
+104 |             errors
+105 |         };
+106 |     }
+107 | 
+108 |     /**
+109 |      * Get default configuration
+110 |      */
+111 |     public static getDefaultConfig(): ExtensionConfig {
+112 |         return {
+113 |             apiKey: '',
+114 |             model: 'openai/gpt-4o-mini',
+115 |             temperature: 0.7,
+116 |             enableWebSearch: true,
+117 |             maxTokens: 4000,
+118 |             timeout: 30000
+119 |         };
+120 |     }
+121 | 
+122 |     /**
+123 |      * Reset configuration to defaults
+124 |      */
+125 |     public static async resetToDefaults(): Promise<void> {
+126 |         const defaultConfig = this.getDefaultConfig();
+127 |         const config = vscode.workspace.getConfiguration(this.configSection);
+128 | 
+129 |         for (const [key, value] of Object.entries(defaultConfig)) {
+130 |             if (key !== 'apiKey') { // Don't reset API key
+131 |                 await config.update(key, value, vscode.ConfigurationTarget.Global);
+132 |             }
+133 |         }
+134 |     }
+135 | 
+136 |     /**
+137 |      * Show configuration dialog
+138 |      */
+139 |     public static async showConfigurationDialog(): Promise<void> {
+140 |         const actions = [
+141 |             'Open Settings',
+142 |             'Set API Key',
+143 |             'Select Model',
+144 |             'Test Connection'
+145 |         ];
+146 | 
+147 |         const selectedAction = await vscode.window.showQuickPick(actions, {
+148 |             placeHolder: 'Choose configuration action'
+149 |         });
+150 | 
+151 |         switch (selectedAction) {
+152 |             case 'Open Settings':
+153 |                 await vscode.commands.executeCommand('workbench.action.openSettings', this.configSection);
+154 |                 break;
 155 | 
-156 |         switch (selectedAction) {
-157 |             case 'Open Settings':
-158 |                 await vscode.commands.executeCommand('workbench.action.openSettings', this.configSection);
-159 |                 break;
-160 | 
-161 |             case 'Set API Key':
-162 |                 await this.promptForApiKey();
-163 |                 break;
-164 | 
-165 |             case 'Select Model':
-166 |                 await vscode.commands.executeCommand('flexChatbot.selectModel');
-167 |                 break;
-168 | 
-169 |             case 'Test Connection':
-170 |                 await this.testConnection();
-171 |                 break;
-172 |         }
-173 |     }
-174 | 
-175 |     /**
-176 |      * Prompt user for API key
-177 |      */
-178 |     public static async promptForApiKey(): Promise<void> {
-179 |         const apiKey = await vscode.window.showInputBox({
-180 |             prompt: 'Enter your OpenRouter API key',
-181 |             password: true,
-182 |             placeHolder: 'sk-or-...',
-183 |             validateInput: (value) => {
-184 |                 if (!value || value.trim().length === 0) {
-185 |                     return 'API key is required';
-186 |                 }
-187 |                 if (value.length < 20) {
-188 |                     return 'API key appears to be invalid (too short)';
-189 |                 }
-190 |                 return null;
-191 |             }
-192 |         });
-193 | 
-194 |         if (apiKey) {
-195 |             await this.set('apiKey', apiKey.trim());
-196 |             vscode.window.showInformationMessage('API key saved successfully!');
-197 |         }
-198 |     }
-199 | 
-200 |     /**
-201 |      * Test API connection
-202 |      */
-203 |     private static async testConnection(): Promise<void> {
-204 |         const config = this.getConfig();
+156 |             case 'Set API Key':
+157 |                 await this.promptForApiKey();
+158 |                 break;
+159 | 
+160 |             case 'Select Model':
+161 |                 await vscode.commands.executeCommand('flexChatbot.selectModel');
+162 |                 break;
+163 | 
+164 |             case 'Test Connection':
+165 |                 await this.testConnection();
+166 |                 break;
+167 |         }
+168 |     }
+169 | 
+170 |     /**
+171 |      * Prompt user for API key
+172 |      */
+173 |     public static async promptForApiKey(): Promise<void> {
+174 |         const apiKey = await vscode.window.showInputBox({
+175 |             prompt: 'Enter your OpenRouter API key',
+176 |             password: true,
+177 |             placeHolder: 'sk-or-...',
+178 |             validateInput: (value) => {
+179 |                 if (!value || value.trim().length === 0) {
+180 |                     return 'API key is required';
+181 |                 }
+182 |                 if (value.length < 20) {
+183 |                     return 'API key appears to be invalid (too short)';
+184 |                 }
+185 |                 return null;
+186 |             }
+187 |         });
+188 | 
+189 |         if (apiKey) {
+190 |             await this.set('apiKey', apiKey.trim());
+191 |             vscode.window.showInformationMessage('API key saved successfully!');
+192 |         }
+193 |     }
+194 | 
+195 |     /**
+196 |      * Test API connection
+197 |      */
+198 |     private static async testConnection(): Promise<void> {
+199 |         const config = this.getConfig();
+200 | 
+201 |         if (!config.apiKey) {
+202 |             vscode.window.showErrorMessage('Please set your API key first');
+203 |             return;
+204 |         }
 205 | 
-206 |         if (!config.apiKey) {
-207 |             vscode.window.showErrorMessage('Please set your API key first');
-208 |             return;
-209 |         }
+206 |         try {
+207 |             // Import ApiService dynamically to avoid circular dependencies
+208 |             const apiServiceModule = await import('./apiService');
+209 |             const isConnected = await apiServiceModule.ApiService.testApiConnection(config.apiKey);
 210 | 
-211 |         try {
-212 |             // Import ApiService dynamically to avoid circular dependencies
-213 |             const apiServiceModule = await import('./apiService');
-214 |             const isConnected = await apiServiceModule.ApiService.testApiConnection(config.apiKey);
-215 | 
-216 |             if (isConnected) {
-217 |                 vscode.window.showInformationMessage('✅ API connection successful!');
-218 |             } else {
-219 |                 vscode.window.showErrorMessage('❌ API connection failed. Please check your API key.');
-220 |             }
-221 |         } catch (error) {
-222 |             const errorMessage = error instanceof Error ? error.message : String(error);
-223 |             vscode.window.showErrorMessage(`❌ Connection test failed: ${errorMessage}`);
-224 |         }
-225 |     }
-226 | 
-227 |     /**
-228 |      * Watch for configuration changes
-229 |      */
-230 |     public static onConfigurationChanged(
-231 |         callback: (config: ExtensionConfig) => void
-232 |     ): vscode.Disposable {
-233 |         return vscode.workspace.onDidChangeConfiguration((event) => {
-234 |             if (event.affectsConfiguration(this.configSection)) {
-235 |                 callback(this.getConfig());
-236 |             }
-237 |         });
-238 |     }
-239 | 
-240 |     /**
-241 |      * Export configuration (excluding sensitive data)
-242 |      */
-243 |     public static exportConfig(): Partial<ExtensionConfig> {
-244 |         const config = this.getConfig();
-245 |         return {
-246 |             model: config.model,
-247 |             temperature: config.temperature,
-248 |             enableWebSearch: config.enableWebSearch,
-249 |             maxTokens: config.maxTokens,
-250 |             timeout: config.timeout
-251 |             // Explicitly exclude apiKey for security
-252 |         };
-253 |     }
-254 | 
-255 |     /**
-256 |      * Import configuration (excluding sensitive data)
-257 |      */
-258 |     public static async importConfig(importedConfig: Partial<ExtensionConfig>): Promise<void> {
-259 |         const config = vscode.workspace.getConfiguration(this.configSection);
-260 | 
-261 |         for (const [key, value] of Object.entries(importedConfig)) {
-262 |             if (key !== 'apiKey' && value !== undefined) {
-263 |                 await config.update(key, value, vscode.ConfigurationTarget.Global);
-264 |             }
-265 |         }
-266 | 
-267 |         vscode.window.showInformationMessage('Configuration imported successfully!');
-268 |     }
-269 | 
-270 |     /**
-271 |      * Get configuration summary for display
-272 |      */
-273 |     public static getConfigSummary(): string {
-274 |         const config = this.getConfig();
-275 |         const hasApiKey = config.apiKey.length > 0;
-276 | 
-277 |         return `
-278 | 📋 **Configuration Summary:**
-279 | - API Key: ${hasApiKey ? '✅ Set' : '❌ Not set'}
-280 | - Model: ${config.model}
-281 | - Temperature: ${config.temperature}
-282 | - Web Search: ${config.enableWebSearch ? '✅ Enabled' : '❌ Disabled'}
-283 | - Max Tokens: ${config.maxTokens || 'Default'}
-284 | - Timeout: ${(config.timeout || 30000) / 1000}s
-285 |     `.trim();
-286 |     }
-287 | } 
+211 |             if (isConnected) {
+212 |                 vscode.window.showInformationMessage('✅ API connection successful!');
+213 |             } else {
+214 |                 vscode.window.showErrorMessage('❌ API connection failed. Please check your API key.');
+215 |             }
+216 |         } catch (error) {
+217 |             const errorMessage = error instanceof Error ? error.message : String(error);
+218 |             vscode.window.showErrorMessage(`❌ Connection test failed: ${errorMessage}`);
+219 |         }
+220 |     }
+221 | 
+222 |     /**
+223 |      * Watch for configuration changes
+224 |      */
+225 |     public static onConfigurationChanged(
+226 |         callback: (config: ExtensionConfig) => void
+227 |     ): vscode.Disposable {
+228 |         return vscode.workspace.onDidChangeConfiguration((event) => {
+229 |             if (event.affectsConfiguration(this.configSection)) {
+230 |                 callback(this.getConfig());
+231 |             }
+232 |         });
+233 |     }
+234 | 
+235 |     /**
+236 |      * Export configuration (excluding sensitive data)
+237 |      */
+238 |     public static exportConfig(): Partial<ExtensionConfig> {
+239 |         const config = this.getConfig();
+240 |         return {
+241 |             model: config.model,
+242 |             temperature: config.temperature,
+243 |             enableWebSearch: config.enableWebSearch,
+244 |             maxTokens: config.maxTokens,
+245 |             timeout: config.timeout
+246 |             // Explicitly exclude apiKey for security
+247 |         };
+248 |     }
+249 | 
+250 |     /**
+251 |      * Import configuration (excluding sensitive data)
+252 |      */
+253 |     public static async importConfig(importedConfig: Partial<ExtensionConfig>): Promise<void> {
+254 |         const config = vscode.workspace.getConfiguration(this.configSection);
+255 | 
+256 |         for (const [key, value] of Object.entries(importedConfig)) {
+257 |             if (key !== 'apiKey' && value !== undefined) {
+258 |                 await config.update(key, value, vscode.ConfigurationTarget.Global);
+259 |             }
+260 |         }
+261 | 
+262 |         vscode.window.showInformationMessage('Configuration imported successfully!');
+263 |     }
+264 | 
+265 |     /**
+266 |      * Get configuration summary for display
+267 |      */
+268 |     public static getConfigSummary(): string {
+269 |         const config = this.getConfig();
+270 |         const hasApiKey = config.apiKey.length > 0;
+271 | 
+272 |         return `
+273 | 📋 **Configuration Summary:**
+274 | - API Key: ${hasApiKey ? '✅ Set' : '❌ Not set'}
+275 | - Model: ${config.model}
+276 | - Temperature: ${config.temperature}
+277 | - Web Search: ${config.enableWebSearch ? '✅ Enabled' : '❌ Disabled'}
+278 | - Max Tokens: ${config.maxTokens || 'Default'}
+279 | - Timeout: ${(config.timeout || 30000) / 1000}s
+280 |     `.trim();
+281 |     }
+282 | } 
 ```
 
 src/services/flexDatasetService.ts
@@ -7314,163 +7424,189 @@ src/services/flexDatasetService.ts
 77 |                 "CRITICAL SYNTAX PATTERNS": this.formatSyntaxPatterns(syntaxPatterns),
 78 |                 "CODE EXAMPLES": this.formatCodeExamples(codeExamples),
 79 |                 "COMMON PATTERNS": this.formatCommonPatterns(commonPatterns),
-80 |             };
-81 | 
-82 |             const fullPrompt = Object.entries(promptSections)
-83 |                 .map(([title, content]) => `## ${title}\n${content}`)
-84 |                 .join('\n\n');
-85 | 
-86 |             return `# Flex Programming Assistant for VSCode\n\n${fullPrompt}\n\n## VSCODE INTEGRATION GUIDELINES:\n- Use \`\`\`flex code blocks for all Flex code examples.\n- Provide copy-pasteable, production-ready code snippets.\n- Format responses for easy scanning with headers and bullet points.\n\nRemember: You are an expert Flex programming assistant. Prioritize working code first, then provide clear explanations adapted to the user's expertise level.`;
-87 | 
-88 |         } catch (error) {
-89 |             console.error('Error generating system prompt:', error);
-90 |             return this.getFallbackSystemPrompt();
-91 |         }
-92 |     }
-93 | 
-94 |     /**
-95 |      * Format code examples for the system prompt
-96 |      */
-97 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-98 |     private formatCodeExamples(examples: Record<string, any>): string {
-99 |         if (!examples) { return ''; }
+80 |                 "CODE QUALITY GUIDELINES": `
+81 | ## PROPER FLEX SYNTAX REQUIREMENTS
+82 | - ALWAYS use correct Flex keywords from the specification
+83 | - NEVER use invalid tokens: 'sndo2', 'etb3', 'karr', 'l7d', 'rg3', 'rakm', 'da5l', 'lw', 'gher'
+84 | - Use proper function keywords: 'fun', 'function', 'fn' (NOT 'sndo2')
+85 | - Use proper I/O keywords: 'print', 'output', 'cout' (NOT 'etb3')
+86 | - Use proper loop keywords: 'for', 'while', 'loop' (NOT 'karr', 'l7d')
+87 | - Use proper variable types: 'int', 'string', 'bool' (NOT 'rakm')
+88 | - Use proper input keywords: 'input', 'read', 'scan' (NOT 'da5l')
+89 | - Use proper conditional keywords: 'if', 'else' (NOT 'lw', 'gher')
+90 | 
+91 | ## CORRECT VS INCORRECT EXAMPLES:
+92 | ❌ WRONG: sndo2 calculateSum(a, b) { rg3 a + b; }
+93 | ✅ CORRECT: fun calculateSum(a, b) { return a + b; }
+94 | 
+95 | ❌ WRONG: etb3("Hello World");
+96 | ✅ CORRECT: print("Hello World");
+97 | 
+98 | ❌ WRONG: l7d i = 0; i < 10; i++
+99 | ✅ CORRECT: for i = 0; i < 10; i++
 100 | 
-101 |         return Object.entries(examples)
-102 |             .map(([name, example]) => {
-103 |                 if (example.code && Array.isArray(example.code)) {
-104 |                     return `### ${example.description || name}:
-105 | \`\`\`flex
-106 | ${example.code.join('\n')}
-107 | \`\`\``;
-108 |                 }
-109 |                 return '';
-110 |             })
-111 |             .filter(Boolean)
-112 |             .join('\n\n');
-113 |     }
-114 | 
-115 |     /**
-116 |      * Format common patterns for the system prompt
-117 |      */
-118 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-119 |     private formatCommonPatterns(patterns: Record<string, any>): string {
-120 |         if (!patterns) { return ''; }
-121 | 
-122 |         return Object.entries(patterns)
-123 |             .map(([name, pattern]) => {
-124 |                 if (Array.isArray(pattern)) {
-125 |                     return `### ${name}:
-126 | \`\`\`flex
-127 | ${pattern.join('\n')}
-128 | \`\`\``;
-129 |                 }
-130 |                 return '';
-131 |             })
-132 |             .filter(Boolean)
-133 |             .join('\n\n');
-134 |     }
-135 | 
-136 |     /**
-137 |      * Format syntax patterns for the system prompt
-138 |      */
-139 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-140 |     private formatSyntaxPatterns(patterns: Record<string, any>): string {
-141 |         if (!patterns) { return ''; }
-142 | 
-143 |         return Object.entries(patterns)
-144 |             .map(([category, pattern]) => {
-145 |                 if (typeof pattern === 'object' && pattern.examples) {
-146 |                     return `### ${category}:
-147 | ${Array.isArray(pattern.examples) ? pattern.examples.join('\n') : pattern.examples}`;
-148 |                 }
-149 |                 return '';
-150 |             })
-151 |             .filter(Boolean)
-152 |             .join('\n\n');
-153 |     }
-154 | 
-155 |     /**
-156 |      * Get a fallback system prompt if the dataset isn't available
-157 |      */
-158 |     private getFallbackSystemPrompt(): string {
-159 |         return `# Flex Programming Assistant for VSCode (Fallback Mode)
-160 | 
-161 | You are a senior-level expert assistant for the Flex programming language, integrated into a VSCode extension. Flex is a bilingual programming language that supports both Franco Arabic and English syntax.
-162 | 
-163 | ## CORE FLEX FEATURES:
-164 | - **Bilingual Syntax**: Mixed Franco Arabic and English keywords
-165 | - **String Interpolation**: Use {variable} syntax for string templating
-166 | - **No Semicolons**: Clean syntax without required semicolons
-167 | - **Automatic Type Detection**: Smart type inference
-168 | - **File Extensions**: .flex, .lx
-169 | 
-170 | ## CRITICAL SAFETY WARNING:
-171 | ⚠️ **Franco loops with 'l7d' are INCLUSIVE** - always use 'length(array) - 1' for safe array access to prevent out-of-bounds errors.
-172 | 
-173 | ## SYNTAX QUICK REFERENCE:
-174 | ### Variables:
-175 | - Franco: \`rakm x = 10\` | English: \`int x = 10\`
-176 | - Franco: \`kasr y = 3.14\` | English: \`float y = 3.14\`
-177 | 
-178 | ### Functions:
-179 | - Franco: \`sndo2 sayHello() { etb3("Hello") }\`
-180 | - English: \`fun sayHello() { print("Hello") }\`
-181 | 
-182 | ### Conditionals:
-183 | - Franco: \`lw x > 5 { etb3("Big") }\`
-184 | - English: \`if (x > 5) { print("Big") }\`
-185 | 
-186 | ### Loops:
-187 | - Franco: \`karr l7d 10 { etb3(i) }\` (INCLUSIVE - use length-1 for arrays)
-188 | - English: \`for(i=0; i<10; i++) { print(i) }\`
-189 | 
-190 | ## VSCODE INTEGRATION GUIDELINES:
-191 | - Use \`\`\`flex code blocks for all code examples
-192 | - Provide immediate, actionable solutions
-193 | - Format responses with clear headers and bullet points
-194 | - Prioritize working code first, then explanations
+101 | ## FORMATTING REQUIREMENTS:
+102 | - Always format code blocks with proper syntax highlighting
+103 | - Use consistent indentation (4 spaces recommended)
+104 | - Include proper comments for complex logic
+105 | - Ensure all code is production-ready and executable`,
+106 |             };
+107 | 
+108 |             const fullPrompt = Object.entries(promptSections)
+109 |                 .map(([title, content]) => `## ${title}\n${content}`)
+110 |                 .join('\n\n');
+111 | 
+112 |             return `# Flex Programming Assistant for VSCode\n\n${fullPrompt}\n\n## VSCODE INTEGRATION GUIDELINES:\n- Use \`\`\`flex code blocks for all Flex code examples.\n- Provide copy-pasteable, production-ready code snippets.\n- Format responses for easy scanning with headers and bullet points.\n\nRemember: You are an expert Flex programming assistant. Prioritize working code first, then provide clear explanations adapted to the user's expertise level.`;
+113 | 
+114 |         } catch (error) {
+115 |             console.error('Error generating system prompt:', error);
+116 |             return this.getFallbackSystemPrompt();
+117 |         }
+118 |     }
+119 | 
+120 |     /**
+121 |      * Format code examples for the system prompt
+122 |      */
+123 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+124 |     private formatCodeExamples(examples: Record<string, any>): string {
+125 |         if (!examples) { return ''; }
+126 | 
+127 |         return Object.entries(examples)
+128 |             .map(([name, example]) => {
+129 |                 if (example.code && Array.isArray(example.code)) {
+130 |                     return `### ${example.description || name}:
+131 | \`\`\`flex
+132 | ${example.code.join('\n')}
+133 | \`\`\``;
+134 |                 }
+135 |                 return '';
+136 |             })
+137 |             .filter(Boolean)
+138 |             .join('\n\n');
+139 |     }
+140 | 
+141 |     /**
+142 |      * Format common patterns for the system prompt
+143 |      */
+144 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+145 |     private formatCommonPatterns(patterns: Record<string, any>): string {
+146 |         if (!patterns) { return ''; }
+147 | 
+148 |         return Object.entries(patterns)
+149 |             .map(([name, pattern]) => {
+150 |                 if (Array.isArray(pattern)) {
+151 |                     return `### ${name}:
+152 | \`\`\`flex
+153 | ${pattern.join('\n')}
+154 | \`\`\``;
+155 |                 }
+156 |                 return '';
+157 |             })
+158 |             .filter(Boolean)
+159 |             .join('\n\n');
+160 |     }
+161 | 
+162 |     /**
+163 |      * Format syntax patterns for the system prompt
+164 |      */
+165 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+166 |     private formatSyntaxPatterns(patterns: Record<string, any>): string {
+167 |         if (!patterns) { return ''; }
+168 | 
+169 |         return Object.entries(patterns)
+170 |             .map(([category, pattern]) => {
+171 |                 if (typeof pattern === 'object' && pattern.examples) {
+172 |                     return `### ${category}:
+173 | ${Array.isArray(pattern.examples) ? pattern.examples.join('\n') : pattern.examples}`;
+174 |                 }
+175 |                 return '';
+176 |             })
+177 |             .filter(Boolean)
+178 |             .join('\n\n');
+179 |     }
+180 | 
+181 |     /**
+182 |      * Get a fallback system prompt if the dataset isn't available
+183 |      */
+184 |     private getFallbackSystemPrompt(): string {
+185 |         return `# Flex Programming Assistant for VSCode (Fallback Mode)
+186 | 
+187 | You are a senior-level expert assistant for the Flex programming language, integrated into a VSCode extension. Flex is a bilingual programming language that supports both Franco Arabic and English syntax.
+188 | 
+189 | ## CORE FLEX FEATURES:
+190 | - **Bilingual Syntax**: Mixed Franco Arabic and English keywords
+191 | - **String Interpolation**: Use {variable} syntax for string templating
+192 | - **No Semicolons**: Clean syntax without required semicolons
+193 | - **Automatic Type Detection**: Smart type inference
+194 | - **File Extensions**: .flex, .lx
 195 | 
-196 | Always help users write safe, efficient Flex code while respecting their syntax preferences (Franco vs English).`;
-197 |     }
+196 | ## CRITICAL SAFETY WARNING:
+197 | ⚠️ **Franco loops with 'l7d' are INCLUSIVE** - always use 'length(array) - 1' for safe array access to prevent out-of-bounds errors.
 198 | 
-199 |     /**
-200 |      * Get specific section of the specification
-201 |      */
-202 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-203 |     public getSpecSection(section: keyof FlexSpecification): any {
-204 |         return this.flexSpec?.[section] || null;
-205 |     }
-206 | 
-207 |     /**
-208 |      * Check if dataset is loaded
-209 |      */
-210 |     public isDatasetLoaded(): boolean {
-211 |         return this.flexSpec !== null;
-212 |     }
-213 | 
-214 |     /**
-215 |      * Reload the dataset (useful for development)
-216 |      */
-217 |     public reload(): void {
-218 |         this.loadFlexSpec();
-219 |     }
-220 | 
-221 |     /**
-222 |      * Get dataset statistics
-223 |      */
-224 |     public getDatasetStats(): Record<string, number> {
-225 |         if (!this.flexSpec) {
-226 |             return { loaded: 0 };
-227 |         }
-228 | 
-229 |         return {
-230 |             loaded: 1,
-231 |             codeExamples: Object.keys(this.flexSpec.code_examples || {}).length,
-232 |             commonPatterns: Object.keys(this.flexSpec.common_patterns || {}).length,
-233 |             syntaxPatterns: Object.keys(this.flexSpec.CRITICAL_SYNTAX_PATTERNS || {}).length,
-234 |         };
-235 |     }
-236 | } 
+199 | ## SYNTAX QUICK REFERENCE:
+200 | ### Variables:
+201 | - Franco: \`rakm x = 10\` | English: \`int x = 10\`
+202 | - Franco: \`kasr y = 3.14\` | English: \`float y = 3.14\`
+203 | 
+204 | ### Functions:
+205 | - Franco: \`sndo2 sayHello() { etb3("Hello") }\`
+206 | - English: \`fun sayHello() { print("Hello") }\`
+207 | 
+208 | ### Conditionals:
+209 | - Franco: \`lw x > 5 { etb3("Big") }\`
+210 | - English: \`if (x > 5) { print("Big") }\`
+211 | 
+212 | ### Loops:
+213 | - Franco: \`karr l7d 10 { etb3(i) }\` (INCLUSIVE - use length-1 for arrays)
+214 | - English: \`for(i=0; i<10; i++) { print(i) }\`
+215 | 
+216 | ## VSCODE INTEGRATION GUIDELINES:
+217 | - Use \`\`\`flex code blocks for all code examples
+218 | - Provide immediate, actionable solutions
+219 | - Format responses with clear headers and bullet points
+220 | - Prioritize working code first, then explanations
+221 | 
+222 | Always help users write safe, efficient Flex code while respecting their syntax preferences (Franco vs English).`;
+223 |     }
+224 | 
+225 |     /**
+226 |      * Get specific section of the specification
+227 |      */
+228 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+229 |     public getSpecSection(section: keyof FlexSpecification): any {
+230 |         return this.flexSpec?.[section] || null;
+231 |     }
+232 | 
+233 |     /**
+234 |      * Check if dataset is loaded
+235 |      */
+236 |     public isDatasetLoaded(): boolean {
+237 |         return this.flexSpec !== null;
+238 |     }
+239 | 
+240 |     /**
+241 |      * Reload the dataset (useful for development)
+242 |      */
+243 |     public reload(): void {
+244 |         this.loadFlexSpec();
+245 |     }
+246 | 
+247 |     /**
+248 |      * Get dataset statistics
+249 |      */
+250 |     public getDatasetStats(): Record<string, number> {
+251 |         if (!this.flexSpec) {
+252 |             return { loaded: 0 };
+253 |         }
+254 | 
+255 |         return {
+256 |             loaded: 1,
+257 |             codeExamples: Object.keys(this.flexSpec.code_examples || {}).length,
+258 |             commonPatterns: Object.keys(this.flexSpec.common_patterns || {}).length,
+259 |             syntaxPatterns: Object.keys(this.flexSpec.CRITICAL_SYNTAX_PATTERNS || {}).length,
+260 |         };
+261 |     }
+262 | }
 ```
 
 src/test/runTest.ts
@@ -7695,128 +7831,140 @@ src/types/index.ts
 2 |  * Type definitions for the Flex Chatbot extension
 3 |  */
 4 | 
-5 | export interface FlexSpecification {
-6 |     ai_system_prompt: {
-7 |         role: string;
-8 |         version: string;
-9 |         description: string;
-10 |         CRITICAL_INSTRUCTIONS: Record<string, string>;
-11 |         [key: string]: unknown;
-12 |     };
-13 |     ESSENTIAL_FLEX_KNOWLEDGE: {
-14 |         language_identity: string;
-15 |         core_philosophy: string;
-16 |         file_extensions: string[];
-17 |         unique_features: string[];
-18 |     };
-19 |     CRITICAL_SYNTAX_PATTERNS: Record<string, unknown>;
-20 |     code_examples: Record<string, unknown>;
-21 |     common_patterns: Record<string, unknown>;
-22 |     [key: string]: unknown;
-23 | }
-24 | 
-25 | /**
-26 |  * Model information from the API
-27 |  */
-28 | export interface ModelInfo {
-29 |     id: string;
-30 |     name: string;
-31 |     description: string;
-32 |     contextLength: number;
-33 |     pricing: {
-34 |         prompt: string;
-35 |         completion: string;
-36 |         request: string;
-37 |         image: string;
-38 |     };
-39 |     trust: string;
-40 | }
-41 | 
-42 | /**
-43 |  * Chat message structure
-44 |  */
-45 | export interface ChatMessage {
-46 |     role: 'user' | 'assistant' | 'system';
-47 |     content: string;
-48 |     timestamp?: Date;
-49 |     id?: string;
-50 | }
-51 | 
-52 | /**
-53 |  * Extension configuration structure
-54 |  */
-55 | export interface ExtensionConfig {
-56 |     apiKey: string;
-57 |     model: string;
-58 |     temperature: number;
-59 |     enableWebSearch: boolean;
-60 |     maxTokens: number;
-61 |     timeout: number;
-62 | }
-63 | 
-64 | /**
-65 |  * API response structure
-66 |  */
-67 | export interface ApiResponse {
-68 |     choices: Array<{
-69 |         message: {
-70 |             content: string;
-71 |         };
-72 |     }>;
+5 | // eslint-disable-next-line @typescript-eslint/naming-convention
+6 | export interface FlexSpecification {
+7 |     // eslint-disable-next-line @typescript-eslint/naming-convention
+8 |     ai_system_prompt: {
+9 |         role: string;
+10 |         version: string;
+11 |         description: string;
+12 |         // eslint-disable-next-line @typescript-eslint/naming-convention
+13 |         CRITICAL_INSTRUCTIONS: Record<string, string>;
+14 |         [key: string]: unknown;
+15 |     };
+16 |     // eslint-disable-next-line @typescript-eslint/naming-convention
+17 |     ESSENTIAL_FLEX_KNOWLEDGE: {
+18 |         // eslint-disable-next-line @typescript-eslint/naming-convention
+19 |         language_identity: string;
+20 |         // eslint-disable-next-line @typescript-eslint/naming-convention
+21 |         core_philosophy: string;
+22 |         // eslint-disable-next-line @typescript-eslint/naming-convention
+23 |         file_extensions: string[];
+24 |         // eslint-disable-next-line @typescript-eslint/naming-convention
+25 |         unique_features: string[];
+26 |     };
+27 |     // eslint-disable-next-line @typescript-eslint/naming-convention
+28 |     CRITICAL_SYNTAX_PATTERNS: Record<string, unknown>;
+29 |     // eslint-disable-next-line @typescript-eslint/naming-convention
+30 |     code_examples: Record<string, unknown>;
+31 |     // eslint-disable-next-line @typescript-eslint/naming-convention
+32 |     common_patterns: Record<string, unknown>;
+33 |     [key: string]: unknown;
+34 | }
+35 | 
+36 | /**
+37 |  * Model information from the API
+38 |  */
+39 | export interface ModelInfo {
+40 |     id: string;
+41 |     name: string;
+42 |     description: string;
+43 |     contextLength: number;
+44 |     pricing: {
+45 |         prompt: string;
+46 |         completion: string;
+47 |         request: string;
+48 |         image: string;
+49 |     };
+50 |     trust: string;
+51 | }
+52 | 
+53 | /**
+54 |  * Chat message structure
+55 |  */
+56 | export interface ChatMessage {
+57 |     role: 'user' | 'assistant' | 'system';
+58 |     content: string;
+59 |     timestamp?: Date;
+60 |     id?: string;
+61 | }
+62 | 
+63 | /**
+64 |  * Extension configuration structure
+65 |  */
+66 | export interface ExtensionConfig {
+67 |     apiKey: string;
+68 |     model: string;
+69 |     temperature: number;
+70 |     enableWebSearch: boolean;
+71 |     maxTokens: number;
+72 |     timeout: number;
 73 | }
 74 | 
 75 | /**
-76 |  * Web search result structure
+76 |  * API response structure
 77 |  */
-78 | export interface WebSearchResult {
-79 |     title: string;
-80 |     snippet: string;
-81 |     link: string;
-82 | }
-83 | 
-84 | /**
-85 |  * Webview message structure
-86 |  */
-87 | export interface WebviewMessage {
-88 |     command: 'sendMessage' | 'clearChat' | 'selectModel' | 'statusUpdate' | 'aiResponse' | 'chatCleared' | 'aiStreamStart' | 'aiStreamChunk' | 'aiStreamComplete';
-89 |     text?: string;
-90 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-91 |     data?: any;
-92 | }
-93 | 
-94 | /**
-95 |  * Chat session structure
-96 |  */
-97 | export interface ChatSession {
-98 |     id: string;
-99 |     messages: ChatMessage[];
-100 |     createdAt: Date;
-101 |     lastModified: Date;
-102 | }
-103 | 
-104 | /**
-105 |  * Log levels
-106 |  */
-107 | export enum LogLevel {
-108 |     error,
-109 |     warn,
-110 |     info,
-111 |     debug
-112 | }
-113 | 
-114 | /**
-115 |  * Logger structure
-116 |  */
-117 | export interface Logger {
-118 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-119 |     error(message: string, data?: any): void;
-120 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-121 |     warn(message: string, data?: any): void;
-122 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-123 |     info(message: string, data?: any): void;
-124 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-125 |     debug(message: string, data?: any): void;
-126 | } 
+78 | export interface ApiResponse {
+79 |     choices: Array<{
+80 |         message: {
+81 |             content: string;
+82 |         };
+83 |     }>;
+84 | }
+85 | 
+86 | /**
+87 |  * Web search result structure
+88 |  */
+89 | export interface WebSearchResult {
+90 |     title: string;
+91 |     snippet: string;
+92 |     link: string;
+93 | }
+94 | 
+95 | /**
+96 |  * Webview message structure
+97 |  */
+98 | export interface WebviewMessage {
+99 |     command: 'sendMessage' | 'clearChat' | 'selectModel' | 'statusUpdate' | 'aiResponse' | 'chatCleared' | 'aiStreamStart' | 'aiStreamChunk' | 'aiStreamComplete' | 'hydrateChatHistory' | 'modelSelectionError';
+100 |     text?: string;
+101 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+102 |     data?: any;
+103 |     history?: ChatMessage[];
+104 | }
+105 | 
+106 | /**
+107 |  * Chat session structure
+108 |  */
+109 | export interface ChatSession {
+110 |     id: string;
+111 |     messages: ChatMessage[];
+112 |     createdAt: Date;
+113 |     lastModified: Date;
+114 | }
+115 | 
+116 | /**
+117 |  * Log levels
+118 |  */
+119 | export enum LogLevel {
+120 |     error,
+121 |     warn,
+122 |     info,
+123 |     debug
+124 | }
+125 | 
+126 | /**
+127 |  * Logger structure
+128 |  */
+129 | export interface Logger {
+130 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+131 |     error(message: string, data?: any): void;
+132 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+133 |     warn(message: string, data?: any): void;
+134 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+135 |     info(message: string, data?: any): void;
+136 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+137 |     debug(message: string, data?: any): void;
+138 | } 
 ```
 
 src/utils/logger.ts
@@ -7835,294 +7983,275 @@ src/utils/logger.ts
 12 |     private logLevel: LogLevel = LogLevel.info;
 13 |     private enableConsoleLogging = true;
 14 |     private performanceTimers: Map<string, number> = new Map();
-15 |     private logHistory: string[] = [];
-16 |     private readonly maxLogHistory = 200;
-17 | 
-18 |     private constructor() {
-19 |         // Try to get VS Code output channel if available
-20 |         try {
-21 |             this.outputChannel = vscode.window.createOutputChannel('Flex Chatbot');
-22 |         } catch {
-23 |             this.outputChannel = null;
-24 |         }
-25 |     }
-26 | 
-27 |     /**
-28 |      * Get singleton instance of Logger
-29 |      */
-30 |     public static getInstance(): Logger {
-31 |         if (!Logger.instance) {
-32 |             Logger.instance = new Logger();
-33 |         }
-34 |         return Logger.instance;
-35 |     }
-36 | 
-37 |     /**
-38 |      * Set logging level
-39 |      */
-40 |     public setLogLevel(level: LogLevel): void {
-41 |         this.logLevel = level;
-42 |     }
-43 | 
-44 |     /**
-45 |      * Enable or disable console logging
-46 |      */
-47 |     public setConsoleLogging(enabled: boolean): void {
-48 |         this.enableConsoleLogging = enabled;
-49 |     }
-50 | 
-51 |     /**
-52 |      * Log error message
-53 |      */
-54 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
-55 |     public error(message: string, data?: any): void {
-56 |         this.log(LogLevel.error, message, data);
-57 |     }
-58 | 
-59 |     /**
-60 |      * Log warning message
-61 |      */
-62 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
-63 |     public warn(message: string, data?: any): void {
-64 |         this.log(LogLevel.warn, message, data);
-65 |     }
-66 | 
-67 |     /**
-68 |      * Log info message
-69 |      */
-70 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
-71 |     public info(message: string, data?: any): void {
-72 |         this.log(LogLevel.info, message, data);
-73 |     }
-74 | 
-75 |     /**
-76 |      * Log debug message
-77 |      */
-78 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
-79 |     public debug(message: string, data?: any): void {
-80 |         this.log(LogLevel.debug, message, data);
-81 |     }
-82 | 
-83 |     /**
-84 |      * Core logging method
-85 |      */
-86 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-87 |     private log(level: LogLevel, message: string, data?: any): void {
-88 |         if (!this.shouldLog(level)) {
-89 |             return;
-90 |         }
-91 | 
-92 |         const timestamp = new Date().toISOString();
-93 |         const logMessage = this.formatMessage(level, timestamp, message, data);
-94 | 
-95 |         // Log to VS Code output channel
-96 |         if (this.outputChannel) {
-97 |             this.outputChannel.appendLine(logMessage);
-98 |         }
-99 | 
-100 |         // Log to console if enabled
-101 |         if (this.enableConsoleLogging) {
-102 |             switch (level) {
-103 |                 case LogLevel.error:
-104 |                     console.error(logMessage, data || '');
-105 |                     break;
-106 |                 case LogLevel.warn:
-107 |                     console.warn(logMessage, data || '');
-108 |                     break;
-109 |                 case LogLevel.debug:
-110 |                     console.debug(logMessage, data || '');
-111 |                     break;
-112 |                 default:
-113 |                     console.log(logMessage, data || '');
-114 |             }
-115 |         }
-116 |     }
-117 | 
-118 |     /**
-119 |      * Check if message should be logged based on current log level
-120 |      */
-121 |     private shouldLog(level: LogLevel): boolean {
-122 |         const levels = [LogLevel.error, LogLevel.warn, LogLevel.info, LogLevel.debug];
-123 |         const currentLevelIndex = levels.indexOf(this.logLevel);
-124 |         const messageLevelIndex = levels.indexOf(level);
-125 | 
-126 |         return messageLevelIndex <= currentLevelIndex;
-127 |     }
-128 | 
-129 |     /**
-130 |      * Format log message
-131 |      */
-132 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-133 |     private formatMessage(level: LogLevel, timestamp: string, message: string, data?: any): string {
-134 |         const levelInfo = {
-135 |             [LogLevel.error]: { emoji: '❌', text: 'ERROR' },
-136 |             [LogLevel.warn]: { emoji: '⚠️', text: 'WARN' },
-137 |             [LogLevel.info]: { emoji: 'ℹ️', text: 'INFO' },
-138 |             [LogLevel.debug]: { emoji: '🐛', text: 'DEBUG' }
-139 |         };
+15 | 
+16 |     private constructor() {
+17 |         // Try to get VS Code output channel if available
+18 |         try {
+19 |             this.outputChannel = vscode.window.createOutputChannel('Flex Chatbot');
+20 |         } catch {
+21 |             this.outputChannel = null;
+22 |         }
+23 |     }
+24 | 
+25 |     /**
+26 |      * Get singleton instance of Logger
+27 |      */
+28 |     public static getInstance(): Logger {
+29 |         if (!Logger.instance) {
+30 |             Logger.instance = new Logger();
+31 |         }
+32 |         return Logger.instance;
+33 |     }
+34 | 
+35 |     /**
+36 |      * Set logging level
+37 |      */
+38 |     public setLogLevel(level: LogLevel): void {
+39 |         this.logLevel = level;
+40 |     }
+41 | 
+42 |     /**
+43 |      * Enable or disable console logging
+44 |      */
+45 |     public setConsoleLogging(enabled: boolean): void {
+46 |         this.enableConsoleLogging = enabled;
+47 |     }
+48 | 
+49 |     /**
+50 |      * Log error message
+51 |      */
+52 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+53 |     public error(message: string, data?: any): void {
+54 |         this.log(LogLevel.error, message, data);
+55 |     }
+56 | 
+57 |     /**
+58 |      * Log warning message
+59 |      */
+60 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+61 |     public warn(message: string, data?: any): void {
+62 |         this.log(LogLevel.warn, message, data);
+63 |     }
+64 | 
+65 |     /**
+66 |      * Log info message
+67 |      */
+68 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+69 |     public info(message: string, data?: any): void {
+70 |         this.log(LogLevel.info, message, data);
+71 |     }
+72 | 
+73 |     /**
+74 |      * Log debug message
+75 |      */
+76 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+77 |     public debug(message: string, data?: any): void {
+78 |         this.log(LogLevel.debug, message, data);
+79 |     }
+80 | 
+81 |     /**
+82 |      * Core logging method
+83 |      */
+84 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+85 |     private log(level: LogLevel, message: string, data?: any): void {
+86 |         if (!this.shouldLog(level)) {
+87 |             return;
+88 |         }
+89 | 
+90 |         const timestamp = new Date().toISOString();
+91 |         const logMessage = this.formatMessage(level, timestamp, message, data);
+92 | 
+93 |         // Log to VS Code output channel
+94 |         if (this.outputChannel) {
+95 |             this.outputChannel.appendLine(logMessage);
+96 |         }
+97 | 
+98 |         // Log to console if enabled
+99 |         if (this.enableConsoleLogging) {
+100 |             switch (level) {
+101 |                 case LogLevel.error:
+102 |                     console.error(logMessage, data || '');
+103 |                     break;
+104 |                 case LogLevel.warn:
+105 |                     console.warn(logMessage, data || '');
+106 |                     break;
+107 |                 case LogLevel.debug:
+108 |                     console.debug(logMessage, data || '');
+109 |                     break;
+110 |                 default:
+111 |                     console.log(logMessage, data || '');
+112 |             }
+113 |         }
+114 |     }
+115 | 
+116 |     /**
+117 |      * Check if message should be logged based on current log level
+118 |      */
+119 |     private shouldLog(level: LogLevel): boolean {
+120 |         const levels = [LogLevel.error, LogLevel.warn, LogLevel.info, LogLevel.debug];
+121 |         const currentLevelIndex = levels.indexOf(this.logLevel);
+122 |         const messageLevelIndex = levels.indexOf(level);
+123 | 
+124 |         return messageLevelIndex <= currentLevelIndex;
+125 |     }
+126 | 
+127 |     /**
+128 |      * Format log message
+129 |      */
+130 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+131 |     private formatMessage(level: LogLevel, timestamp: string, message: string, data?: any): string {
+132 |         const levelInfo = {
+133 |             [LogLevel.error]: { emoji: '❌', text: 'ERROR' },
+134 |             [LogLevel.warn]: { emoji: '⚠️', text: 'WARN' },
+135 |             [LogLevel.info]: { emoji: 'ℹ️', text: 'INFO' },
+136 |             [LogLevel.debug]: { emoji: '🐛', text: 'DEBUG' }
+137 |         };
+138 | 
+139 |         const { emoji, text: levelString } = levelInfo[level] || { emoji: '❓', text: 'UNKNOWN' };
 140 | 
-141 |         const { emoji, text: levelString } = levelInfo[level] || { emoji: '❓', text: 'UNKNOWN' };
+141 |         let formatted = `${emoji} [${timestamp}] [${levelString}] ${message}`;
 142 | 
-143 |         let formatted = `${emoji} [${timestamp}] [${levelString}] ${message}`;
-144 | 
-145 |         if (data) {
-146 |             const dataString = typeof data === 'object' ? JSON.stringify(data, null, 2) : String(data);
-147 |             formatted += `\nData: ${dataString}`;
-148 |         }
-149 | 
-150 |         return formatted;
-151 |     }
-152 | 
-153 |     /**
-154 |      * Get emoji for log level
-155 |      */
-156 |     private getLevelEmoji(level: LogLevel): string {
-157 |         switch (level) {
-158 |             case LogLevel.error:
-159 |                 return '❌';
-160 |             case LogLevel.warn:
-161 |                 return '⚠️';
-162 |             case LogLevel.info:
-163 |                 return 'ℹ️';
-164 |             case LogLevel.debug:
-165 |                 return '🐛';
-166 |             default:
-167 |                 return '❓';
-168 |         }
-169 |     }
-170 | 
-171 |     /**
-172 |      * Log API request
-173 |      */
-174 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
-175 |     public logApiRequest(endpoint: string, method: string, data?: any): void {
-176 |         this.debug(`API Request: ${method} ${endpoint}`, data);
-177 |     }
-178 | 
-179 |     /**
-180 |      * Log API response
-181 |      */
-182 |     public logApiResponse(endpoint: string, status: number, duration?: number): void {
-183 |         const message = `API Response: ${endpoint} - ${status}${duration ? ` (${duration}ms)` : ''}`;
-184 |         if (status >= 400) {
-185 |             this.error(message);
-186 |         } else {
-187 |             this.debug(message);
-188 |         }
-189 |     }
-190 | 
-191 |     /**
-192 |      * Log user interaction
-193 |      */
-194 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
-195 |     public logUserAction(action: string, details?: any): void {
-196 |         this.info(`User Action: ${action}`, details);
-197 |     }
-198 | 
-199 |     /**
-200 |      * Log performance metric
-201 |      */
-202 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
-203 |     public logPerformance(operation: string, duration: number, details?: any): void {
-204 |         const message = `Performance: ${operation} took ${duration}ms`;
-205 |         if (duration > 5000) {
-206 |             this.warn(message, details);
-207 |         } else {
-208 |             this.debug(message, details);
-209 |         }
-210 |     }
-211 | 
-212 |     /**
-213 |      * Log configuration change
-214 |      */
-215 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
-216 |     public logConfigChange(key: string, oldValue: any, newValue: any): void {
-217 |         this.info(`Config Change: ${key}`, { oldValue, newValue });
-218 |     }
-219 | 
-220 |     /**
-221 |      * Log extension lifecycle event
-222 |      */
-223 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
-224 |     public logExtensionEvent(event: 'activate' | 'deactivate' | 'error', details?: any): void {
-225 |         const message = `Extension Event: ${event}`;
-226 |         if (event === 'error') {
-227 |             this.error(message, details);
-228 |         } else {
-229 |             this.info(message, details);
-230 |         }
-231 |     }
-232 | 
-233 |     /**
-234 |      * Create a timed operation logger
-235 |      */
-236 |     public createTimer(operation: string): TimedOperation {
-237 |         return new TimedOperation(operation, this);
-238 |     }
-239 | 
-240 |     /**
-241 |      * Show output channel in VS Code
-242 |      */
-243 |     public show(): void {
-244 |         if (this.outputChannel) {
-245 |             this.outputChannel.show();
-246 |         }
+143 |         if (data) {
+144 |             const dataString = typeof data === 'object' ? JSON.stringify(data, null, 2) : String(data);
+145 |             formatted += `\nData: ${dataString}`;
+146 |         }
+147 | 
+148 |         return formatted;
+149 |     }
+150 | 
+151 | 
+152 |     /**
+153 |      * Log API request
+154 |      */
+155 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+156 |     public logApiRequest(endpoint: string, method: string, data?: any): void {
+157 |         this.debug(`API Request: ${method} ${endpoint}`, data);
+158 |     }
+159 | 
+160 |     /**
+161 |      * Log API response
+162 |      */
+163 |     public logApiResponse(endpoint: string, status: number, duration?: number): void {
+164 |         const message = `API Response: ${endpoint} - ${status}${duration ? ` (${duration}ms)` : ''}`;
+165 |         if (status >= 400) {
+166 |             this.error(message);
+167 |         } else {
+168 |             this.debug(message);
+169 |         }
+170 |     }
+171 | 
+172 |     /**
+173 |      * Log user interaction
+174 |      */
+175 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+176 |     public logUserAction(action: string, details?: any): void {
+177 |         this.info(`User Action: ${action}`, details);
+178 |     }
+179 | 
+180 |     /**
+181 |      * Log performance metric
+182 |      */
+183 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+184 |     public logPerformance(operation: string, duration: number, details?: any): void {
+185 |         const message = `Performance: ${operation} took ${duration}ms`;
+186 |         if (duration > 5000) {
+187 |             this.warn(message, details);
+188 |         } else {
+189 |             this.debug(message, details);
+190 |         }
+191 |     }
+192 | 
+193 |     /**
+194 |      * Log configuration change
+195 |      */
+196 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+197 |     public logConfigChange(key: string, oldValue: any, newValue: any): void {
+198 |         this.info(`Config Change: ${key}`, { oldValue, newValue });
+199 |     }
+200 | 
+201 |     /**
+202 |      * Log extension lifecycle event
+203 |      */
+204 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+205 |     public logExtensionEvent(event: 'activate' | 'deactivate' | 'error', details?: any): void {
+206 |         const message = `Extension Event: ${event}`;
+207 |         if (event === 'error') {
+208 |             this.error(message, details);
+209 |         } else {
+210 |             this.info(message, details);
+211 |         }
+212 |     }
+213 | 
+214 |     /**
+215 |      * Create a timed operation logger
+216 |      */
+217 |     public createTimer(operation: string): TimedOperation {
+218 |         return new TimedOperation(operation, this);
+219 |     }
+220 | 
+221 |     /**
+222 |      * Show output channel in VS Code
+223 |      */
+224 |     public show(): void {
+225 |         if (this.outputChannel) {
+226 |             this.outputChannel.show();
+227 |         }
+228 |     }
+229 | 
+230 |     /**
+231 |      * Clear output channel
+232 |      */
+233 |     public clear(): void {
+234 |         if (this.outputChannel) {
+235 |             this.outputChannel.clear();
+236 |         }
+237 |     }
+238 | 
+239 |     /**
+240 |      * Get log statistics
+241 |      */
+242 |     public getStats(): { level: LogLevel; consoleLogging: boolean } {
+243 |         return {
+244 |             level: this.logLevel,
+245 |             consoleLogging: this.enableConsoleLogging
+246 |         };
 247 |     }
-248 | 
-249 |     /**
-250 |      * Clear output channel
-251 |      */
-252 |     public clear(): void {
-253 |         if (this.outputChannel) {
-254 |             this.outputChannel.clear();
-255 |         }
-256 |     }
-257 | 
-258 |     /**
-259 |      * Get log statistics
-260 |      */
-261 |     public getStats(): { level: LogLevel; consoleLogging: boolean } {
-262 |         return {
-263 |             level: this.logLevel,
-264 |             consoleLogging: this.enableConsoleLogging
-265 |         };
-266 |     }
-267 | }
-268 | 
-269 | /**
-270 |  * Utility class for timed operations
-271 |  */
-272 | export class TimedOperation {
-273 |     private startTime: number;
-274 | 
-275 |     constructor(
-276 |         private operation: string,
-277 |         private logger: Logger
-278 |     ) {
-279 |         this.startTime = Date.now();
-280 |         this.logger.debug(`Started: ${this.operation}`);
-281 |     }
-282 | 
-283 |     /**
-284 |      * End the timed operation and log the duration
-285 |      */
-286 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
-287 |     public end(details?: any): void {
-288 |         const duration = Date.now() - this.startTime;
-289 |         this.logger.logPerformance(this.operation, duration, details);
-290 |     }
-291 | 
-292 |     /**
-293 |      * Add a checkpoint to the timed operation
-294 |      */
-295 |     public checkpoint(checkpoint: string): void {
-296 |         const elapsed = Date.now() - this.startTime;
-297 |         this.logger.debug(`Checkpoint: ${this.operation} - ${checkpoint} (${elapsed}ms elapsed)`);
-298 |     }
-299 | }
-300 | 
-301 | // Export singleton instance for convenience
-302 | export const logger = Logger.getInstance(); 
+248 | }
+249 | 
+250 | /**
+251 |  * Utility class for timed operations
+252 |  */
+253 | export class TimedOperation {
+254 |     private startTime: number;
+255 | 
+256 |     constructor(
+257 |         private operation: string,
+258 |         private logger: Logger
+259 |     ) {
+260 |         this.startTime = Date.now();
+261 |         this.logger.debug(`Started: ${this.operation}`);
+262 |     }
+263 | 
+264 |     /**
+265 |      * End the timed operation and log the duration
+266 |      */
+267 |     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+268 |     public end(details?: any): void {
+269 |         const duration = Date.now() - this.startTime;
+270 |         this.logger.logPerformance(this.operation, duration, details);
+271 |     }
+272 | 
+273 |     /**
+274 |      * Add a checkpoint to the timed operation
+275 |      */
+276 |     public checkpoint(checkpoint: string): void {
+277 |         const elapsed = Date.now() - this.startTime;
+278 |         this.logger.debug(`Checkpoint: ${this.operation} - ${checkpoint} (${elapsed}ms elapsed)`);
+279 |     }
+280 | }
+281 | 
+282 | // Export singleton instance for convenience
+283 | export const logger = Logger.getInstance(); 
 ```
 
 assets/webview/css/dev-dashboard.css
@@ -8991,20 +9120,69 @@ assets/webview/js/chat.js
 80 |       case 'chatCleared':
 81 |         domManager.clearChat();
 82 |         break;
-83 |       case 'error':
-84 |         domManager.addMessage(message.text, 'ai', true); // Treat errors as a status message from AI
-85 |         sendButton.disabled = false;
-86 |         sendButton.innerHTML = '<span class="send-icon">📤</span>';
-87 |         break;
-88 |     }
-89 |   });
-90 | 
-91 |   // Auto-resize textarea
-92 |   userInput.addEventListener('input', function () {
-93 |     this.style.height = 'auto';
-94 |     this.style.height = (this.scrollHeight) + 'px';
+83 |       case 'hydrateChatHistory':
+84 |         handleChatHistoryRestoration(message.history);
+85 |         break;
+86 |       case 'error':
+87 |         domManager.addMessage(message.text, 'ai', true); // Treat errors as a status message from AI
+88 |         sendButton.disabled = false;
+89 |         sendButton.innerHTML = '<span class="send-icon">📤</span>';
+90 |         break;
+91 |       case 'modelUpdated':
+92 |         updateModelDisplay(message.model);
+93 |         break;
+94 |     }
 95 |   });
-96 | })();
+96 | 
+97 |   // Handle chat history restoration
+98 |   function handleChatHistoryRestoration(history) {
+99 |     if (!history || !Array.isArray(history)) {
+100 |       console.warn('Invalid chat history data received');
+101 |       return;
+102 |     }
+103 | 
+104 |     try {
+105 |       // Hide welcome message if history exists
+106 |       if (history.length > 0 && welcomeMessage) {
+107 |         welcomeMessage.style.display = 'none';
+108 |       }
+109 | 
+110 |       // Restore each message in order
+111 |       history.forEach(message => {
+112 |         if (message.role === 'user') {
+113 |           domManager.addMessage(message.content, 'user');
+114 |         } else if (message.role === 'assistant') {
+115 |           domManager.addMessage(message.content, 'ai');
+116 |         }
+117 |       });
+118 | 
+119 |       console.log(`Restored ${history.length} messages from chat history`);
+120 |     } catch (error) {
+121 |       console.error('Error restoring chat history:', error);
+122 |     }
+123 |   }
+124 | 
+125 |   // Update model display in header
+126 |   function updateModelDisplay(modelName) {
+127 |     const modelDisplay = document.querySelector('.model-display');
+128 |     if (modelDisplay) {
+129 |       modelDisplay.textContent = modelName || 'Default';
+130 |       // Add a brief animation to show the change
+131 |       modelDisplay.style.background = '#10b981';
+132 |       modelDisplay.style.color = 'white';
+133 |       setTimeout(() => {
+134 |         modelDisplay.style.background = '';
+135 |         modelDisplay.style.color = '';
+136 |       }, 1000);
+137 |     }
+138 |   }
+139 | 
+140 |   // Auto-resize textarea
+141 |   userInput.addEventListener('input', function () {
+142 |     this.style.height = 'auto';
+143 |     this.style.height = (this.scrollHeight) + 'px';
+144 |   });
+145 | })();
 ```
 
 src/test/suite/extension.test.ts
@@ -9178,43 +9356,50 @@ src/test/suite/services.test.ts
 75 |     suite('ChatService', () => {
 76 |         test('resetChat should clear history and post message', () => {
 77 |             const postMessageSpy = sinon.spy();
-78 |             const service = new ChatService(postMessageSpy, vscode.Uri.file('/'));
-79 | 
-80 |             // Simulate adding a message
-81 |             (service as unknown as { conversationHistory: unknown[] }).conversationHistory.push({ role: 'user', content: 'hello' });
-82 | 
-83 |             service.resetChat();
-84 | 
-85 |             assert.strictEqual((service as unknown as { conversationHistory: unknown[] }).conversationHistory.length, 0, "Conversation history should be cleared");
-86 |             assert.ok(postMessageSpy.calledWith({ command: 'chatCleared' }), "Should send chatCleared message");
-87 |         });
-88 |     });
+78 |             const mockContext = {
+79 |                 globalState: {
+80 |                     get: sinon.stub().returns([]),
+81 |                     update: sinon.stub()
+82 |                 }
+83 |             } as unknown as vscode.ExtensionContext;
+84 |             
+85 |             const service = new ChatService(postMessageSpy, vscode.Uri.file('/'), mockContext);
+86 | 
+87 |             // Simulate adding a message
+88 |             (service as unknown as { conversationHistory: unknown[] }).conversationHistory.push({ role: 'user', content: 'hello' });
 89 | 
-90 |     suite('WebviewService', () => {
-91 |         test('getHtmlContent should return valid HTML', () => {
-92 |             const mockWebview = {
-93 |                 asWebviewUri: (uri: vscode.Uri) => uri,
-94 |                 cspSource: 'https://example.com'
-95 |             };
-96 |             const service = new WebviewService(vscode.Uri.file('/'));
-97 |             const html = service.getHtmlContent(mockWebview as vscode.Webview);
-98 | 
-99 |             assert.ok(html.startsWith('<!DOCTYPE html>'), "Should be a valid HTML doc");
-100 |             assert.ok(html.includes('Flex Assistant'), "Should include the title");
-101 |         });
-102 |     });
-103 | 
-104 |     suite('Logger', () => {
-105 |         test('Should create a timer', () => {
-106 |             const timer = logger.createTimer('test-op');
-107 |             assert.ok(timer, 'Should create a timer object');
-108 |             assert.doesNotThrow(() => {
-109 |                 timer.checkpoint('step 1');
-110 |                 timer.end();
-111 |             });
-112 |         });
-113 |     });
-114 | }); 
+90 |             service.resetChat();
+91 | 
+92 |             assert.strictEqual((service as unknown as { conversationHistory: unknown[] }).conversationHistory.length, 0, "Conversation history should be cleared");
+93 |             assert.ok(postMessageSpy.calledWith({ command: 'chatCleared' }), "Should send chatCleared message");
+94 |         });
+95 |     });
+96 | 
+97 |     suite('WebviewService', () => {
+98 |         test('getHtmlContent should return valid HTML', () => {
+99 |             const mockWebview = {
+100 |                 asWebviewUri: (uri: vscode.Uri) => uri,
+101 |                 cspSource: 'https://example.com'
+102 |             };
+103 |             const service = new WebviewService(vscode.Uri.file('/'));
+104 |             const html = service.getHtmlContent(mockWebview as vscode.Webview);
+105 | 
+106 |             assert.ok(html.startsWith('<!DOCTYPE html>'), "Should be a valid HTML doc");
+107 |             assert.ok(html.includes('Flex Assistant'), "Should include the title");
+108 |         });
+109 |     });
+110 | 
+111 |     suite('Logger', () => {
+112 |         test('Should create a timer', () => {
+113 |             const timer = logger.createTimer('test-op');
+114 |             assert.ok(timer, 'Should create a timer object');
+115 |             assert.doesNotThrow(() => {
+116 |                 timer.checkpoint('step 1');
+117 |                 timer.end();
+118 |             });
+119 |         });
+120 |     });
+121 | }); 
 ```
 
 assets/webview/css/components/base.css
@@ -9669,6 +9854,223 @@ assets/webview/css/components/code.css
 130 | .code-block:hover .copy-code-button {
 131 |     opacity: 1;
 132 | }
+133 | 
+134 | /* Flex Code Snippet Styles */
+135 | .flex-code-snippet {
+136 |     background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+137 |     border: 2px solid #3b82f6;
+138 |     border-radius: var(--radius-lg);
+139 |     margin: var(--space-4) 0;
+140 |     box-shadow: var(--shadow-lg);
+141 |     position: relative;
+142 |     overflow: hidden;
+143 |     font-family: var(--font-family-mono);
+144 | }
+145 | 
+146 | .flex-snippet-header {
+147 |     background: linear-gradient(135deg, #1e293b, #334155);
+148 |     border-bottom: 1px solid #475569;
+149 |     padding: var(--space-3) var(--space-4);
+150 |     display: flex;
+151 |     justify-content: space-between;
+152 |     align-items: center;
+153 | }
+154 | 
+155 | .flex-snippet-metadata {
+156 |     display: flex;
+157 |     align-items: center;
+158 |     gap: var(--space-3);
+159 | }
+160 | 
+161 | .flex-snippet-language {
+162 |     display: flex;
+163 |     align-items: center;
+164 |     gap: var(--space-1);
+165 |     color: #3b82f6;
+166 |     font-weight: var(--font-weight-semibold);
+167 |     font-size: 0.875rem;
+168 | }
+169 | 
+170 | .flex-icon {
+171 |     font-size: 1rem;
+172 | }
+173 | 
+174 | .flex-snippet-stats {
+175 |     color: var(--text-subtle);
+176 |     font-size: 0.75rem;
+177 | }
+178 | 
+179 | .flex-snippet-controls {
+180 |     display: flex;
+181 |     gap: var(--space-2);
+182 | }
+183 | 
+184 | .flex-copy-button,
+185 | .flex-expand-button {
+186 |     background: transparent;
+187 |     border: 1px solid #475569;
+188 |     border-radius: var(--radius-sm);
+189 |     color: var(--text-secondary);
+190 |     padding: var(--space-1) var(--space-2);
+191 |     cursor: pointer;
+192 |     transition: all 0.2s ease;
+193 |     font-size: 0.75rem;
+194 | }
+195 | 
+196 | .flex-copy-button:hover,
+197 | .flex-expand-button:hover {
+198 |     background: #475569;
+199 |     color: #3b82f6;
+200 |     transform: translateY(-1px);
+201 | }
+202 | 
+203 | .flex-snippet-code-container {
+204 |     display: flex;
+205 |     max-height: 400px;
+206 |     overflow: auto;
+207 |     background: #0f172a;
+208 | }
+209 | 
+210 | .flex-snippet-line-numbers {
+211 |     background: #1e293b;
+212 |     color: var(--text-subtle);
+213 |     padding: var(--space-3) var(--space-2);
+214 |     font-size: 0.75rem;
+215 |     line-height: 1.6;
+216 |     text-align: right;
+217 |     border-right: 1px solid #334155;
+218 |     user-select: none;
+219 |     min-width: 50px;
+220 | }
+221 | 
+222 | .line-number {
+223 |     display: block;
+224 |     padding: 0 var(--space-1);
+225 | }
+226 | 
+227 | .flex-snippet-code-content {
+228 |     flex: 1;
+229 |     padding: var(--space-3);
+230 |     font-size: 0.8125rem;
+231 |     line-height: 1.6;
+232 |     overflow-x: auto;
+233 | }
+234 | 
+235 | .flex-snippet-footer {
+236 |     background: #1e293b;
+237 |     border-top: 1px solid #334155;
+238 |     padding: var(--space-2) var(--space-4);
+239 | }
+240 | 
+241 | .flex-hint {
+242 |     color: var(--text-subtle);
+243 |     font-size: 0.75rem;
+244 |     display: flex;
+245 |     align-items: center;
+246 |     gap: var(--space-1);
+247 | }
+248 | 
+249 | .flex-hint code {
+250 |     background: #374151;
+251 |     padding: 0 var(--space-1);
+252 |     border-radius: var(--radius-xs);
+253 |     font-family: var(--font-family-mono);
+254 | }
+255 | 
+256 | /* Expanded state */
+257 | .flex-code-snippet.expanded {
+258 |     position: fixed;
+259 |     top: 0;
+260 |     left: 0;
+261 |     right: 0;
+262 |     bottom: 0;
+263 |     z-index: 1000;
+264 |     margin: 0;
+265 |     border-radius: 0;
+266 |     max-height: 100vh;
+267 | }
+268 | 
+269 | .flex-code-snippet.expanded .flex-snippet-code-container {
+270 |     max-height: calc(100vh - 120px);
+271 |     flex: 1;
+272 | }
+273 | 
+274 | /* Scrollbar styling for code containers */
+275 | .flex-snippet-code-container::-webkit-scrollbar,
+276 | .flex-snippet-code-content::-webkit-scrollbar {
+277 |     width: 8px;
+278 |     height: 8px;
+279 | }
+280 | 
+281 | .flex-snippet-code-container::-webkit-scrollbar-track,
+282 | .flex-snippet-code-content::-webkit-scrollbar-track {
+283 |     background: #1e293b;
+284 | }
+285 | 
+286 | .flex-snippet-code-container::-webkit-scrollbar-thumb,
+287 | .flex-snippet-code-content::-webkit-scrollbar-thumb {
+288 |     background: #475569;
+289 |     border-radius: 4px;
+290 | }
+291 | 
+292 | .flex-snippet-code-container::-webkit-scrollbar-thumb:hover,
+293 | .flex-snippet-code-content::-webkit-scrollbar-thumb:hover {
+294 |     background: #64748b;
+295 | }
+296 | 
+297 | /* Copy success animation */
+298 | .flex-copy-button.copied {
+299 |     background: #10b981 !important;
+300 |     color: white !important;
+301 |     border-color: #10b981 !important;
+302 | }
+303 | 
+304 | .flex-copy-button.copied .copy-icon::after {
+305 |     content: ' ✓';
+306 | }
+307 | 
+308 | /* Flex Snippet Placeholder Styles */
+309 | .flex-snippet-placeholder {
+310 |     display: inline-flex;
+311 |     align-items: center;
+312 |     background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(78, 205, 196, 0.1));
+313 |     border: 1px dashed var(--accent-color);
+314 |     border-radius: var(--radius-sm);
+315 |     padding: var(--space-2) var(--space-3);
+316 |     margin: var(--space-1) 0;
+317 |     font-size: 0.875rem;
+318 |     color: var(--text-secondary);
+319 |     transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+320 |     position: relative;
+321 |     opacity: 0.8;
+322 | }
+323 | 
+324 | .flex-snippet-placeholder::before {
+325 |     content: '';
+326 |     width: 12px;
+327 |     height: 12px;
+328 |     border: 2px solid var(--accent-color);
+329 |     border-top: 2px solid transparent;
+330 |     border-radius: 50%;
+331 |     margin-right: var(--space-2);
+332 |     animation: placeholder-spin 1s linear infinite;
+333 | }
+334 | 
+335 | .flex-snippet-placeholder:hover {
+336 |     opacity: 1;
+337 |     background: linear-gradient(135deg, rgba(255, 107, 107, 0.15), rgba(78, 205, 196, 0.15));
+338 |     transform: translateY(-1px);
+339 | }
+340 | 
+341 | @keyframes placeholder-spin {
+342 |     0% {
+343 |         transform: rotate(0deg);
+344 |     }
+345 | 
+346 |     100% {
+347 |         transform: rotate(360deg);
+348 |     }
+349 | }
 ```
 
 assets/webview/css/components/header.css
@@ -9779,34 +10181,36 @@ assets/webview/css/components/header.css
 104 |     text-overflow: ellipsis;
 105 |     max-width: 120px;
 106 |     /* Reasonable default max width */
-107 | }
-108 | 
-109 | .icon-button {
-110 |     background: var(--card-bg);
-111 |     border: 1px solid var(--border-color);
-112 |     color: var(--text-secondary);
-113 |     padding: var(--space-2);
-114 |     border-radius: var(--radius-md);
-115 |     cursor: pointer;
-116 |     transition: all 0.2s ease;
-117 |     font-size: 0.8125rem;
-118 |     display: flex;
-119 |     align-items: center;
-120 |     justify-content: center;
-121 |     min-width: 32px;
-122 |     height: 32px;
-123 | }
-124 | 
-125 | .icon-button:hover {
-126 |     background: var(--accent-color);
-127 |     border-color: var(--accent-color);
-128 |     color: white;
-129 |     transform: translateY(-1px);
-130 | }
-131 | 
-132 | .icon-button:active {
-133 |     transform: translateY(0);
-134 | }
+107 |     transition: all 0.3s ease;
+108 |     /* Smooth transition for updates */
+109 | }
+110 | 
+111 | .icon-button {
+112 |     background: var(--card-bg);
+113 |     border: 1px solid var(--border-color);
+114 |     color: var(--text-secondary);
+115 |     padding: var(--space-2);
+116 |     border-radius: var(--radius-md);
+117 |     cursor: pointer;
+118 |     transition: all 0.2s ease;
+119 |     font-size: 0.8125rem;
+120 |     display: flex;
+121 |     align-items: center;
+122 |     justify-content: center;
+123 |     min-width: 32px;
+124 |     height: 32px;
+125 | }
+126 | 
+127 | .icon-button:hover {
+128 |     background: var(--accent-color);
+129 |     border-color: var(--accent-color);
+130 |     color: white;
+131 |     transform: translateY(-1px);
+132 | }
+133 | 
+134 | .icon-button:active {
+135 |     transform: translateY(0);
+136 | }
 ```
 
 assets/webview/css/components/input.css
@@ -10155,84 +10559,93 @@ assets/webview/js/syntax/highlighter.js
 98 |             .replace(/^-\s(.*)/gm, '<ul><li>$1</li></ul>')
 99 |             .replace(/<\/ul>\n<ul>/g, '');
 100 | 
-101 |         return { formatted, flexSnippets };
-102 |     }
+101 |         // Replace Flex snippet placeholders with visual indicators
+102 |         formatted = this.replacePlaceholdersWithIndicators(formatted);
 103 | 
-104 |     createFlexCodeSnippet(snippet, domManager) {
-105 |         const snippetContainer = document.createElement('div');
-106 |         snippetContainer.className = 'flex-code-snippet';
-107 |         snippetContainer.id = snippet.id;
-108 | 
-109 |         const header = document.createElement('div');
-110 |         header.className = 'flex-snippet-header';
-111 |         header.innerHTML = `
-112 |             <div class="flex-snippet-metadata">
-113 |                 <span class="flex-snippet-language"><span class="flex-icon">⚡</span> Flex Code</span>
-114 |                 <span class="flex-snippet-stats">${snippet.lineCount} lines • ${(snippet.size / 1024).toFixed(1)}KB • ${snippet.confidence}</span>
-115 |             </div>
-116 |             <div class="flex-snippet-controls">
-117 |                 <button class="flex-copy-button" title="Copy Flex code"><span class="copy-icon">📋</span></button>
-118 |                 <button class="flex-expand-button" title="Toggle fullscreen"><span class="expand-icon">⤢</span></button>
-119 |             </div>
-120 |         `;
-121 | 
-122 |         const codeContainer = document.createElement('div');
-123 |         codeContainer.className = 'flex-snippet-code-container';
-124 |         const lineNumbers = document.createElement('div');
-125 |         lineNumbers.className = 'flex-snippet-line-numbers';
-126 |         const codeContent = document.createElement('div');
-127 |         codeContent.className = 'flex-snippet-code-content';
-128 | 
-129 |         const lines = snippet.code.split('\n');
-130 |         let lineNumbersHtml = '';
-131 |         for (let i = 0; i < lines.length + 2; i++) {
-132 |             lineNumbersHtml += `<span class="line-number">${i + 1}</span>`;
-133 |         }
-134 |         lineNumbers.innerHTML = lineNumbersHtml;
-135 |         codeContent.innerHTML = this.highlightFlexSyntax(snippet.code);
-136 | 
-137 |         codeContainer.appendChild(lineNumbers);
-138 |         codeContainer.appendChild(codeContent);
-139 | 
-140 |         const footer = document.createElement('div');
-141 |         footer.className = 'flex-snippet-footer';
-142 |         footer.innerHTML = `<span class="flex-hint">💡 This code can be saved as a <code>.lx</code>, <code>.fx</code>, or <code>.flex</code> file</span>`;
-143 | 
-144 |         snippetContainer.appendChild(header);
-145 |         snippetContainer.appendChild(codeContainer);
-146 |         snippetContainer.appendChild(footer);
-147 | 
-148 |         header.querySelector('.flex-copy-button').addEventListener('click', () => this.copyCode(snippet.code, header.querySelector('.flex-copy-button')));
-149 |         header.querySelector('.flex-expand-button').addEventListener('click', (e) => {
-150 |             e.stopPropagation();
-151 |             domManager.toggleFlexSnippetExpanded(snippetContainer);
-152 |         });
-153 | 
-154 |         return snippetContainer;
-155 |     }
+104 |         return { formatted, flexSnippets };
+105 |     }
+106 | 
+107 |     replacePlaceholdersWithIndicators(text) {
+108 |         return text.replace(/%%FLEX_SNIPPET_(flex-snippet-\d+)%%/g, (match, snippetId) => {
+109 |             return `<div class="flex-snippet-placeholder" data-snippet-id="${snippetId}">📄 Flex Code Snippet (${snippetId})</div>`;
+110 |         });
+111 |     }
+112 | 
+113 |     createFlexCodeSnippet(snippet, domManager) {
+114 |         const snippetContainer = document.createElement('div');
+115 |         snippetContainer.className = 'flex-code-snippet';
+116 |         snippetContainer.id = snippet.id;
+117 | 
+118 |         const header = document.createElement('div');
+119 |         header.className = 'flex-snippet-header';
+120 |         header.innerHTML = `
+121 |             <div class="flex-snippet-metadata">
+122 |                 <span class="flex-snippet-language"><span class="flex-icon">⚡</span> Flex Code</span>
+123 |                 <span class="flex-snippet-stats">${snippet.lineCount} lines • ${(snippet.size / 1024).toFixed(1)}KB • ${snippet.confidence}</span>
+124 |             </div>
+125 |             <div class="flex-snippet-controls">
+126 |                 <button class="flex-copy-button" title="Copy Flex code"><span class="copy-icon">📋</span></button>
+127 |                 <button class="flex-expand-button" title="Toggle fullscreen"><span class="expand-icon">⤢</span></button>
+128 |             </div>
+129 |         `;
+130 | 
+131 |         const codeContainer = document.createElement('div');
+132 |         codeContainer.className = 'flex-snippet-code-container';
+133 |         const lineNumbers = document.createElement('div');
+134 |         lineNumbers.className = 'flex-snippet-line-numbers';
+135 |         const codeContent = document.createElement('div');
+136 |         codeContent.className = 'flex-snippet-code-content';
+137 | 
+138 |         const lines = snippet.code.split('\n');
+139 |         let lineNumbersHtml = '';
+140 |         for (let i = 0; i < lines.length + 2; i++) {
+141 |             lineNumbersHtml += `<span class="line-number">${i + 1}</span>`;
+142 |         }
+143 |         lineNumbers.innerHTML = lineNumbersHtml;
+144 |         codeContent.innerHTML = this.highlightFlexSyntax(snippet.code);
+145 | 
+146 |         codeContainer.appendChild(lineNumbers);
+147 |         codeContainer.appendChild(codeContent);
+148 | 
+149 |         const footer = document.createElement('div');
+150 |         footer.className = 'flex-snippet-footer';
+151 |         footer.innerHTML = `<span class="flex-hint">💡 This code can be saved as a <code>.lx</code>, <code>.fx</code>, or <code>.flex</code> file</span>`;
+152 | 
+153 |         snippetContainer.appendChild(header);
+154 |         snippetContainer.appendChild(codeContainer);
+155 |         snippetContainer.appendChild(footer);
 156 | 
-157 |     async copyCode(code, buttonElement) {
-158 |         try {
-159 |             await navigator.clipboard.writeText(code);
-160 |             const originalText = buttonElement.innerHTML;
-161 |             buttonElement.innerHTML = 'Copied!';
-162 |             buttonElement.style.background = '#10b981';
-163 |             setTimeout(() => {
-164 |                 buttonElement.innerHTML = originalText;
-165 |                 buttonElement.style.background = '';
-166 |             }, 1500);
-167 |         } catch (err) {
-168 |             console.error('Failed to copy code: ', err);
+157 |         header.querySelector('.flex-copy-button').addEventListener('click', () => this.copyCode(snippet.code, header.querySelector('.flex-copy-button')));
+158 |         header.querySelector('.flex-expand-button').addEventListener('click', (e) => {
+159 |             e.stopPropagation();
+160 |             domManager.toggleFlexSnippetExpanded(snippetContainer);
+161 |         });
+162 | 
+163 |         return snippetContainer;
+164 |     }
+165 | 
+166 |     async copyCode(code, buttonElement) {
+167 |         try {
+168 |             await navigator.clipboard.writeText(code);
 169 |             const originalText = buttonElement.innerHTML;
-170 |             buttonElement.innerHTML = 'Error!';
-171 |             buttonElement.style.background = '#ef4444';
+170 |             buttonElement.innerHTML = 'Copied!';
+171 |             buttonElement.style.background = '#10b981';
 172 |             setTimeout(() => {
 173 |                 buttonElement.innerHTML = originalText;
 174 |                 buttonElement.style.background = '';
-175 |             }, 2000);
-176 |         }
-177 |     }
-178 | } 
+175 |             }, 1500);
+176 |         } catch (err) {
+177 |             console.error('Failed to copy code: ', err);
+178 |             const originalText = buttonElement.innerHTML;
+179 |             buttonElement.innerHTML = 'Error!';
+180 |             buttonElement.style.background = '#ef4444';
+181 |             setTimeout(() => {
+182 |                 buttonElement.innerHTML = originalText;
+183 |                 buttonElement.style.background = '';
+184 |             }, 2000);
+185 |         }
+186 |     }
+187 | }
 ```
 
 assets/webview/js/ui/domManager.js
@@ -10313,109 +10726,125 @@ assets/webview/js/ui/domManager.js
 74 |                 const contentDiv = this.createMessageContent(formatted);
 75 |                 messageDiv.appendChild(label);
 76 |                 messageDiv.appendChild(contentDiv);
-77 |             }
-78 |             this.chatBox.appendChild(messageDiv);
-79 |             this.animateMessageIn(messageDiv);
-80 |         }
-81 | 
-82 |         if (flexSnippets.length > 0) {
-83 |             this.appendFlexSnippets(flexSnippets);
-84 |         }
-85 | 
-86 |         this.scrollChatToBottom();
-87 |     }
-88 | 
-89 |     appendFlexSnippets(snippets) {
-90 |         snippets.forEach((snippet, index) => {
-91 |             setTimeout(() => {
-92 |                 const snippetElement = this.syntaxHighlighter.createFlexCodeSnippet(snippet, this);
-93 |                 this.chatBox.appendChild(snippetElement);
-94 |                 this.animateMessageIn(snippetElement);
-95 |                 this.scrollChatToBottom();
-96 |             }, index * 200);
+77 |                 
+78 |                 // Replace snippet placeholders with actual rendered snippets
+79 |                 this.replaceSnippetPlaceholders(contentDiv, flexSnippets);
+80 |             }
+81 |             this.chatBox.appendChild(messageDiv);
+82 |             this.animateMessageIn(messageDiv);
+83 |         }
+84 | 
+85 |         this.scrollChatToBottom();
+86 |     }
+87 | 
+88 |     replaceSnippetPlaceholders(container, flexSnippets) {
+89 |         const placeholders = container.querySelectorAll('.flex-snippet-placeholder');
+90 |         placeholders.forEach(placeholder => {
+91 |             const snippetId = placeholder.getAttribute('data-snippet-id');
+92 |             const snippet = flexSnippets.find(s => s.id === snippetId);
+93 |             if (snippet) {
+94 |                 const snippetElement = this.syntaxHighlighter.createFlexCodeSnippet(snippet, this);
+95 |                 placeholder.parentNode.replaceChild(snippetElement, placeholder);
+96 |             }
 97 |         });
 98 |     }
 99 | 
-100 |     toggleFlexSnippetExpanded(snippetContainer) {
-101 |         const isExpanding = !snippetContainer.classList.contains('expanded');
-102 |         snippetContainer.classList.toggle('expanded');
-103 |         let overlay = document.getElementById('snippet-overlay');
-104 |         if (isExpanding) {
-105 |             if (!overlay) {
-106 |                 overlay = document.createElement('div');
-107 |                 overlay.id = 'snippet-overlay';
-108 |                 overlay.className = 'snippet-overlay';
-109 |                 document.body.appendChild(overlay);
-110 |                 overlay.addEventListener('click', () => {
-111 |                     const expandedSnippet = document.querySelector('.flex-code-snippet.expanded');
-112 |                     if (expandedSnippet) {
-113 |                         this.toggleFlexSnippetExpanded(expandedSnippet);
-114 |                     }
-115 |                 });
-116 |             }
-117 |             requestAnimationFrame(() => {
-118 |                 overlay.classList.add('visible');
-119 |             });
-120 |         } else {
-121 |             if (overlay) {
-122 |                 overlay.classList.remove('visible');
-123 |             }
-124 |         }
-125 |         const expandButton = snippetContainer.querySelector('.flex-expand-button');
-126 |         if (expandButton) {
-127 |             expandButton.innerHTML = isExpanding ? `<span class="expand-icon">⤡</span>` : `<span class="expand-icon">⤢</span>`;
-128 |             expandButton.title = isExpanding ? 'Exit fullscreen view' : 'Toggle fullscreen view';
-129 |         }
-130 |     }
-131 | 
-132 |     startStreaming() {
-133 |         if (this.welcomeMessage) {
-134 |             this.welcomeMessage.style.display = 'none';
-135 |         }
-136 | 
-137 |         this.streamingMessage = this.createMessageContainer('ai', false);
-138 |         const label = this.createMessageLabel('ai');
-139 |         const contentDiv = this.createMessageContent('<span class="streaming-cursor"></span>');
-140 | 
-141 |         this.streamingMessage.appendChild(label);
-142 |         this.streamingMessage.appendChild(contentDiv);
-143 |         this.chatBox.appendChild(this.streamingMessage);
+100 |     appendFlexSnippets(snippets) {
+101 |         // This method is now deprecated in favor of inline replacement
+102 |         // but kept for backwards compatibility
+103 |         snippets.forEach((snippet, index) => {
+104 |             setTimeout(() => {
+105 |                 const snippetElement = this.syntaxHighlighter.createFlexCodeSnippet(snippet, this);
+106 |                 this.chatBox.appendChild(snippetElement);
+107 |                 this.animateMessageIn(snippetElement);
+108 |                 this.scrollChatToBottom();
+109 |             }, index * 200);
+110 |         });
+111 |     }
+112 | 
+113 |     toggleFlexSnippetExpanded(snippetContainer) {
+114 |         const isExpanding = !snippetContainer.classList.contains('expanded');
+115 |         snippetContainer.classList.toggle('expanded');
+116 |         let overlay = document.getElementById('snippet-overlay');
+117 |         if (isExpanding) {
+118 |             if (!overlay) {
+119 |                 overlay = document.createElement('div');
+120 |                 overlay.id = 'snippet-overlay';
+121 |                 overlay.className = 'snippet-overlay';
+122 |                 document.body.appendChild(overlay);
+123 |                 overlay.addEventListener('click', () => {
+124 |                     const expandedSnippet = document.querySelector('.flex-code-snippet.expanded');
+125 |                     if (expandedSnippet) {
+126 |                         this.toggleFlexSnippetExpanded(expandedSnippet);
+127 |                     }
+128 |                 });
+129 |             }
+130 |             requestAnimationFrame(() => {
+131 |                 overlay.classList.add('visible');
+132 |             });
+133 |         } else {
+134 |             if (overlay) {
+135 |                 overlay.classList.remove('visible');
+136 |             }
+137 |         }
+138 |         const expandButton = snippetContainer.querySelector('.flex-expand-button');
+139 |         if (expandButton) {
+140 |             expandButton.innerHTML = isExpanding ? `<span class="expand-icon">⤡</span>` : `<span class="expand-icon">⤢</span>`;
+141 |             expandButton.title = isExpanding ? 'Exit fullscreen view' : 'Toggle fullscreen view';
+142 |         }
+143 |     }
 144 | 
-145 |         this.streamingContent = '';
-146 |         this.scrollChatToBottom();
-147 |     }
-148 | 
-149 |     addStreamingChunk(chunk) {
-150 |         if (!this.streamingMessage) {
-151 |             this.startStreaming();
-152 |         }
+145 |     startStreaming() {
+146 |         if (this.welcomeMessage) {
+147 |             this.welcomeMessage.style.display = 'none';
+148 |         }
+149 | 
+150 |         this.streamingMessage = this.createMessageContainer('ai', false);
+151 |         const label = this.createMessageLabel('ai');
+152 |         const contentDiv = this.createMessageContent('<span class="streaming-cursor"></span>');
 153 | 
-154 |         this.streamingContent += chunk;
-155 |         const contentDiv = this.streamingMessage.querySelector('.message-content');
-156 |         if (contentDiv) {
-157 |             // Basic markdown for now. Full formatting on complete.
-158 |             const formattedChunk = this.syntaxHighlighter.escapeHtml(this.streamingContent)
-159 |                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-160 |                 .replace(/\*(.*?)\*/g, '<em>$1</em>');
-161 |             contentDiv.innerHTML = `${formattedChunk}<span class="streaming-cursor"></span>`;
-162 |         }
-163 |         this.scrollChatToBottom();
-164 |     }
-165 | 
-166 |     completeStreaming() {
-167 |         if (!this.streamingMessage) return;
-168 | 
-169 |         const contentDiv = this.streamingMessage.querySelector('.message-content');
-170 |         if (contentDiv) {
-171 |             const { formatted } = this.syntaxHighlighter.formatText(this.streamingContent);
-172 |             contentDiv.innerHTML = formatted;
-173 |         }
-174 | 
-175 |         this.streamingMessage = null;
-176 |         this.streamingContent = '';
-177 |         this.scrollChatToBottom();
-178 |     }
-179 | 
-180 |     // ... other DOM manipulation methods
-181 | } 
+154 |         this.streamingMessage.appendChild(label);
+155 |         this.streamingMessage.appendChild(contentDiv);
+156 |         this.chatBox.appendChild(this.streamingMessage);
+157 | 
+158 |         this.streamingContent = '';
+159 |         this.scrollChatToBottom();
+160 |     }
+161 | 
+162 |     addStreamingChunk(chunk) {
+163 |         if (!this.streamingMessage) {
+164 |             this.startStreaming();
+165 |         }
+166 | 
+167 |         this.streamingContent += chunk;
+168 |         const contentDiv = this.streamingMessage.querySelector('.message-content');
+169 |         if (contentDiv) {
+170 |             // Basic markdown for now. Full formatting on complete.
+171 |             const formattedChunk = this.syntaxHighlighter.escapeHtml(this.streamingContent)
+172 |                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+173 |                 .replace(/\*(.*?)\*/g, '<em>$1</em>');
+174 |             contentDiv.innerHTML = `${formattedChunk}<span class="streaming-cursor"></span>`;
+175 |         }
+176 |         this.scrollChatToBottom();
+177 |     }
+178 | 
+179 |     completeStreaming() {
+180 |         if (!this.streamingMessage) return;
+181 | 
+182 |         const contentDiv = this.streamingMessage.querySelector('.message-content');
+183 |         if (contentDiv) {
+184 |             const { formatted, flexSnippets } = this.syntaxHighlighter.formatText(this.streamingContent);
+185 |             contentDiv.innerHTML = formatted;
+186 |             
+187 |             // Replace snippet placeholders with actual rendered snippets
+188 |             this.replaceSnippetPlaceholders(contentDiv, flexSnippets);
+189 |         }
+190 | 
+191 |         this.streamingMessage = null;
+192 |         this.streamingContent = '';
+193 |         this.scrollChatToBottom();
+194 |     }
+195 | 
+196 |     // ... other DOM manipulation methods
+197 | }
 ```

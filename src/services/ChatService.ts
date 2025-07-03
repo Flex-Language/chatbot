@@ -8,15 +8,20 @@ import { logger } from '../utils/logger';
 export class ChatService {
     private _conversationHistory: ChatMessage[] = [];
     private readonly maxConversationHistory = 20;
+    private readonly maxStoredMessages = 50; // Limit for persistence
+    private readonly maxStorageDays = 30; // Days to keep history
     private _isProcessingMessage = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _postMessage: (message: any) => void;
     private _flexDatasetService: FlexDatasetService;
+    private _context: vscode.ExtensionContext;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    constructor(postMessageCallback: (message: any) => void, extensionUri: vscode.Uri) {
+    constructor(postMessageCallback: (message: any) => void, extensionUri: vscode.Uri, context: vscode.ExtensionContext) {
         this._postMessage = postMessageCallback;
         this._flexDatasetService = FlexDatasetService.getInstance(extensionUri.fsPath);
+        this._context = context;
+        this.loadChatHistory();
     }
 
     public async handleSendMessage(userMessage: string): Promise<void> {
@@ -69,6 +74,9 @@ export class ChatService {
             };
             this._conversationHistory.push(userChatMessage);
 
+            // Save history after adding user message
+            this.saveChatHistory();
+
             if (this._conversationHistory.length > this.maxConversationHistory) {
                 this._conversationHistory = this._conversationHistory.slice(-this.maxConversationHistory);
             }
@@ -89,8 +97,9 @@ export class ChatService {
                 messages,
                 config,
                 (chunk: string) => {
-                    fullResponse += chunk;
-                    this._postMessage({ command: 'aiStreamChunk', text: chunk });
+                    const sanitizedChunk = this.sanitizeAIResponse(chunk);
+                    fullResponse += sanitizedChunk;
+                    this._postMessage({ command: 'aiStreamChunk', text: sanitizedChunk });
                 },
                 (error: Error) => {
                     this._postMessage({ command: 'aiResponse', text: `Streaming error: ${error.message}` });
@@ -100,12 +109,18 @@ export class ChatService {
                 }
             );
 
+            // Final sanitization of complete response
+            const sanitizedResponse = this.sanitizeAIResponse(fullResponse);
+
             const aiChatMessage: ChatMessage = {
                 role: 'assistant',
-                content: fullResponse,
+                content: sanitizedResponse,
                 timestamp: new Date()
             };
             this._conversationHistory.push(aiChatMessage);
+
+            // Save chat history after each exchange
+            this.saveChatHistory();
 
             logger.info('Message processed successfully', {
                 userMessageLength: userMessage.length,
@@ -135,6 +150,86 @@ export class ChatService {
     public resetChat(): void {
         logger.logUserAction('resetChat');
         this._conversationHistory = [];
+        this.saveChatHistory(); // Persist the empty state
         this._postMessage({ command: 'chatCleared' });
     }
-} 
+
+    /**
+     * Load chat history from VSCode global state
+     */
+    private loadChatHistory(): void {
+        try {
+            const stored = this._context.globalState.get<ChatMessage[]>('flexChatHistory', []);
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - this.maxStorageDays);
+
+            // Filter out old messages and limit to max stored messages
+            this._conversationHistory = stored
+                .filter(msg => !msg.timestamp || new Date(msg.timestamp) > cutoffDate)
+                .slice(-this.maxStoredMessages);
+
+            logger.info(`Loaded ${this._conversationHistory.length} messages from chat history`);
+        } catch (error) {
+            logger.error('Error loading chat history', error);
+            this._conversationHistory = [];
+        }
+    }
+
+    /**
+     * Save chat history to VSCode global state
+     */
+    private saveChatHistory(): void {
+        try {
+            // Only save recent messages to prevent excessive storage usage
+            const messagesToSave = this._conversationHistory.slice(-this.maxStoredMessages);
+            this._context.globalState.update('flexChatHistory', messagesToSave);
+            logger.debug(`Saved ${messagesToSave.length} messages to chat history`);
+        } catch (error) {
+            logger.error('Error saving chat history', error);
+        }
+    }
+
+    /**
+     * Sanitize AI response to remove corrupted tokens and improve code quality
+     */
+    private sanitizeAIResponse(response: string): string {
+        const invalidTokens = {
+            'sndo2': 'fun',
+            'etb3': 'print',
+            'karr': 'for',
+            'l7d': 'for',
+            'rg3': 'return',
+            'rakm': 'int',
+            'da5l': 'input',
+            'lw': 'if',
+            'gher': 'else'
+        };
+
+        let sanitized = response;
+        let hadChanges = false;
+
+        for (const [invalid, correct] of Object.entries(invalidTokens)) {
+            const regex = new RegExp(`\\b${invalid}\\b`, 'g');
+            if (regex.test(sanitized)) {
+                sanitized = sanitized.replace(regex, correct);
+                hadChanges = true;
+            }
+        }
+
+        if (hadChanges) {
+            logger.warn('Sanitized AI response - removed corrupted tokens', { 
+                originalLength: response.length,
+                sanitizedLength: sanitized.length 
+            });
+        }
+
+        return sanitized;
+    }
+
+    /**
+     * Get chat history for restoration
+     */
+    public getChatHistory(): ChatMessage[] {
+        return [...this._conversationHistory];
+    }
+}

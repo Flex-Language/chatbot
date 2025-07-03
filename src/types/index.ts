@@ -2,22 +2,33 @@
  * Type definitions for the Flex Chatbot extension
  */
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface FlexSpecification {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     ai_system_prompt: {
         role: string;
         version: string;
         description: string;
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         CRITICAL_INSTRUCTIONS: Record<string, string>;
         [key: string]: unknown;
     };
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     ESSENTIAL_FLEX_KNOWLEDGE: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         language_identity: string;
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         core_philosophy: string;
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         file_extensions: string[];
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         unique_features: string[];
     };
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CRITICAL_SYNTAX_PATTERNS: Record<string, unknown>;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     code_examples: Record<string, unknown>;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     common_patterns: Record<string, unknown>;
     [key: string]: unknown;
 }
@@ -85,10 +96,11 @@ export interface WebSearchResult {
  * Webview message structure
  */
 export interface WebviewMessage {
-    command: 'sendMessage' | 'clearChat' | 'selectModel' | 'statusUpdate' | 'aiResponse' | 'chatCleared' | 'aiStreamStart' | 'aiStreamChunk' | 'aiStreamComplete';
+    command: 'sendMessage' | 'clearChat' | 'selectModel' | 'statusUpdate' | 'aiResponse' | 'chatCleared' | 'aiStreamStart' | 'aiStreamChunk' | 'aiStreamComplete' | 'hydrateChatHistory' | 'modelSelectionError';
     text?: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data?: any;
+    history?: ChatMessage[];
 }
 
 /**

@@ -20,7 +20,7 @@ export function activate(context: vscode.ExtensionContext): void {
 	try {
 		// Initialize services
 		FlexDatasetService.getInstance(context.extensionPath);
-		const provider = new CustomSidebarViewProvider(context.extensionUri);
+		const provider = new CustomSidebarViewProvider(context.extensionUri, context);
 		devTools.initialize(context.extensionUri);
 
 		// Register webview provider
@@ -198,7 +198,8 @@ async function handleSelectModel(provider: CustomSidebarViewProvider): Promise<v
 			await ConfigService.set('model', selectedItem.label);
 			vscode.window.showInformationMessage(`Model set to: ${selectedItem.label}`);
 
-			provider.refreshWebview();
+			// Update the model display in the webview without full refresh
+			provider.updateModelDisplay();
 			logger.info('Model changed', { model: selectedItem.label });
 		}
 	} catch (error) {

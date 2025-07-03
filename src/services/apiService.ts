@@ -574,19 +574,6 @@ export class ApiService {
         }
     }
 
-    /**
-     * Extract error message from various error types
-     */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private static getErrorMessage(error: any): string {
-        if (error?.response?.data?.error?.message) {
-            return error.response.data.error.message;
-        }
-        if (error?.message) {
-            return error.message;
-        }
-        return 'Unknown error occurred';
-    }
 
     /**
      * Sleep utility for retry delays
@@ -614,9 +601,9 @@ export class ApiService {
      */
     public static getRecommendedModels(): string[] {
         return [
+            'openai/gpt-4.1-mini',
             'openai/gpt-4o-mini',
             'openai/gpt-4o',
-            'openai/gpt-4-turbo',
             'anthropic/claude-3.5-sonnet',
             'anthropic/claude-3-haiku',
             'google/gemini-flash-1.5',

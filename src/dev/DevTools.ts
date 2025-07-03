@@ -40,7 +40,7 @@ export class DevTools {
     return DevTools.instance;
   }
 
-  public initialize(extensionUri: vscode.Uri) {
+  public initialize(extensionUri: vscode.Uri): void {
     this.extensionUri = extensionUri;
   }
 

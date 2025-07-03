@@ -80,13 +80,62 @@
       case 'chatCleared':
         domManager.clearChat();
         break;
+      case 'hydrateChatHistory':
+        handleChatHistoryRestoration(message.history);
+        break;
       case 'error':
         domManager.addMessage(message.text, 'ai', true); // Treat errors as a status message from AI
         sendButton.disabled = false;
         sendButton.innerHTML = '<span class="send-icon">📤</span>';
         break;
+      case 'modelUpdated':
+        updateModelDisplay(message.model);
+        break;
     }
   });
+
+  // Handle chat history restoration
+  function handleChatHistoryRestoration(history) {
+    if (!history || !Array.isArray(history)) {
+      console.warn('Invalid chat history data received');
+      return;
+    }
+
+    try {
+      // Hide welcome message if history exists
+      if (history.length > 0 && welcomeMessage) {
+        welcomeMessage.style.display = 'none';
+      }
+
+      // Restore each message in order
+      history.forEach(message => {
+        if (message.role === 'user') {
+          domManager.addMessage(message.content, 'user');
+        } else if (message.role === 'assistant') {
+          domManager.addMessage(message.content, 'ai');
+        }
+      });
+
+      console.log(`Restored ${history.length} messages from chat history`);
+    } catch (error) {
+      console.error('Error restoring chat history:', error);
+    }
+  }
+
+  // Update model display in header
+  function updateModelDisplay(modelName) {
+    const modelDisplay = document.querySelector('.model-display');
+    if (modelDisplay) {
+      modelDisplay.textContent = modelName || 'Default';
+      // Add a brief animation to show the change
+      modelDisplay.style.background = '#10b981';
+      modelDisplay.style.color = 'white';
+      setTimeout(() => {
+        modelDisplay.style.background = '';
+        modelDisplay.style.color = '';
+      }, 1000);
+    }
+  }
 
   // Auto-resize textarea
   userInput.addEventListener('input', function () {

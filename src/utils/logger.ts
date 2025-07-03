@@ -12,8 +12,6 @@ export class Logger implements ILogger {
     private logLevel: LogLevel = LogLevel.info;
     private enableConsoleLogging = true;
     private performanceTimers: Map<string, number> = new Map();
-    private logHistory: string[] = [];
-    private readonly maxLogHistory = 200;
 
     private constructor() {
         // Try to get VS Code output channel if available
@@ -150,23 +148,6 @@ export class Logger implements ILogger {
         return formatted;
     }
 
-    /**
-     * Get emoji for log level
-     */
-    private getLevelEmoji(level: LogLevel): string {
-        switch (level) {
-            case LogLevel.error:
-                return '❌';
-            case LogLevel.warn:
-                return '⚠️';
-            case LogLevel.info:
-                return 'ℹ️';
-            case LogLevel.debug:
-                return '🐛';
-            default:
-                return '❓';
-        }
-    }
 
     /**
      * Log API request

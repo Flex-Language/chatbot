@@ -104,6 +104,8 @@
     text-overflow: ellipsis;
     max-width: 120px;
     /* Reasonable default max width */
+    transition: all 0.3s ease;
+    /* Smooth transition for updates */
 }
 
 .icon-button {

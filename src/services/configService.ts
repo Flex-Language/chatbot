@@ -12,24 +12,19 @@ export class ConfigService {
      */
     public static getConfig(): ExtensionConfig {
         const config = vscode.workspace.getConfiguration(this.configSection);
-        let model = config.get<string>('model', 'openai/gpt-4o-mini');
+        const model = config.get<string>('model', 'openai/gpt-4o-mini');
 
-        // Fix common invalid model names
-        const modelFixes: Record<string, string> = {
-            'openai/gpt-4.1-mini': 'openai/gpt-4o-mini',
-            'openai/gpt-4.1': 'openai/gpt-4o',
-            'openai/gpt-4.1-nano': 'openai/gpt-4o-mini',
-            'openai/gpt-4.5-preview': 'openai/gpt-4o'
-        };
+        // Log when users select models that might not exist, but preserve their choice
+        const commonModels = [
+            'openai/gpt-4o-mini',
+            'openai/gpt-4o',
+            'openai/gpt-3.5-turbo',
+            'anthropic/claude-3-sonnet',
+            'anthropic/claude-3-haiku'
+        ];
 
-        if (modelFixes[model]) {
-            const newModel = modelFixes[model];
-            if (newModel) {
-                console.warn(`⚠️ Fixing invalid model: ${model} → ${newModel}`);
-                // Auto-update the configuration
-                this.set('model', newModel).catch(console.error);
-                model = newModel;
-            }
+        if (!commonModels.includes(model)) {
+            console.info(`ℹ️ User selected custom model: ${model}. This model may not exist or may have limited functionality.`);
         }
 
         return {

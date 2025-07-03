@@ -19,8 +19,10 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
   private _configWatcher?: vscode.Disposable;
   private _availableModels: ModelInfo[] = [];
   private _isModelListLoaded = false;
+  private _context: vscode.ExtensionContext;
 
-  constructor(private readonly _extensionUri: vscode.Uri) {
+  constructor(private readonly _extensionUri: vscode.Uri, context: vscode.ExtensionContext) {
+    this._context = context;
     logger.logExtensionEvent('activate', { component: 'CustomSidebarViewProvider' });
     this._configWatcher = ConfigService.onConfigurationChanged(() => this.onConfigurationChanged());
     this.initializeModels();
@@ -47,6 +49,17 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
     if (this._view && this._webviewService) {
       this._view.webview.html = this._webviewService.getHtmlContent(this._view.webview);
       logger.debug('Webview refreshed');
+    }
+  }
+
+  public updateModelDisplay(): void {
+    if (this._view) {
+      const config = ConfigService.getConfig();
+      this._view.webview.postMessage({
+        command: 'modelUpdated',
+        model: config.model
+      });
+      logger.debug('Model display updated', { model: config.model });
     }
   }
 
@@ -91,7 +104,7 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
         this._view.webview.postMessage(message);
       }
     };
-    this._chatService = new ChatService(postMessage, this._extensionUri);
+    this._chatService = new ChatService(postMessage, this._extensionUri, this._context);
 
     webviewView.webview.options = {
       enableScripts: true,
@@ -104,7 +117,26 @@ export class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
       await this.handleWebviewMessage(message);
     });
 
+    // Restore chat history after webview is ready
+    this.restoreChatHistory();
+
     logger.info('Webview resolved and services initialized');
+  }
+
+  /**
+   * Restore chat history in the webview
+   */
+  private restoreChatHistory(): void {
+    if (this._chatService && this._view) {
+      const history = this._chatService.getChatHistory();
+      if (history.length > 0) {
+        this._view.webview.postMessage({
+          command: 'hydrateChatHistory',
+          history: history
+        });
+        logger.info(`Restored ${history.length} messages to webview`);
+      }
+    }
   }
 
   private async handleWebviewMessage(message: WebviewMessage): Promise<void> {

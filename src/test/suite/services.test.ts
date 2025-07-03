@@ -75,7 +75,14 @@ suite('Services Test Suite', () => {
     suite('ChatService', () => {
         test('resetChat should clear history and post message', () => {
             const postMessageSpy = sinon.spy();
-            const service = new ChatService(postMessageSpy, vscode.Uri.file('/'));
+            const mockContext = {
+                globalState: {
+                    get: sinon.stub().returns([]),
+                    update: sinon.stub()
+                }
+            } as unknown as vscode.ExtensionContext;
+            
+            const service = new ChatService(postMessageSpy, vscode.Uri.file('/'), mockContext);
 
             // Simulate adding a message
             (service as unknown as { conversationHistory: unknown[] }).conversationHistory.push({ role: 'user', content: 'hello' });

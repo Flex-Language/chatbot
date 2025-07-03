@@ -98,7 +98,16 @@ class SyntaxHighlighter {
             .replace(/^-\s(.*)/gm, '<ul><li>$1</li></ul>')
             .replace(/<\/ul>\n<ul>/g, '');
 
+        // Replace Flex snippet placeholders with visual indicators
+        formatted = this.replacePlaceholdersWithIndicators(formatted);
+
         return { formatted, flexSnippets };
+    }
+
+    replacePlaceholdersWithIndicators(text) {
+        return text.replace(/%%FLEX_SNIPPET_(flex-snippet-\d+)%%/g, (match, snippetId) => {
+            return `<div class="flex-snippet-placeholder" data-snippet-id="${snippetId}">📄 Flex Code Snippet (${snippetId})</div>`;
+        });
     }
 
     createFlexCodeSnippet(snippet, domManager) {
@@ -175,4 +184,4 @@ class SyntaxHighlighter {
             }, 2000);
         }
     }
-} 
+}

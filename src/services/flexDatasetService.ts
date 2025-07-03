@@ -77,6 +77,32 @@ export class FlexDatasetService {
                 "CRITICAL SYNTAX PATTERNS": this.formatSyntaxPatterns(syntaxPatterns),
                 "CODE EXAMPLES": this.formatCodeExamples(codeExamples),
                 "COMMON PATTERNS": this.formatCommonPatterns(commonPatterns),
+                "CODE QUALITY GUIDELINES": `
+## PROPER FLEX SYNTAX REQUIREMENTS
+- ALWAYS use correct Flex keywords from the specification
+- NEVER use invalid tokens: 'sndo2', 'etb3', 'karr', 'l7d', 'rg3', 'rakm', 'da5l', 'lw', 'gher'
+- Use proper function keywords: 'fun', 'function', 'fn' (NOT 'sndo2')
+- Use proper I/O keywords: 'print', 'output', 'cout' (NOT 'etb3')
+- Use proper loop keywords: 'for', 'while', 'loop' (NOT 'karr', 'l7d')
+- Use proper variable types: 'int', 'string', 'bool' (NOT 'rakm')
+- Use proper input keywords: 'input', 'read', 'scan' (NOT 'da5l')
+- Use proper conditional keywords: 'if', 'else' (NOT 'lw', 'gher')
+
+## CORRECT VS INCORRECT EXAMPLES:
+❌ WRONG: sndo2 calculateSum(a, b) { rg3 a + b; }
+✅ CORRECT: fun calculateSum(a, b) { return a + b; }
+
+❌ WRONG: etb3("Hello World");
+✅ CORRECT: print("Hello World");
+
+❌ WRONG: l7d i = 0; i < 10; i++
+✅ CORRECT: for i = 0; i < 10; i++
+
+## FORMATTING REQUIREMENTS:
+- Always format code blocks with proper syntax highlighting
+- Use consistent indentation (4 spaces recommended)
+- Include proper comments for complex logic
+- Ensure all code is production-ready and executable`,
             };
 
             const fullPrompt = Object.entries(promptSections)
@@ -233,4 +259,4 @@ Always help users write safe, efficient Flex code while respecting their syntax 
             syntaxPatterns: Object.keys(this.flexSpec.CRITICAL_SYNTAX_PATTERNS || {}).length,
         };
     }
-} 
+}

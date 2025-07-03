@@ -74,19 +74,32 @@ class DOMManager {
                 const contentDiv = this.createMessageContent(formatted);
                 messageDiv.appendChild(label);
                 messageDiv.appendChild(contentDiv);
+                
+                // Replace snippet placeholders with actual rendered snippets
+                this.replaceSnippetPlaceholders(contentDiv, flexSnippets);
             }
             this.chatBox.appendChild(messageDiv);
             this.animateMessageIn(messageDiv);
         }
 
-        if (flexSnippets.length > 0) {
-            this.appendFlexSnippets(flexSnippets);
-        }
-
         this.scrollChatToBottom();
     }
 
+    replaceSnippetPlaceholders(container, flexSnippets) {
+        const placeholders = container.querySelectorAll('.flex-snippet-placeholder');
+        placeholders.forEach(placeholder => {
+            const snippetId = placeholder.getAttribute('data-snippet-id');
+            const snippet = flexSnippets.find(s => s.id === snippetId);
+            if (snippet) {
+                const snippetElement = this.syntaxHighlighter.createFlexCodeSnippet(snippet, this);
+                placeholder.parentNode.replaceChild(snippetElement, placeholder);
+            }
+        });
+    }
+
     appendFlexSnippets(snippets) {
+        // This method is now deprecated in favor of inline replacement
+        // but kept for backwards compatibility
         snippets.forEach((snippet, index) => {
             setTimeout(() => {
                 const snippetElement = this.syntaxHighlighter.createFlexCodeSnippet(snippet, this);
@@ -168,8 +181,11 @@ class DOMManager {
 
         const contentDiv = this.streamingMessage.querySelector('.message-content');
         if (contentDiv) {
-            const { formatted } = this.syntaxHighlighter.formatText(this.streamingContent);
+            const { formatted, flexSnippets } = this.syntaxHighlighter.formatText(this.streamingContent);
             contentDiv.innerHTML = formatted;
+            
+            // Replace snippet placeholders with actual rendered snippets
+            this.replaceSnippetPlaceholders(contentDiv, flexSnippets);
         }
 
         this.streamingMessage = null;
@@ -178,4 +194,4 @@ class DOMManager {
     }
 
     // ... other DOM manipulation methods
-} 
+}

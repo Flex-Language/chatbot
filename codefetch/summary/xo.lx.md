@@ -1,0 +1,1 @@
+This file is empty and likely serves as a placeholder or a file with a specific purpose within the project's tooling that doesn't require any content.
