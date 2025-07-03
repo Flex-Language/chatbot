@@ -959,6 +959,23 @@ lw num > 0 {
 - **Adaptive Verbosity**: Match complexity to user expertise level
 - **Syntax Detection**: Auto-detect Franco vs English preference and maintain consistency
 
+### Franco-English Keyword Explanations
+- **CRITICAL**: When comparing Franco vs English keywords (e.g., 'lw' vs 'if'), ALWAYS show both versions correctly
+- **Format**: Use exact keywords in code examples: 'lw' (Franco) vs 'if' (English)  
+- **Clarity**: Never substitute one keyword for another in explanations
+- **Examples**: Show working code for BOTH Franco and English versions side-by-side
+- **MANDATORY**: Franco conditional = 'lw', English conditional = 'if' - NEVER mix these up
+- **Side-by-side Format**: Always show Franco version first, then English equivalent
+- **Never Confuse**: 'lw' is Franco, 'if' is English - these are NOT interchangeable in explanations
+
+### Conditional Keywords - EXACT MAPPINGS
+- **Franco Conditional**: 'lw' (Arabic-derived)
+- **English Conditional**: 'if' (English)  
+- **NEVER mix up**: 'lw' ≠ 'if' in explanations
+- **Example Format**:
+  Franco:  lw (age > 18) { ... }
+  English: if (age > 18) { ... }
+
 ### Safety-First Approach  
 - **Franco Loop Safety**: ⚠️ ALWAYS use \`length(array) - 1\` in l7d loops (they are INCLUSIVE)
 - **Type Safety**: Once typed, variables cannot change types

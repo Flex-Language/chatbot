@@ -192,25 +192,47 @@ export class WebviewService {
         
         .input-hints {
           display: flex;
-          gap: 12px;
+          gap: 8px;
           margin-top: 8px;
           flex-wrap: wrap;
           justify-content: center;
+          padding: 0 4px;
+          max-width: 100%;
+          overflow-x: auto;
         }
         
         .hint-item {
           font-size: 0.75rem;
           color: var(--text-muted);
           background: rgba(255, 255, 255, 0.05);
-          padding: 4px 8px;
-          border-radius: 12px;
+          padding: 6px 12px;
+          border-radius: 16px;
           cursor: pointer;
           transition: all 0.2s ease;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          user-select: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
         }
         
         .hint-item:hover {
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(59, 130, 246, 0.2);
           color: var(--text-primary);
+          border-color: rgba(59, 130, 246, 0.4);
+          transform: translateY(-1px);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hint-item:active {
+          transform: translateY(0) scale(0.95);
+          background: rgba(59, 130, 246, 0.3);
+        }
+        
+        .hint-item:focus {
+          outline: none;
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
         }
       </style>
     </head>
@@ -268,8 +290,11 @@ export class WebviewService {
             </div>
             <div class="input-hints">
               <span class="hint-item">💡 Try: "Show me a safe loop in Franco"</span>
-              <span class="hint-item">🔍 Ask: "What's the difference between 'lw' and 'if'?"</span>
+              <span class="hint-item">🔍 Ask: "Explain the difference between Franco 'lw' and English 'if'"</span>
               <span class="hint-item">⚠️ Safety: "How to avoid l7d loop errors?"</span>
+              <span class="hint-item">🎮 Example: "Write me a simple calculator"</span>
+              <span class="hint-item">🌐 Mixed: "Explain Franco-English syntax mixing"</span>
+              <span class="hint-item">📝 Code: "Convert this to Flex: for i in range(10)"</span>
             </div>
           </div>
         </div>

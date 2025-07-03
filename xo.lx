@@ -1,1 +1,69 @@
-nana mellodysta
+list board = [" ", " ", " ", " ", " ", " ", " ", " ", " "]
+int currentPlayer = 1 
+
+# Function to draw board
+fun printBoard() {
+    print("{board[0]}|{board[1]}|{board[2]}")
+    print("-----")
+    print("{board[3]}|{board[4]}|{board[5]}")
+    print("-----")
+    print("{board[6]}|{board[7]}|{board[8]}")
+}
+
+# Function to check win
+fun checkWin(player) {
+    # Rows
+    if (board[0] == player and board[1] == player and board[2] == player) return true
+    if (board[3] == player and board[4] == player and board[5] == player) return true
+    if (board[6] == player and board[7] == player and board[8] == player) return true
+    # Columns
+    if (board[0] == player and board[3] == player and board[6] == player) return true
+    if (board[1] == player and board[4] == player and board[7] == player) return true
+    if (board[2] == player and board[5] == player and board[8] == player) return true
+    # Diagonals
+    if (board[0] == player and board[4] == player and board[8] == player) return true
+    if (board[2] == player and board[4] == player and board[6] == player) return true
+    return false
+}
+
+# Function to check tie
+fun checkTie() {
+    for(i=0; i9; i++) {
+        if (board[i] == " ") return false
+    }
+    return true
+}
+
+# Main game
+fun main() {
+    int move
+    while(true) {
+        printBoard()
+        print("Player {if(currentPlayer == 1) 'X' else 'O'}, enter move (1-9):")
+        move = scan()
+        move = move - 1
+        if (move  0 or move > 8 or board[move] != " ") {
+            print("Invalid move, try again.")
+            continue
+        }
+        if (currentPlayer == 1) {
+            board[move] = "X"
+            currentPlayer = 2
+        } else {
+            board[move] = "O"
+            currentPlayer = 1
+        }
+        if (checkWin(if(currentPlayer == 1) 'O' else 'X')) {
+            printBoard()
+            print("Player {if(currentPlayer == 1) 'O' else 'X'} wins!")
+            break
+        }
+        if (checkTie()) {
+            printBoard()
+            print("It's a tie!")
+            break
+        }
+    }
+}
+
+main()

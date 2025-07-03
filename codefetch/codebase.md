@@ -24,6 +24,7 @@ Project Structure:
 │   ├── extension.ts
 ├── test-copy-fix.html
 ├── test-enhanced-webview.html
+├── test-hint-buttons.html
 ├── test-line-breaks.html
 ├── test-syntax-highlighting.html
 ├── tsconfig.json
@@ -1012,6 +1013,228 @@ test-enhanced-webview.html
 217 | </html>
 ```
 
+test-hint-buttons.html
+```
+1 | <!DOCTYPE html>
+2 | <html lang="en">
+3 | <head>
+4 |     <meta charset="UTF-8">
+5 |     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+6 |     <title>Hint Buttons Test</title>
+7 |     <style>
+8 |         body {
+9 |             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+10 |             background: #1a1a1a;
+11 |             color: #e0e0e0;
+12 |             padding: 20px;
+13 |             line-height: 1.6;
+14 |         }
+15 | 
+16 |         .test-section {
+17 |             background: #2a2a2a;
+18 |             border-radius: 8px;
+19 |             padding: 20px;
+20 |             margin: 20px 0;
+21 |             border-left: 4px solid #4ecdc4;
+22 |         }
+23 | 
+24 |         .input-container {
+25 |             background: #2a2a2a;
+26 |             border-radius: 8px;
+27 |             padding: 16px;
+28 |             margin: 16px 0;
+29 |         }
+30 | 
+31 |         #user-input {
+32 |             width: 100%;
+33 |             min-height: 40px;
+34 |             background: #1e1e1e;
+35 |             border: 1px solid #444;
+36 |             border-radius: 8px;
+37 |             color: #e0e0e0;
+38 |             padding: 12px;
+39 |             font-family: inherit;
+40 |             resize: vertical;
+41 |         }
+42 | 
+43 |         .input-hints {
+44 |             display: flex;
+45 |             gap: 8px;
+46 |             margin-top: 8px;
+47 |             flex-wrap: wrap;
+48 |             justify-content: center;
+49 |             padding: 0 4px;
+50 |             max-width: 100%;
+51 |             overflow-x: auto;
+52 |         }
+53 | 
+54 |         .hint-item {
+55 |             font-size: 0.75rem;
+56 |             color: rgba(248, 250, 252, 0.7);
+57 |             background: rgba(255, 255, 255, 0.05);
+58 |             padding: 6px 12px;
+59 |             border-radius: 16px;
+60 |             cursor: pointer;
+61 |             transition: all 0.2s ease;
+62 |             border: 1px solid rgba(255, 255, 255, 0.1);
+63 |             user-select: none;
+64 |             display: inline-flex;
+65 |             align-items: center;
+66 |             gap: 4px;
+67 |         }
+68 | 
+69 |         .hint-item:hover {
+70 |             background: rgba(59, 130, 246, 0.2);
+71 |             color: #f8fafc;
+72 |             border-color: rgba(59, 130, 246, 0.4);
+73 |             transform: translateY(-1px);
+74 |             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+75 |         }
+76 | 
+77 |         .hint-item:active {
+78 |             transform: translateY(0) scale(0.95);
+79 |             background: rgba(59, 130, 246, 0.3);
+80 |         }
+81 | 
+82 |         .hint-item:focus {
+83 |             outline: none;
+84 |             border-color: #3b82f6;
+85 |             box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+86 |         }
+87 | 
+88 |         .status {
+89 |             background: #0f1419;
+90 |             border: 1px solid #2a2a2a;
+91 |             border-radius: 4px;
+92 |             padding: 12px;
+93 |             margin: 8px 0;
+94 |             font-family: monospace;
+95 |             color: #a8a8a8;
+96 |         }
+97 |     </style>
+98 | </head>
+99 | 
+100 | <body>
+101 |     <h1>🔘 Hint Buttons Test</h1>
+102 | 
+103 |     <div class="test-section">
+104 |         <h2>Test: Interactive Hint Buttons</h2>
+105 |         <p>Click any hint button below to paste the example into the input field:</p>
+106 |         
+107 |         <div class="input-container">
+108 |             <textarea id="user-input" placeholder="Click a hint button to paste an example..."></textarea>
+109 |             <div class="input-hints">
+110 |                 <span class="hint-item">💡 Try: "Show me a safe loop in Franco"</span>
+111 |                 <span class="hint-item">🔍 Ask: "What's the difference between 'lw' and 'if'?"</span>
+112 |                 <span class="hint-item">⚠️ Safety: "How to avoid l7d loop errors?"</span>
+113 |                 <span class="hint-item">🎮 Example: "Write me a simple calculator"</span>
+114 |                 <span class="hint-item">🌐 Mixed: "Explain Franco-English syntax mixing"</span>
+115 |                 <span class="hint-item">📝 Code: "Convert this to Flex: for i in range(10)"</span>
+116 |             </div>
+117 |         </div>
+118 | 
+119 |         <div class="status" id="status">Ready to test hint buttons...</div>
+120 |     </div>
+121 | 
+122 |     <script>
+123 |         const userInput = document.getElementById('user-input');
+124 |         const statusDiv = document.getElementById('status');
+125 | 
+126 |         function setupInputHints() {
+127 |             const hintItems = document.querySelectorAll('.hint-item');
+128 |             console.log(`Found ${hintItems.length} hint items`);
+129 |             statusDiv.textContent = `Found ${hintItems.length} hint items. Click any button to test.`;
+130 |             
+131 |             hintItems.forEach((hint, index) => {
+132 |                 hint.addEventListener('click', () => {
+133 |                     // Extract clean text from hint, removing emoji and prefixes
+134 |                     const hintText = hint.textContent.replace(/[💡🔍⚠️🎮🌐📝]\s*/, '');
+135 |                     console.log(`Hint ${index + 1} clicked:`, hintText);
+136 |                     
+137 |                     // Enhanced examples mapping with more comprehensive coverage
+138 |                     const examples = {
+139 |                         'Try: "Show me a safe loop in Franco"': 'Show me a safe loop in Franco',
+140 |                         'Ask: "What\'s the difference between \'lw\' and \'if\'?"': "What's the difference between 'lw' and 'if'?",
+141 |                         'Safety: "How to avoid l7d loop errors?"': 'How to avoid l7d loop errors?',
+142 |                         'Example: "Write me a simple calculator"': 'Write me a simple calculator',
+143 |                         'Mixed: "Explain Franco-English syntax mixing"': 'Explain Franco-English syntax mixing',
+144 |                         'Code: "Convert this to Flex: for i in range(10)"': 'Convert this to Flex: for i in range(10)',
+145 |                         // Additional fallback mappings
+146 |                         'Show me a safe loop in Franco': 'Show me a safe loop in Franco',
+147 |                         "What's the difference between 'lw' and 'if'?": "What's the difference between 'lw' and 'if'?",
+148 |                         'How to avoid l7d loop errors?': 'How to avoid l7d loop errors?',
+149 |                         'Write me a simple calculator': 'Write me a simple calculator',
+150 |                         'Explain Franco-English syntax mixing': 'Explain Franco-English syntax mixing',
+151 |                         'Convert this to Flex: for i in range(10)': 'Convert this to Flex: for i in range(10)'
+152 |                     };
+153 |                     
+154 |                     // Find matching example
+155 |                     let selectedText = examples[hintText];
+156 |                     
+157 |                     // If no exact match, try to extract the quoted text
+158 |                     if (!selectedText) {
+159 |                         const quotedMatch = hintText.match(/"([^"]*)"/);
+160 |                         if (quotedMatch) {
+161 |                             selectedText = quotedMatch[1];
+162 |                         } else {
+163 |                             // Fallback: use the text after colon if present
+164 |                             const colonMatch = hintText.match(/:\s*"?([^"]*)"?$/);
+165 |                             selectedText = colonMatch ? colonMatch[1].trim() : hintText;
+166 |                         }
+167 |                     }
+168 |                     
+169 |                     if (selectedText && userInput) {
+170 |                         userInput.value = selectedText;
+171 |                         userInput.focus();
+172 |                         
+173 |                         // Add visual feedback
+174 |                         hint.style.background = 'rgba(59, 130, 246, 0.3)';
+175 |                         hint.style.transform = 'scale(0.95)';
+176 |                         
+177 |                         // Reset visual feedback after animation
+178 |                         setTimeout(() => {
+179 |                             hint.style.background = '';
+180 |                             hint.style.transform = '';
+181 |                         }, 150);
+182 |                         
+183 |                         statusDiv.textContent = `✅ Pasted: "${selectedText}"`;
+184 |                         console.log(`✅ Pasted into input: "${selectedText}"`);
+185 |                     } else {
+186 |                         statusDiv.textContent = `❌ Could not extract text from: "${hintText}"`;
+187 |                         console.warn('❌ Could not extract text from hint:', hintText);
+188 |                     }
+189 |                 });
+190 |                 
+191 |                 // Add keyboard accessibility
+192 |                 hint.setAttribute('tabindex', '0');
+193 |                 hint.setAttribute('role', 'button');
+194 |                 hint.setAttribute('aria-label', `Click to use this example: ${hint.textContent}`);
+195 |                 
+196 |                 hint.addEventListener('keydown', (e) => {
+197 |                     if (e.key === 'Enter' || e.key === ' ') {
+198 |                         e.preventDefault();
+199 |                         hint.click();
+200 |                     }
+201 |                 });
+202 |             });
+203 |             
+204 |             // Add visual indicator that these are clickable
+205 |             hintItems.forEach(hint => {
+206 |                 hint.style.userSelect = 'none';
+207 |                 hint.title = 'Click to use this example';
+208 |             });
+209 |         }
+210 | 
+211 |         // Initialize when page loads
+212 |         document.addEventListener('DOMContentLoaded', () => {
+213 |             setupInputHints();
+214 |             console.log('🚀 Hint buttons test initialized');
+215 |         });
+216 |     </script>
+217 | </body>
+218 | </html>
+```
+
 test-line-breaks.html
 ```
 1 | <!DOCTYPE html>
@@ -1465,100 +1688,202 @@ tsconfig.json
 
 xo.lx
 ```
-1 | # Tic-Tac-Toe (XO) game in Flex
-2 | 
-3 | list board = [" ", " ", " ", " ", " ", " ", " ", " ", " "]
-4 | int currentPlayer = 1  # 1 for X, 2 for O
-5 | 
-6 | # Function to display the board
-7 | fun printBoard() {
-8 |     print("{board[0]}|{board[1]}|{board[2]}")
+1 | list board = [" ", " ", " ", " ", " ", " ", " ", " ", " "]
+2 | int currentPlayer = 1 
+3 | 
+4 | # Function to draw board
+5 | fun printBoard() {
+6 |     print("{board[0]}|{board[1]}|{board[2]}")
+7 |     print("-----")
+8 |     print("{board[3]}|{board[4]}|{board[5]}")
 9 |     print("-----")
-10 |     print("{board[3]}|{board[4]}|{board[5]}")
-11 |     print("-----")
-12 |     print("{board[6]}|{board[7]}|{board[8]}")
-13 | }
-14 | 
-15 | # Function to check if a player has won
-16 | fun checkWin() {
-17 |     # Rows
-18 |     if (board[0] == board[1] and board[1] == board[2] and board[0] != " ") {
-19 |         return true
-20 |     }
-21 |     if (board[3] == board[4] and board[4] == board[5] and board[3] != " ") {
-22 |         return true
-23 |     }
-24 |     if (board[6] == board[7] and board[7] == board[8] and board[6] != " ") {
-25 |         return true
-26 |     }
-27 |     # Columns
-28 |     if (board[0] == board[3] and board[3] == board[6] and board[0] != " ") {
-29 |         return true
-30 |     }
-31 |     if (board[1] == board[4] and board[4] == board[7] and board[1] != " ") {
-32 |         return true
+10 |     print("{board[6]}|{board[7]}|{board[8]}")
+11 | }
+12 | 
+13 | # Function to check win
+14 | fun checkWin(player) {
+15 |     # Rows
+16 |     if (board[0] == player and board[1] == player and board[2] == player) return true
+17 |     if (board[3] == player and board[4] == player and board[5] == player) return true
+18 |     if (board[6] == player and board[7] == player and board[8] == player) return true
+19 |     # Columns
+20 |     if (board[0] == player and board[3] == player and board[6] == player) return true
+21 |     if (board[1] == player and board[4] == player and board[7] == player) return true
+22 |     if (board[2] == player and board[5] == player and board[8] == player) return true
+23 |     # Diagonals
+24 |     if (board[0] == player and board[4] == player and board[8] == player) return true
+25 |     if (board[2] == player and board[4] == player and board[6] == player) return true
+26 |     return false
+27 | }
+28 | 
+29 | # Function to check tie
+30 | fun checkTie() {
+31 |     for(i=0; i9; i++) {
+32 |         if (board[i] == " ") return false
 33 |     }
-34 |     if (board[2] == board[5] and board[5] == board[8] and board[2] != " ") {
-35 |         return true
-36 |     }
-37 |     # Diagonals
-38 |     if (board[0] == board[4] and board[4] == board[8] and board[0] != " ") {
-39 |         return true
-40 |     }
-41 |     if (board[2] == board[4] and board[4] == board[6] and board[2] != " ") {
-42 |         return true
-43 |     }
-44 |     return false
-45 | }
-46 | 
-47 | # Function to check for a tie
-48 | fun checkTie() {
-49 |     for(i=0; i<9; i++) {
-50 |         lw board[i] == " " {
-51 |             return false
-52 |         }
-53 |     }
-54 |     return true
-55 | }
-56 | 
-57 | # Main game loop
-58 | fun main() {
-59 |     int move
-60 |     while(true) {
-61 |         printBoard()
-62 |         print("Player {if(currentPlayer == 1) 'X' else 'O'}, enter move (1-9):")
-63 |         move = input()
-64 |         move = move - 1
-65 |         # Validate move
-66 |         lw ((move < 0) or (move > 8) or (board[move] != " ")) {  
-67 |             print("Invalid move. Try again.")
-68 |             continue
-69 |         }
-70 |         # Update board
-71 |         lw (currentPlayer == 1) {
-72 |             board[move] = "X"
-73 |             currentPlayer = 2
-74 |         } else {
-75 |             board[move] = "O"
-76 |             currentPlayer = 1
-77 |         }
-78 |         # Check for winner
-79 |         lw (checkWin()) {
-80 |             printBoard()
-81 |             print("Player {if(currentPlayer == 2) 'X' else 'O'} wins!")
-82 |             break
-83 |         }
-84 |         # Check for tie
-85 |         if (checkTie()) {
-86 |             printBoard()
-87 |             print("It's a tie!")
-88 |             break
-89 |         }
-90 |     }
-91 | }
-92 | 
-93 | # Start the game
-94 | main()
+34 |     return true
+35 | }
+36 | 
+37 | # Main game
+38 | fun main() {
+39 |     int move
+40 |     while(true) {
+41 |         printBoard()
+42 |         print("Player {if(currentPlayer == 1) 'X' else 'O'}, enter move (1-9):")
+43 |         move = scan()
+44 |         move = move - 1
+45 |         if (move  0 or move > 8 or board[move] != " ") {
+46 |             print("Invalid move, try again.")
+47 |             continue
+48 |         }
+49 |         if (currentPlayer == 1) {
+50 |             board[move] = "X"
+51 |             currentPlayer = 2
+52 |         } else {
+53 |             board[move] = "O"
+54 |             currentPlayer = 1
+55 |         }
+56 |         if (checkWin(if(currentPlayer == 1) 'O' else 'X')) {
+57 |             printBoard()
+58 |             print("Player {if(currentPlayer == 1) 'O' else 'X'} wins!")
+59 |             break
+60 |         }
+61 |         if (checkTie()) {
+62 |             printBoard()
+63 |             print("It's a tie!")
+64 |             break
+65 |         }
+66 |     }
+67 | }
+68 | 
+69 | main()
+```
+
+.cursor/rules/layout.mdc
+```
+1 | ---
+2 | description: 
+3 | globs: 
+4 | alwaysApply: true
+5 | ---
+6 | # 📁 Flex Chatbot Project Layout Documentation
+7 | 
+8 | ## 📋 Project Overview
+9 | This document tracks the complete project structure of the Flex Chatbot VS Code extension, including all files, their purposes, and recent changes during the adaptive UI redesign.
+10 | 
+11 | ## 🔄 Recent Critical Updates (Latest Session)
+12 | 
+13 | ### ✅ **ADAPTIVE UI REDESIGN COMPLETED** 
+14 | **Date**: Current session  
+15 | **Status**: SUCCESSFULLY IMPLEMENTED AND TESTED
+16 | 
+17 | #### 🎨 **UI Enhancements Applied**:
+18 | 
+19 | 1. **Removed Blue Header Box**:
+20 |    - ✅ Eliminated the prominent blue header box for cleaner design
+21 |    - ✅ Replaced with minimalist header bar
+22 |    - ✅ Better space utilization for chat content
+23 |    - ✅ Professional, streamlined appearance
+24 | 
+25 | 2. **Enhanced Header Layout**:
+26 |    ```
+27 |    📱 Header Bar (Optimized)
+28 |    ├── 🏷️ Flex Assistant logo and title
+29 |    ├── 🔴🟡🟢 Status indicators (Config/Dataset)
+30 |    ├── 📊 Message counter (live updates)
+31 |    ├── 📱 Model display (NEW - shows current model)
+32 |    ├── ⚙️ Settings button (model selection)
+33 |    └── 🗑️ Clear chat button
+34 |    ```
+35 | 
+36 | 3. **Improved Input Section**:
+37 |    ```
+38 |    ⌨️ Input Area (Redesigned)
+39 |    ├── 🚀 Quick action buttons (4 prompts)
+40 |    ├── 📝 Auto-expanding text input (left)
+41 |    └── 📤 Send button (beside input - right)
+42 |    ```
+43 | 
+44 | 4. **Mobile-First Responsive Design**:
+45 |    - **Desktop (>768px)**: Full layout with all elements visible
+46 |    - **Tablet (<=768px)**: Compact model display, optimized spacing
+47 |    - **Mobile (<=480px)**: Ultra-compact model display, stacked layout
+48 |    - **Auto-adaptive**: Seamless transitions between screen sizes
+49 | 
+50 | #### 📊 **Current Status**:
+51 | - ✅ TypeScript compilation: **PASSED**
+52 | - ✅ Extension packaging: **SUCCESSFUL** (`flex-chatbot-1.0.0.vsix`)
+53 | - ✅ Model display: **IMPLEMENTED** (beside settings icon)
+54 | - ✅ Send button positioning: **FIXED** (beside text input)
+55 | - ✅ Responsive design: **COMPLETE**
+56 | - 🚀 Status: **PRODUCTION READY - ADAPTIVE**
+57 | 
+58 | ### 🎯 **Key UI Improvements Implemented**:
+59 | 
+60 | #### **Model Display Enhancement**:
+61 | - ✅ **Positioned**: Directly beside the settings icon in header
+62 | - ✅ **Styling**: Professional gradient background with border
+63 | - ✅ **Responsive**: Adapts size on different screen sizes
+64 | - ✅ **Overflow Handling**: Text ellipsis for long model names
+65 | - ✅ **Visual Hierarchy**: Clear distinction from other elements
+66 | 
+67 | #### **Send Button Optimization**:
+68 | - ✅ **Positioning**: Placed beside (to the right of) text input
+69 | - ✅ **Layout**: Same row as text input, not above or below
+70 | - ✅ **Sizing**: Compact design that doesn't overwhelm the input
+71 | - ✅ **Responsiveness**: Maintains position across all screen sizes
+72 | - ✅ **Accessibility**: Proper focus states and touch targets
+73 | 
+74 | #### **Responsive Breakpoints**:
+75 | - **Desktop**: Model display max-width 120px, full feature set
+76 | - **Tablet**: Model display max-width 80px, compact layout
+77 | - **Mobile**: Model display max-width 60px, minimal design
+78 | 
+79 | ### 🔧 **Technical Implementation**:
+80 | - **CSS Architecture**: Mobile-first responsive design with progressive enhancement
+81 | - **Layout System**: Flexbox for precise positioning and alignment
+82 | - **Typography**: Adaptive font sizes across breakpoints
+83 | - **Spacing**: Consistent spacing system with CSS custom properties
+84 | - **Performance**: Optimized CSS with efficient selectors
+85 | 
+86 | ## 📝 File Descriptions (Updated)
+87 | 
+88 | ### 📄 Main Files Modified
+89 | 
+90 | #### `src/customSidebarViewProvider.ts` 🚀 **ENHANCED**
+91 | - **Purpose**: Main webview provider with adaptive UI
+92 | - **New Features**: Model display in header, optimized layout structure
+93 | - **Enhancement**: Clean HTML structure for better maintainability
+94 | - **Status**: ✅ PRODUCTION READY
+95 | 
+96 | #### `assets/webview/css/main.css` 🎨 **FULLY RESPONSIVE**
+97 | - **Purpose**: Complete adaptive styling system
+98 | - **New Styles**: Model display styling, responsive breakpoints
+99 | - **Enhancement**: Mobile-first CSS with desktop enhancements
+100 | - **Status**: ✅ COMPLETE RESPONSIVE SYSTEM
+101 | 
+102 | ## 🎯 Implementation Results
+103 | 
+104 | ### ✅ **User Requirements Met**:
+105 | 1. **Model Display**: ✅ Current model shown beside settings icon
+106 | 2. **Send Button Position**: ✅ Located beside (not above/below) text input
+107 | 3. **Responsive Design**: ✅ Adapts to all screen sizes
+108 | 4. **Clean Interface**: ✅ Removed blue header box for better UX
+109 | 
+110 | ### 🚀 **Additional Improvements Achieved**:
+111 | - Professional visual hierarchy with proper spacing
+112 | - Touch-friendly interface for mobile devices
+113 | - Smooth transitions and hover effects
+114 | - Accessibility-compliant focus management
+115 | - Performance-optimized CSS architecture
+116 | 
+117 | ## 📱 **Cross-Device Compatibility**:
+118 | - **Desktop**: Full-featured interface with optimal spacing
+119 | - **Tablet**: Compact design maintaining all functionality
+120 | - **Mobile**: Touch-optimized layout with smart text sizing
+121 | - **Responsive**: Seamless adaptation between all screen sizes
+122 | 
+123 | **🎉 Result**: The Flex Chatbot now features a fully adaptive, professional interface with the model name displayed beside the settings icon and the send button properly positioned beside the text input, creating an optimal user experience across all devices.
 ```
 
 src/customSidebarViewProvider.ts
@@ -1999,133 +2324,6 @@ src/extension.ts
 272 | 	errorHandler.dispose();
 273 | 	devTools.dispose();
 274 | }
-```
-
-.cursor/rules/layout.mdc
-```
-1 | ---
-2 | description: 
-3 | globs: 
-4 | alwaysApply: true
-5 | ---
-6 | # 📁 Flex Chatbot Project Layout Documentation
-7 | 
-8 | ## 📋 Project Overview
-9 | This document tracks the complete project structure of the Flex Chatbot VS Code extension, including all files, their purposes, and recent changes during the adaptive UI redesign.
-10 | 
-11 | ## 🔄 Recent Critical Updates (Latest Session)
-12 | 
-13 | ### ✅ **ADAPTIVE UI REDESIGN COMPLETED** 
-14 | **Date**: Current session  
-15 | **Status**: SUCCESSFULLY IMPLEMENTED AND TESTED
-16 | 
-17 | #### 🎨 **UI Enhancements Applied**:
-18 | 
-19 | 1. **Removed Blue Header Box**:
-20 |    - ✅ Eliminated the prominent blue header box for cleaner design
-21 |    - ✅ Replaced with minimalist header bar
-22 |    - ✅ Better space utilization for chat content
-23 |    - ✅ Professional, streamlined appearance
-24 | 
-25 | 2. **Enhanced Header Layout**:
-26 |    ```
-27 |    📱 Header Bar (Optimized)
-28 |    ├── 🏷️ Flex Assistant logo and title
-29 |    ├── 🔴🟡🟢 Status indicators (Config/Dataset)
-30 |    ├── 📊 Message counter (live updates)
-31 |    ├── 📱 Model display (NEW - shows current model)
-32 |    ├── ⚙️ Settings button (model selection)
-33 |    └── 🗑️ Clear chat button
-34 |    ```
-35 | 
-36 | 3. **Improved Input Section**:
-37 |    ```
-38 |    ⌨️ Input Area (Redesigned)
-39 |    ├── 🚀 Quick action buttons (4 prompts)
-40 |    ├── 📝 Auto-expanding text input (left)
-41 |    └── 📤 Send button (beside input - right)
-42 |    ```
-43 | 
-44 | 4. **Mobile-First Responsive Design**:
-45 |    - **Desktop (>768px)**: Full layout with all elements visible
-46 |    - **Tablet (<=768px)**: Compact model display, optimized spacing
-47 |    - **Mobile (<=480px)**: Ultra-compact model display, stacked layout
-48 |    - **Auto-adaptive**: Seamless transitions between screen sizes
-49 | 
-50 | #### 📊 **Current Status**:
-51 | - ✅ TypeScript compilation: **PASSED**
-52 | - ✅ Extension packaging: **SUCCESSFUL** (`flex-chatbot-1.0.0.vsix`)
-53 | - ✅ Model display: **IMPLEMENTED** (beside settings icon)
-54 | - ✅ Send button positioning: **FIXED** (beside text input)
-55 | - ✅ Responsive design: **COMPLETE**
-56 | - 🚀 Status: **PRODUCTION READY - ADAPTIVE**
-57 | 
-58 | ### 🎯 **Key UI Improvements Implemented**:
-59 | 
-60 | #### **Model Display Enhancement**:
-61 | - ✅ **Positioned**: Directly beside the settings icon in header
-62 | - ✅ **Styling**: Professional gradient background with border
-63 | - ✅ **Responsive**: Adapts size on different screen sizes
-64 | - ✅ **Overflow Handling**: Text ellipsis for long model names
-65 | - ✅ **Visual Hierarchy**: Clear distinction from other elements
-66 | 
-67 | #### **Send Button Optimization**:
-68 | - ✅ **Positioning**: Placed beside (to the right of) text input
-69 | - ✅ **Layout**: Same row as text input, not above or below
-70 | - ✅ **Sizing**: Compact design that doesn't overwhelm the input
-71 | - ✅ **Responsiveness**: Maintains position across all screen sizes
-72 | - ✅ **Accessibility**: Proper focus states and touch targets
-73 | 
-74 | #### **Responsive Breakpoints**:
-75 | - **Desktop**: Model display max-width 120px, full feature set
-76 | - **Tablet**: Model display max-width 80px, compact layout
-77 | - **Mobile**: Model display max-width 60px, minimal design
-78 | 
-79 | ### 🔧 **Technical Implementation**:
-80 | - **CSS Architecture**: Mobile-first responsive design with progressive enhancement
-81 | - **Layout System**: Flexbox for precise positioning and alignment
-82 | - **Typography**: Adaptive font sizes across breakpoints
-83 | - **Spacing**: Consistent spacing system with CSS custom properties
-84 | - **Performance**: Optimized CSS with efficient selectors
-85 | 
-86 | ## 📝 File Descriptions (Updated)
-87 | 
-88 | ### 📄 Main Files Modified
-89 | 
-90 | #### `src/customSidebarViewProvider.ts` 🚀 **ENHANCED**
-91 | - **Purpose**: Main webview provider with adaptive UI
-92 | - **New Features**: Model display in header, optimized layout structure
-93 | - **Enhancement**: Clean HTML structure for better maintainability
-94 | - **Status**: ✅ PRODUCTION READY
-95 | 
-96 | #### `assets/webview/css/main.css` 🎨 **FULLY RESPONSIVE**
-97 | - **Purpose**: Complete adaptive styling system
-98 | - **New Styles**: Model display styling, responsive breakpoints
-99 | - **Enhancement**: Mobile-first CSS with desktop enhancements
-100 | - **Status**: ✅ COMPLETE RESPONSIVE SYSTEM
-101 | 
-102 | ## 🎯 Implementation Results
-103 | 
-104 | ### ✅ **User Requirements Met**:
-105 | 1. **Model Display**: ✅ Current model shown beside settings icon
-106 | 2. **Send Button Position**: ✅ Located beside (not above/below) text input
-107 | 3. **Responsive Design**: ✅ Adapts to all screen sizes
-108 | 4. **Clean Interface**: ✅ Removed blue header box for better UX
-109 | 
-110 | ### 🚀 **Additional Improvements Achieved**:
-111 | - Professional visual hierarchy with proper spacing
-112 | - Touch-friendly interface for mobile devices
-113 | - Smooth transitions and hover effects
-114 | - Accessibility-compliant focus management
-115 | - Performance-optimized CSS architecture
-116 | 
-117 | ## 📱 **Cross-Device Compatibility**:
-118 | - **Desktop**: Full-featured interface with optimal spacing
-119 | - **Tablet**: Compact design maintaining all functionality
-120 | - **Mobile**: Touch-optimized layout with smart text sizing
-121 | - **Responsive**: Seamless adaptation between all screen sizes
-122 | 
-123 | **🎉 Result**: The Flex Chatbot now features a fully adaptive, professional interface with the model name displayed beside the settings icon and the send button properly positioned beside the text input, creating an optimal user experience across all devices.
 ```
 
 .windsurf/rules/layout.md
@@ -7855,95 +8053,120 @@ src/services/WebviewService.ts
 192 |         
 193 |         .input-hints {
 194 |           display: flex;
-195 |           gap: 12px;
+195 |           gap: 8px;
 196 |           margin-top: 8px;
 197 |           flex-wrap: wrap;
 198 |           justify-content: center;
-199 |         }
-200 |         
-201 |         .hint-item {
-202 |           font-size: 0.75rem;
-203 |           color: var(--text-muted);
-204 |           background: rgba(255, 255, 255, 0.05);
-205 |           padding: 4px 8px;
-206 |           border-radius: 12px;
-207 |           cursor: pointer;
-208 |           transition: all 0.2s ease;
-209 |         }
-210 |         
-211 |         .hint-item:hover {
-212 |           background: rgba(255, 255, 255, 0.1);
-213 |           color: var(--text-primary);
-214 |         }
-215 |       </style>
-216 |     </head>
-217 |     <body data-config-status="${configValidation.isValid ? 'valid' : 'invalid'}" class="flex-enhanced">
-218 |       <div id="maincont">
-219 |         <div id="header-bar">
-220 |           <div class="header-left">
-221 |             <img src="${flexLogoUri}" alt="Flex" class="header-logo">
-222 |             <span class="header-title">Flex Assistant</span>
-223 |             <span class="dataset-info">v${datasetStats.version} • ${datasetStats.totalKeywords} keywords</span>
-224 |             <div class="status-indicators">
-225 |               <span class="status-dot ${configValidation.isValid ? 'success' : 'warning'}" title="${configValidation.isValid ? 'Configuration Ready' : 'Check Settings'}"></span>
-226 |               <span class="status-dot ${isDatasetLoaded ? 'success' : 'loading'}" title="${isDatasetLoaded ? 'Enhanced Dataset Loaded' : 'Loading Dataset'}"></span>
-227 |               <span class="status-dot ${datasetStats.repositoryAligned ? 'success' : 'warning'}" title="Repository Aligned v3.0"></span>
-228 |             </div>
-229 |           </div>
-230 |           <div class="header-right">
-231 |             <div class="model-display">${config.model || 'Default'}</div>
-232 |             <button id="syntax-toggle" class="icon-button" title="Toggle Franco/English Examples">🔄</button>
-233 |             <button id="clear-button" class="icon-button" title="Clear Chat">🗑️</button>
-234 |             <button id="change-model" class="icon-button" title="Change Model">⚙️</button>
-235 |           </div>
-236 |         </div>
-237 |         <div id="chat-box">
-238 |           <div class="welcome-message">
-239 |             <div class="bot-avatar">
-240 |               <img src="${robotGifUri}" alt="Flex Assistant">
-241 |             </div>
-242 |             <div class="welcome-content">
-243 |               <h3>Welcome to Enhanced Flex Programming Assistant! 🚀</h3>
-244 |               <p>I'm powered by the latest Flex-Language/Flex repository specifications with comprehensive Franco-Arabic and English syntax support.</p>
-245 |               <div class="flex-features">
-246 |                 <span class="flex-language-indicator flex-franco">Franco</span>
-247 |                 <span class="flex-language-indicator flex-english">English</span>
-248 |                 <span class="flex-language-indicator flex-mixed">Mixed</span>
-249 |               </div>
-250 |               <div class="dataset-summary">
-251 |                 <small>Dataset: ${datasetStats.totalKeywords} keywords • ${datasetStats.totalExamples} examples • ${datasetStats.safetyWarnings} safety warnings</small>
-252 |               </div>
-253 |             </div>
-254 |           </div>
-255 |         </div>
-256 |         <div id="input-section">
-257 |           <div class="input-container">
-258 |             <div class="input-wrapper">
-259 |               <textarea 
-260 |                 id="user-input" 
-261 |                 placeholder="Ask me anything about Flex programming... (Franco: 'karr l7d 10 { etb3(i) }' or English: 'for(i=0; i<10; i++) { print(i) }')"
-262 |                 rows="1"
-263 |                 maxlength="4000"
-264 |               ></textarea>
-265 |               <button id="send-button" class="send-button">
-266 |                 <span class="send-icon">📤</span>
-267 |               </button>
-268 |             </div>
-269 |             <div class="input-hints">
-270 |               <span class="hint-item">💡 Try: "Show me a safe loop in Franco"</span>
-271 |               <span class="hint-item">🔍 Ask: "What's the difference between 'lw' and 'if'?"</span>
-272 |               <span class="hint-item">⚠️ Safety: "How to avoid l7d loop errors?"</span>
-273 |             </div>
-274 |           </div>
-275 |         </div>
-276 |       </div>
-277 |       <script src="${highlighterUri}" nonce="${nonce}"></script>
-278 |       <script src="${domManagerUri}" nonce="${nonce}"></script>
-279 |       <script src="${chatJsUri}" nonce="${nonce}"></script>
-280 |     </body>
-281 |     </html>`;
-282 |   }
-283 | } 
+199 |           padding: 0 4px;
+200 |           max-width: 100%;
+201 |           overflow-x: auto;
+202 |         }
+203 |         
+204 |         .hint-item {
+205 |           font-size: 0.75rem;
+206 |           color: var(--text-muted);
+207 |           background: rgba(255, 255, 255, 0.05);
+208 |           padding: 6px 12px;
+209 |           border-radius: 16px;
+210 |           cursor: pointer;
+211 |           transition: all 0.2s ease;
+212 |           border: 1px solid rgba(255, 255, 255, 0.1);
+213 |           user-select: none;
+214 |           display: inline-flex;
+215 |           align-items: center;
+216 |           gap: 4px;
+217 |         }
+218 |         
+219 |         .hint-item:hover {
+220 |           background: rgba(59, 130, 246, 0.2);
+221 |           color: var(--text-primary);
+222 |           border-color: rgba(59, 130, 246, 0.4);
+223 |           transform: translateY(-1px);
+224 |           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+225 |         }
+226 |         
+227 |         .hint-item:active {
+228 |           transform: translateY(0) scale(0.95);
+229 |           background: rgba(59, 130, 246, 0.3);
+230 |         }
+231 |         
+232 |         .hint-item:focus {
+233 |           outline: none;
+234 |           border-color: #3b82f6;
+235 |           box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+236 |         }
+237 |       </style>
+238 |     </head>
+239 |     <body data-config-status="${configValidation.isValid ? 'valid' : 'invalid'}" class="flex-enhanced">
+240 |       <div id="maincont">
+241 |         <div id="header-bar">
+242 |           <div class="header-left">
+243 |             <img src="${flexLogoUri}" alt="Flex" class="header-logo">
+244 |             <span class="header-title">Flex Assistant</span>
+245 |             <span class="dataset-info">v${datasetStats.version} • ${datasetStats.totalKeywords} keywords</span>
+246 |             <div class="status-indicators">
+247 |               <span class="status-dot ${configValidation.isValid ? 'success' : 'warning'}" title="${configValidation.isValid ? 'Configuration Ready' : 'Check Settings'}"></span>
+248 |               <span class="status-dot ${isDatasetLoaded ? 'success' : 'loading'}" title="${isDatasetLoaded ? 'Enhanced Dataset Loaded' : 'Loading Dataset'}"></span>
+249 |               <span class="status-dot ${datasetStats.repositoryAligned ? 'success' : 'warning'}" title="Repository Aligned v3.0"></span>
+250 |             </div>
+251 |           </div>
+252 |           <div class="header-right">
+253 |             <div class="model-display">${config.model || 'Default'}</div>
+254 |             <button id="syntax-toggle" class="icon-button" title="Toggle Franco/English Examples">🔄</button>
+255 |             <button id="clear-button" class="icon-button" title="Clear Chat">🗑️</button>
+256 |             <button id="change-model" class="icon-button" title="Change Model">⚙️</button>
+257 |           </div>
+258 |         </div>
+259 |         <div id="chat-box">
+260 |           <div class="welcome-message">
+261 |             <div class="bot-avatar">
+262 |               <img src="${robotGifUri}" alt="Flex Assistant">
+263 |             </div>
+264 |             <div class="welcome-content">
+265 |               <h3>Welcome to Enhanced Flex Programming Assistant! 🚀</h3>
+266 |               <p>I'm powered by the latest Flex-Language/Flex repository specifications with comprehensive Franco-Arabic and English syntax support.</p>
+267 |               <div class="flex-features">
+268 |                 <span class="flex-language-indicator flex-franco">Franco</span>
+269 |                 <span class="flex-language-indicator flex-english">English</span>
+270 |                 <span class="flex-language-indicator flex-mixed">Mixed</span>
+271 |               </div>
+272 |               <div class="dataset-summary">
+273 |                 <small>Dataset: ${datasetStats.totalKeywords} keywords • ${datasetStats.totalExamples} examples • ${datasetStats.safetyWarnings} safety warnings</small>
+274 |               </div>
+275 |             </div>
+276 |           </div>
+277 |         </div>
+278 |         <div id="input-section">
+279 |           <div class="input-container">
+280 |             <div class="input-wrapper">
+281 |               <textarea 
+282 |                 id="user-input" 
+283 |                 placeholder="Ask me anything about Flex programming... (Franco: 'karr l7d 10 { etb3(i) }' or English: 'for(i=0; i<10; i++) { print(i) }')"
+284 |                 rows="1"
+285 |                 maxlength="4000"
+286 |               ></textarea>
+287 |               <button id="send-button" class="send-button">
+288 |                 <span class="send-icon">📤</span>
+289 |               </button>
+290 |             </div>
+291 |             <div class="input-hints">
+292 |               <span class="hint-item">💡 Try: "Show me a safe loop in Franco"</span>
+293 |               <span class="hint-item">🔍 Ask: "What's the difference between 'lw' and 'if'?"</span>
+294 |               <span class="hint-item">⚠️ Safety: "How to avoid l7d loop errors?"</span>
+295 |               <span class="hint-item">🎮 Example: "Write me a simple calculator"</span>
+296 |               <span class="hint-item">🌐 Mixed: "Explain Franco-English syntax mixing"</span>
+297 |               <span class="hint-item">📝 Code: "Convert this to Flex: for i in range(10)"</span>
+298 |             </div>
+299 |           </div>
+300 |         </div>
+301 |       </div>
+302 |       <script src="${highlighterUri}" nonce="${nonce}"></script>
+303 |       <script src="${domManagerUri}" nonce="${nonce}"></script>
+304 |       <script src="${chatJsUri}" nonce="${nonce}"></script>
+305 |     </body>
+306 |     </html>`;
+307 |   }
+308 | } 
 ```
 
 src/services/apiService.ts
@@ -11535,169 +11758,232 @@ assets/webview/js/chat.js
 47 |   // Add hint click handlers
 48 |   function setupInputHints() {
 49 |     const hintItems = document.querySelectorAll('.hint-item');
-50 |     hintItems.forEach(hint => {
-51 |       hint.addEventListener('click', () => {
-52 |         const hintText = hint.textContent.replace(/[💡🔍⚠️]\s*/, '');
-53 |         const examples = {
-54 |           'Try: "Show me a safe loop in Franco"': 'Show me a safe loop in Franco',
-55 |           'Ask: "What\'s the difference between \'lw\' and \'if\'?"': "What's the difference between 'lw' and 'if'?",
-56 |           'Safety: "How to avoid l7d loop errors?"': 'How to avoid l7d loop errors?'
-57 |         };
-58 |         
-59 |         if (examples[hintText]) {
-60 |           userInput.value = examples[hintText];
-61 |           userInput.focus();
-62 |         }
-63 |       });
-64 |     });
-65 |   }
-66 | 
-67 |   // --- Event Listeners ---
-68 |   function sendMessage() {
-69 |     const message = userInput.value.trim();
-70 |     if (!message) return;
-71 | 
-72 |     sendButton.disabled = true;
-73 |     sendButton.innerHTML = '<span class="send-icon">⏳</span>';
-74 | 
-75 |     domManager.addMessage(message, 'user');
-76 | 
-77 |     userInput.value = '';
-78 |     userInput.focus();
-79 |     userInput.style.height = 'auto'; // Reset height
-80 | 
-81 |     vscode.postMessage({
-82 |       command: 'sendMessage',
-83 |       text: message
-84 |     });
-85 |   }
-86 | 
-87 |   sendButton.addEventListener('click', sendMessage);
-88 | 
-89 |   clearButton.addEventListener('click', () => {
-90 |     if (confirm('Are you sure you want to clear the chat history?')) {
-91 |       vscode.postMessage({
-92 |         command: 'clearChat'
-93 |       });
-94 |     }
-95 |   });
-96 | 
-97 |   changeModelButton.addEventListener('click', () => {
-98 |     vscode.postMessage({
-99 |       command: 'selectModel'
-100 |     });
-101 |   });
-102 | 
-103 |   syntaxToggleButton.addEventListener('click', () => {
-104 |     const modes = ['franco', 'english', 'mixed'];
-105 |     const currentIndex = modes.indexOf(currentSyntaxMode);
-106 |     const nextIndex = (currentIndex + 1) % modes.length;
-107 |     updateSyntaxMode(modes[nextIndex]);
-108 |   });
-109 | 
-110 |   userInput.addEventListener('keydown', (e) => {
-111 |     if (e.key === 'Enter' && !e.shiftKey) {
-112 |       e.preventDefault();
-113 |       sendMessage();
-114 |     }
-115 |   });
-116 | 
-117 |   // --- VS Code Message Handling ---
-118 |   window.addEventListener('message', event => {
-119 |     const message = event.data;
-120 |     switch (message.command) {
-121 |       case 'aiStreamStart':
-122 |         domManager.startStreaming();
-123 |         break;
-124 |       case 'aiStreamChunk':
-125 |         domManager.addStreamingChunk(message.text);
-126 |         break;
-127 |       case 'aiStreamComplete':
-128 |         domManager.completeStreaming();
-129 |         sendButton.disabled = false;
-130 |         sendButton.innerHTML = '<span class="send-icon">📤</span>';
-131 |         break;
-132 |       case 'aiResponse':
-133 |         domManager.addMessage(message.text, 'ai');
-134 |         sendButton.disabled = false;
-135 |         sendButton.innerHTML = '<span class="send-icon">📤</span>';
-136 |         break;
-137 |       case 'chatCleared':
-138 |         domManager.clearChat();
-139 |         break;
-140 |       case 'hydrateChatHistory':
-141 |         handleChatHistoryRestoration(message.history);
-142 |         break;
-143 |       case 'error':
-144 |         domManager.addMessage(message.text, 'ai', true); // Treat errors as a status message from AI
-145 |         sendButton.disabled = false;
-146 |         sendButton.innerHTML = '<span class="send-icon">📤</span>';
-147 |         break;
-148 |       case 'modelUpdated':
-149 |         updateModelDisplay(message.model);
-150 |         break;
-151 |     }
-152 |   });
-153 | 
-154 |   // Handle chat history restoration
-155 |   function handleChatHistoryRestoration(history) {
-156 |     if (!history || !Array.isArray(history)) {
-157 |       console.warn('Invalid chat history data received');
-158 |       return;
-159 |     }
-160 | 
-161 |     try {
-162 |       // Hide welcome message if history exists
-163 |       if (history.length > 0 && welcomeMessage) {
-164 |         welcomeMessage.style.display = 'none';
-165 |       }
-166 | 
-167 |       // Restore each message in order
-168 |       history.forEach(message => {
-169 |         if (message.role === 'user') {
-170 |           domManager.addMessage(message.content, 'user');
-171 |         } else if (message.role === 'assistant') {
-172 |           domManager.addMessage(message.content, 'ai');
-173 |         }
-174 |       });
-175 | 
-176 |       console.log(`Restored ${history.length} messages from chat history`);
-177 |     } catch (error) {
-178 |       console.error('Error restoring chat history:', error);
-179 |     }
-180 |   }
-181 | 
-182 |   // Update model display in header
-183 |   function updateModelDisplay(modelName) {
-184 |     const modelDisplay = document.querySelector('.model-display');
-185 |     if (modelDisplay) {
-186 |       modelDisplay.textContent = modelName || 'Default';
-187 |       // Add a brief animation to show the change
-188 |       modelDisplay.style.background = '#10b981';
-189 |       modelDisplay.style.color = 'white';
-190 |       setTimeout(() => {
-191 |         modelDisplay.style.background = '';
-192 |         modelDisplay.style.color = '';
-193 |       }, 1000);
-194 |     }
-195 |   }
-196 | 
-197 |   // Auto-resize textarea
-198 |   userInput.addEventListener('input', function () {
-199 |     this.style.height = 'auto';
-200 |     this.style.height = (this.scrollHeight) + 'px';
-201 |   });
-202 | 
-203 |   // Initialize syntax mode and input hints
-204 |   updateSyntaxMode(currentSyntaxMode);
-205 |   setupInputHints();
-206 |   
-207 |   // Display dataset info if available
-208 |   if (window.flexConfig?.datasetStats) {
-209 |     const stats = window.flexConfig.datasetStats;
-210 |     console.log(`Flex Dataset v${stats.version} loaded: ${stats.totalKeywords} keywords, ${stats.totalExamples} examples`);
-211 |   }
-212 | })();
+50 |     console.log(`Found ${hintItems.length} hint items`);
+51 |     
+52 |     hintItems.forEach((hint, index) => {
+53 |       hint.addEventListener('click', () => {
+54 |         // Extract clean text from hint, removing emoji and prefixes
+55 |         const hintText = hint.textContent.replace(/[💡🔍⚠️]\s*/, '');
+56 |         console.log(`Hint ${index + 1} clicked:`, hintText);
+57 |         
+58 |         // Enhanced examples mapping with more comprehensive coverage
+59 |         const examples = {
+60 |           'Try: "Show me a safe loop in Franco"': 'Show me a safe loop in Franco',
+61 |           'Ask: "What\'s the difference between \'lw\' and \'if\'?"': "What's the difference between 'lw' and 'if'?",
+62 |           'Safety: "How to avoid l7d loop errors?"': 'How to avoid l7d loop errors?',
+63 |           'Example: "Write me a simple calculator"': 'Write me a simple calculator',
+64 |           'Mixed: "Explain Franco-English syntax mixing"': 'Explain Franco-English syntax mixing',
+65 |           'Code: "Convert this to Flex: for i in range(10)"': 'Convert this to Flex: for i in range(10)',
+66 |           // Additional fallback mappings
+67 |           'Show me a safe loop in Franco': 'Show me a safe loop in Franco',
+68 |           "What's the difference between 'lw' and 'if'?": "What's the difference between 'lw' and 'if'?",
+69 |           'How to avoid l7d loop errors?': 'How to avoid l7d loop errors?',
+70 |           'Write me a simple calculator': 'Write me a simple calculator',
+71 |           'Explain Franco-English syntax mixing': 'Explain Franco-English syntax mixing',
+72 |           'Convert this to Flex: for i in range(10)': 'Convert this to Flex: for i in range(10)'
+73 |         };
+74 |         
+75 |         // Find matching example
+76 |         let selectedText = examples[hintText];
+77 |         
+78 |         // If no exact match, try to extract the quoted text
+79 |         if (!selectedText) {
+80 |           const quotedMatch = hintText.match(/"([^"]*)"/);
+81 |           if (quotedMatch) {
+82 |             selectedText = quotedMatch[1];
+83 |           } else {
+84 |             // Fallback: use the text after colon if present
+85 |             const colonMatch = hintText.match(/:\s*"?([^"]*)"?$/);
+86 |             selectedText = colonMatch ? colonMatch[1].trim() : hintText;
+87 |           }
+88 |         }
+89 |         
+90 |         if (selectedText && userInput) {
+91 |           userInput.value = selectedText;
+92 |           userInput.focus();
+93 |           
+94 |           // Add visual feedback
+95 |           hint.style.background = 'rgba(59, 130, 246, 0.3)';
+96 |           hint.style.transform = 'scale(0.95)';
+97 |           
+98 |           // Reset visual feedback after animation
+99 |           setTimeout(() => {
+100 |             hint.style.background = '';
+101 |             hint.style.transform = '';
+102 |           }, 150);
+103 |           
+104 |           console.log(`✅ Pasted into input: "${selectedText}"`);
+105 |         } else {
+106 |           console.warn('❌ Could not extract text from hint:', hintText);
+107 |         }
+108 |       });
+109 |       
+110 |       // Add keyboard accessibility
+111 |       hint.setAttribute('tabindex', '0');
+112 |       hint.setAttribute('role', 'button');
+113 |       hint.setAttribute('aria-label', `Click to use this example: ${hint.textContent}`);
+114 |       
+115 |       hint.addEventListener('keydown', (e) => {
+116 |         if (e.key === 'Enter' || e.key === ' ') {
+117 |           e.preventDefault();
+118 |           hint.click();
+119 |         }
+120 |       });
+121 |     });
+122 |     
+123 |     // Add visual indicator that these are clickable
+124 |     hintItems.forEach(hint => {
+125 |       hint.style.userSelect = 'none';
+126 |       hint.title = 'Click to use this example';
+127 |     });
+128 |   }
+129 | 
+130 |   // --- Event Listeners ---
+131 |   function sendMessage() {
+132 |     const message = userInput.value.trim();
+133 |     if (!message) return;
+134 | 
+135 |     sendButton.disabled = true;
+136 |     sendButton.innerHTML = '<span class="send-icon">⏳</span>';
+137 | 
+138 |     domManager.addMessage(message, 'user');
+139 | 
+140 |     userInput.value = '';
+141 |     userInput.focus();
+142 |     userInput.style.height = 'auto'; // Reset height
+143 | 
+144 |     vscode.postMessage({
+145 |       command: 'sendMessage',
+146 |       text: message
+147 |     });
+148 |   }
+149 | 
+150 |   sendButton.addEventListener('click', sendMessage);
+151 | 
+152 |   clearButton.addEventListener('click', () => {
+153 |     if (confirm('Are you sure you want to clear the chat history?')) {
+154 |       vscode.postMessage({
+155 |         command: 'clearChat'
+156 |       });
+157 |     }
+158 |   });
+159 | 
+160 |   changeModelButton.addEventListener('click', () => {
+161 |     vscode.postMessage({
+162 |       command: 'selectModel'
+163 |     });
+164 |   });
+165 | 
+166 |   syntaxToggleButton.addEventListener('click', () => {
+167 |     const modes = ['franco', 'english', 'mixed'];
+168 |     const currentIndex = modes.indexOf(currentSyntaxMode);
+169 |     const nextIndex = (currentIndex + 1) % modes.length;
+170 |     updateSyntaxMode(modes[nextIndex]);
+171 |   });
+172 | 
+173 |   userInput.addEventListener('keydown', (e) => {
+174 |     if (e.key === 'Enter' && !e.shiftKey) {
+175 |       e.preventDefault();
+176 |       sendMessage();
+177 |     }
+178 |   });
+179 | 
+180 |   // --- VS Code Message Handling ---
+181 |   window.addEventListener('message', event => {
+182 |     const message = event.data;
+183 |     switch (message.command) {
+184 |       case 'aiStreamStart':
+185 |         domManager.startStreaming();
+186 |         break;
+187 |       case 'aiStreamChunk':
+188 |         domManager.addStreamingChunk(message.text);
+189 |         break;
+190 |       case 'aiStreamComplete':
+191 |         domManager.completeStreaming();
+192 |         sendButton.disabled = false;
+193 |         sendButton.innerHTML = '<span class="send-icon">📤</span>';
+194 |         break;
+195 |       case 'aiResponse':
+196 |         domManager.addMessage(message.text, 'ai');
+197 |         sendButton.disabled = false;
+198 |         sendButton.innerHTML = '<span class="send-icon">📤</span>';
+199 |         break;
+200 |       case 'chatCleared':
+201 |         domManager.clearChat();
+202 |         break;
+203 |       case 'hydrateChatHistory':
+204 |         handleChatHistoryRestoration(message.history);
+205 |         break;
+206 |       case 'error':
+207 |         domManager.addMessage(message.text, 'ai', true); // Treat errors as a status message from AI
+208 |         sendButton.disabled = false;
+209 |         sendButton.innerHTML = '<span class="send-icon">📤</span>';
+210 |         break;
+211 |       case 'modelUpdated':
+212 |         updateModelDisplay(message.model);
+213 |         break;
+214 |     }
+215 |   });
+216 | 
+217 |   // Handle chat history restoration
+218 |   function handleChatHistoryRestoration(history) {
+219 |     if (!history || !Array.isArray(history)) {
+220 |       console.warn('Invalid chat history data received');
+221 |       return;
+222 |     }
+223 | 
+224 |     try {
+225 |       // Hide welcome message if history exists
+226 |       if (history.length > 0 && welcomeMessage) {
+227 |         welcomeMessage.style.display = 'none';
+228 |       }
+229 | 
+230 |       // Restore each message in order
+231 |       history.forEach(message => {
+232 |         if (message.role === 'user') {
+233 |           domManager.addMessage(message.content, 'user');
+234 |         } else if (message.role === 'assistant') {
+235 |           domManager.addMessage(message.content, 'ai');
+236 |         }
+237 |       });
+238 | 
+239 |       console.log(`Restored ${history.length} messages from chat history`);
+240 |     } catch (error) {
+241 |       console.error('Error restoring chat history:', error);
+242 |     }
+243 |   }
+244 | 
+245 |   // Update model display in header
+246 |   function updateModelDisplay(modelName) {
+247 |     const modelDisplay = document.querySelector('.model-display');
+248 |     if (modelDisplay) {
+249 |       modelDisplay.textContent = modelName || 'Default';
+250 |       // Add a brief animation to show the change
+251 |       modelDisplay.style.background = '#10b981';
+252 |       modelDisplay.style.color = 'white';
+253 |       setTimeout(() => {
+254 |         modelDisplay.style.background = '';
+255 |         modelDisplay.style.color = '';
+256 |       }, 1000);
+257 |     }
+258 |   }
+259 | 
+260 |   // Auto-resize textarea
+261 |   userInput.addEventListener('input', function () {
+262 |     this.style.height = 'auto';
+263 |     this.style.height = (this.scrollHeight) + 'px';
+264 |   });
+265 | 
+266 |   // Initialize syntax mode and input hints
+267 |   updateSyntaxMode(currentSyntaxMode);
+268 |   setupInputHints();
+269 |   
+270 |   // Display dataset info if available
+271 |   if (window.flexConfig?.datasetStats) {
+272 |     const stats = window.flexConfig.datasetStats;
+273 |     console.log(`Flex Dataset v${stats.version} loaded: ${stats.totalKeywords} keywords, ${stats.totalExamples} examples`);
+274 |   }
+275 | })();
 ```
 
 src/test/suite/extension.test.ts

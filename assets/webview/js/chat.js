@@ -47,20 +47,84 @@
   // Add hint click handlers
   function setupInputHints() {
     const hintItems = document.querySelectorAll('.hint-item');
-    hintItems.forEach(hint => {
+    console.log(`Found ${hintItems.length} hint items`);
+    
+    hintItems.forEach((hint, index) => {
       hint.addEventListener('click', () => {
+        // Extract clean text from hint, removing emoji and prefixes
         const hintText = hint.textContent.replace(/[💡🔍⚠️]\s*/, '');
+        console.log(`Hint ${index + 1} clicked:`, hintText);
+        
+        // Enhanced examples mapping with more comprehensive coverage
         const examples = {
           'Try: "Show me a safe loop in Franco"': 'Show me a safe loop in Franco',
-          'Ask: "What\'s the difference between \'lw\' and \'if\'?"': "What's the difference between 'lw' and 'if'?",
-          'Safety: "How to avoid l7d loop errors?"': 'How to avoid l7d loop errors?'
+          'Ask: "Explain the difference between Franco \'lw\' and English \'if\'"': 'Explain the difference between Franco \'lw\' and English \'if\'',
+          'Safety: "How to avoid l7d loop errors?"': 'How to avoid l7d loop errors?',
+          'Example: "Write me a simple calculator"': 'Write me a simple calculator',
+          'Mixed: "Explain Franco-English syntax mixing"': 'Explain Franco-English syntax mixing',
+          'Code: "Convert this to Flex: for i in range(10)"': 'Convert this to Flex: for i in range(10)',
+          // Additional fallback mappings
+          'Show me a safe loop in Franco': 'Show me a safe loop in Franco',
+          'Explain the difference between Franco \'lw\' and English \'if\'': 'Explain the difference between Franco \'lw\' and English \'if\'',
+          "What's the difference between 'lw' and 'if'?": 'Explain the difference between Franco \'lw\' and English \'if\'',
+          'How to avoid l7d loop errors?': 'How to avoid l7d loop errors?',
+          'Write me a simple calculator': 'Write me a simple calculator',
+          'Explain Franco-English syntax mixing': 'Explain Franco-English syntax mixing',
+          'Convert this to Flex: for i in range(10)': 'Convert this to Flex: for i in range(10)'
         };
         
-        if (examples[hintText]) {
-          userInput.value = examples[hintText];
+        // Find matching example
+        let selectedText = examples[hintText];
+        
+        // If no exact match, try to extract the quoted text
+        if (!selectedText) {
+          const quotedMatch = hintText.match(/"([^"]*)"/);
+          if (quotedMatch) {
+            selectedText = quotedMatch[1];
+          } else {
+            // Fallback: use the text after colon if present
+            const colonMatch = hintText.match(/:\s*"?([^"]*)"?$/);
+            selectedText = colonMatch ? colonMatch[1].trim() : hintText;
+          }
+        }
+        
+        if (selectedText && userInput) {
+          userInput.value = selectedText;
           userInput.focus();
+          
+          // Add visual feedback
+          hint.style.background = 'rgba(59, 130, 246, 0.3)';
+          hint.style.transform = 'scale(0.95)';
+          
+          // Reset visual feedback after animation
+          setTimeout(() => {
+            hint.style.background = '';
+            hint.style.transform = '';
+          }, 150);
+          
+          console.log(`✅ Pasted into input: "${selectedText}"`);
+        } else {
+          console.warn('❌ Could not extract text from hint:', hintText);
         }
       });
+      
+      // Add keyboard accessibility
+      hint.setAttribute('tabindex', '0');
+      hint.setAttribute('role', 'button');
+      hint.setAttribute('aria-label', `Click to use this example: ${hint.textContent}`);
+      
+      hint.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          hint.click();
+        }
+      });
+    });
+    
+    // Add visual indicator that these are clickable
+    hintItems.forEach(hint => {
+      hint.style.userSelect = 'none';
+      hint.title = 'Click to use this example';
     });
   }
 
