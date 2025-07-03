@@ -8,7 +8,6 @@ Project Structure:
 ├── docs
 │   ├── CHANGELOG.md
 │   └── README.md
-├── flex-chatbot-1.0.0.vsix
 ├── out
 │   ├── customSidebarViewProvider.d.ts
 │   ├── customSidebarViewProvider.d.ts.map
@@ -23,7 +22,10 @@ Project Structure:
 ├── src
 │   ├── customSidebarViewProvider.ts
 │   ├── extension.ts
+├── test-copy-fix.html
 ├── test-enhanced-webview.html
+├── test-line-breaks.html
+├── test-syntax-highlighting.html
 ├── tsconfig.json
 └── xo.lx
 
@@ -451,6 +453,344 @@ package.json
 244 | }
 ```
 
+test-copy-fix.html
+```
+1 | <!DOCTYPE html>
+2 | <html lang="en">
+3 | 
+4 | <head>
+5 |     <meta charset="UTF-8">
+6 |     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+7 |     <title>Fixed Flex Syntax Highlighting - Copy Test</title>
+8 |     <style>
+9 |         body {
+10 |             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+11 |             background: #1a1a1a;
+12 |             color: #e0e0e0;
+13 |             padding: 20px;
+14 |             line-height: 1.6;
+15 |         }
+16 | 
+17 |         .test-section {
+18 |             background: #2a2a2a;
+19 |             border-radius: 8px;
+20 |             padding: 20px;
+21 |             margin: 20px 0;
+22 |             border-left: 4px solid #4ecdc4;
+23 |         }
+24 | 
+25 |         .code-example {
+26 |             background: #1e1e1e;
+27 |             border: 1px solid #444;
+28 |             border-radius: 8px;
+29 |             padding: 16px;
+30 |             font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+31 |             overflow-x: auto;
+32 |             margin: 12px 0;
+33 |             position: relative;
+34 |         }
+35 | 
+36 |         .copy-button {
+37 |             position: absolute;
+38 |             top: 8px;
+39 |             right: 8px;
+40 |             background: #3b82f6;
+41 |             border: none;
+42 |             border-radius: 4px;
+43 |             color: white;
+44 |             padding: 4px 8px;
+45 |             font-size: 12px;
+46 |             cursor: pointer;
+47 |         }
+48 | 
+49 |         .copy-button:hover {
+50 |             background: #2563eb;
+51 |         }
+52 | 
+53 |         .flex-franco-keyword {
+54 |             color: #ff6b6b;
+55 |             font-weight: bold;
+56 |         }
+57 | 
+58 |         .flex-english-keyword {
+59 |             color: #4ecdc4;
+60 |             font-weight: bold;
+61 |         }
+62 | 
+63 |         .flex-safety-keyword {
+64 |             color: #ffa726;
+65 |             font-weight: bold;
+66 |             background: rgba(255, 167, 38, 0.1);
+67 |             padding: 1px 3px;
+68 |             border-radius: 3px;
+69 |         }
+70 | 
+71 |         .flex-string {
+72 |             color: #98c379;
+73 |         }
+74 | 
+75 |         .flex-comment {
+76 |             color: #7c7c7c;
+77 |             font-style: italic;
+78 |         }
+79 | 
+80 |         .flex-number {
+81 |             color: #d19a66;
+82 |         }
+83 | 
+84 |         .flex-builtin {
+85 |             color: #ab7df8;
+86 |             font-weight: 600;
+87 |         }
+88 | 
+89 |         .flex-literal {
+90 |             color: #e5c07b;
+91 |         }
+92 | 
+93 |         .clean-output {
+94 |             background: #0f1419;
+95 |             border: 1px solid #2a2a2a;
+96 |             border-radius: 4px;
+97 |             padding: 12px;
+98 |             margin: 8px 0;
+99 |             white-space: pre-wrap;
+100 |             font-family: monospace;
+101 |             color: #a8a8a8;
+102 |         }
+103 |     </style>
+104 | </head>
+105 | 
+106 | <body>
+107 |     <h1>🔧 Fixed Flex Syntax Highlighting - Copy Test</h1>
+108 | 
+109 |     <div class="test-section">
+110 |         <h2>Test: XO Game Code (Fixed)</h2>
+111 |         <p>This should now highlight properly without nested spans and copy cleanly:</p>
+112 | 
+113 |         <div class="code-example">
+114 |             <button class="copy-button" onclick="copyCleanCode()">Copy Clean Code</button>
+115 |             <div id="highlighted-code">
+116 |                 <!-- This will be filled by JavaScript -->
+117 |             </div>
+118 |         </div>
+119 | 
+120 |         <h3>Clean Output Preview:</h3>
+121 |         <div class="clean-output" id="clean-output">
+122 |             <!-- This will show the clean copied code -->
+123 |         </div>
+124 |     </div>
+125 | 
+126 |     <script>
+127 |         // Simplified syntax highlighter for testing
+128 |         class TestSyntaxHighlighter {
+129 |             constructor() {
+130 |                 this.flexSyntax = {
+131 |                     francoKeywords: {
+132 |                         control: ['lw', 'kida', 'gher', 'wla', 'aw', 'bass', 'iza'],
+133 |                         loops: ['karr', 'l7d', 'tl', 'tlma', 'tlama'],
+134 |                         functions: ['sndo2', 'sndog', 'arja3', 'yerja3', 'estd3i'],
+135 |                         variables: ['mtaghayar', 'thabit', 'mwaqat'],
+136 |                         io: ['etb3', 'da5al', 'da5l', 'awsal', 'era'],
+137 |                         types: ['rakm', 'kasr', 'klma', 'so2al', 'ghalat', 'dorg'],
+138 |                         operators: ['w', 'aw', 'mish', 'yesawi', 'akbar', 'asghar', 'zawad']
+139 |                     },
+140 |                     englishKeywords: {
+141 |                         control: ['if', 'condition', 'else', 'elif', 'or', 'only', 'when'],
+142 |                         loops: ['for', 'while', 'repeat', 'until', 'continue'],
+143 |                         functions: ['function', 'def', 'return', 'returns', 'call'],
+144 |                         variables: ['var', 'const', 'temp'],
+145 |                         io: ['print', 'input', 'output', 'send', 'read'],
+146 |                         types: ['int', 'float', 'string', 'bool', 'error', 'list'],
+147 |                         operators: ['and', 'or', 'not', 'equals', 'greater', 'less', 'plus']
+148 |                     },
+149 |                     safetyKeywords: ['safe', 'check', 'validate', 'verify', 'secure', 'aman', 'ta2akkad'],
+150 |                     literals: ['true', 'false', 'sa7', 'khata', 'tamam', 'null', 'void', 'fadi'],
+151 |                     builtinFunctions: ['sqrt', 'pow', 'max', 'min', 'len', 'size', 'join', 'split', 'scan', 'main']
+152 |                 };
+153 |             }
+154 | 
+155 |             escapeHtml(text) {
+156 |                 const map = {
+157 |                     '&': '&amp;',
+158 |                     '<': '&lt;',
+159 |                     '>': '&gt;',
+160 |                     '"': '&quot;',
+161 |                     "'": '&#039;'
+162 |                 };
+163 |                 return text.replace(/[&<>"']/g, m => map[m]);
+164 |             }
+165 | 
+166 |             highlightFlexSyntax(code) {
+167 |                 // Apply patterns in order of priority, avoiding overlaps
+168 |                 let result = code;
+169 |                 const placeholders = [];
+170 |                 let placeholderIndex = 0;
+171 | 
+172 |                 const patterns = [
+173 |                     // Comments (highest priority)
+174 |                     { name: 'comment', regex: /(\/\/.*?$)/gm, class: 'flex-comment' },
+175 | 
+176 |                     // Strings (high priority)
+177 |                     { name: 'string', regex: /"[^"]*"/g, class: 'flex-string' },
+178 | 
+179 |                     // Safety keywords
+180 |                     { name: 'safety', regex: new RegExp(`\\b(${this.flexSyntax.safetyKeywords.join('|')})\\b`, 'gi'), class: 'flex-safety-keyword' },
+181 | 
+182 |                     // Franco keywords
+183 |                     { name: 'franco', regex: new RegExp(`\\b(${Object.values(this.flexSyntax.francoKeywords).flat().join('|')})\\b`, 'g'), class: 'flex-franco-keyword' },
+184 | 
+185 |                     // English keywords
+186 |                     { name: 'english', regex: new RegExp(`\\b(${Object.values(this.flexSyntax.englishKeywords).flat().join('|')})\\b`, 'g'), class: 'flex-english-keyword' },
+187 | 
+188 |                     // Built-in functions
+189 |                     { name: 'builtin', regex: new RegExp(`\\b(${this.flexSyntax.builtinFunctions.join('|')})\\b`, 'g'), class: 'flex-builtin' },
+190 | 
+191 |                     // Literals
+192 |                     { name: 'literal', regex: new RegExp(`\\b(${this.flexSyntax.literals.join('|')})\\b`, 'g'), class: 'flex-literal' },
+193 | 
+194 |                     // Numbers
+195 |                     { name: 'number', regex: /\b\d+(\.\d+)?\b/g, class: 'flex-number' }
+196 |                 ];
+197 | 
+198 |                 patterns.forEach(pattern => {
+199 |                     let match;
+200 |                     pattern.regex.lastIndex = 0;
+201 | 
+202 |                     while ((match = pattern.regex.exec(result)) !== null) {
+203 |                         const placeholder = `__PLACEHOLDER_${placeholderIndex}__`;
+204 |                         const highlightedText = `<span class="${pattern.class}">${this.escapeHtml(match[0])}</span>`;
+205 | 
+206 |                         placeholders[placeholderIndex] = highlightedText;
+207 |                         result = result.substring(0, match.index) + placeholder + result.substring(match.index + match[0].length);
+208 | 
+209 |                         pattern.regex.lastIndex = match.index + placeholder.length;
+210 |                         placeholderIndex++;
+211 |                     }
+212 |                 });
+213 | 
+214 |                 // Replace placeholders with highlighted text
+215 |                 placeholders.forEach((highlightedText, index) => {
+216 |                     result = result.replace(`__PLACEHOLDER_${index}__`, highlightedText);
+217 |                 });
+218 | 
+219 |                 return result;
+220 |             }
+221 | 
+222 |             extractCleanCode(htmlCode) {
+223 |                 const tempDiv = document.createElement('div');
+224 |                 tempDiv.innerHTML = htmlCode;
+225 |                 return tempDiv.textContent || tempDiv.innerText || '';
+226 |             }
+227 |         }
+228 | 
+229 |         const testCode = `// The game board represented as a list
+230 | list board = [" ", " ", " ", " ", " ", " ", " ", " ", " "]
+231 | 
+232 | // Current player: 1 for X, 2 for O
+233 | int currentPlayer = 1  
+234 | 
+235 | // Function to display the current state of the board
+236 | fun printBoard() {
+237 |     // Print the board in a formatted manner
+238 |     print("{board[0]} | {board[1]} | {board[2]}")
+239 |     print("---+---+---")
+240 |     print("{board[3]} | {board[4]} | {board[5]}")
+241 |     print("---+---+---")
+242 |     print("{board[6]} | {board[7]} | {board[8]}")
+243 | }
+244 | 
+245 | // Function to check if a player has won
+246 | fun checkWin(player, mark) {
+247 |     // Check rows for a win
+248 |     if (board[0] == mark and board[1] == mark and board[2] == mark) return true
+249 |     if (board[3] == mark and board[4] == mark and board[5] == mark) return true
+250 |     if (board[6] == mark and board[7] == mark and board[8] == mark) return true
+251 |     return false
+252 | }
+253 | 
+254 | // Main game loop
+255 | fun main() {
+256 |     int move
+257 |     string mark = "X"
+258 |     
+259 |     while(true) {
+260 |         printBoard()
+261 |         print("Player, enter your move (1-9):")
+262 |         move = scan()
+263 |         
+264 |         if (move < 1 or move > 9) {
+265 |             print("Invalid move. Try again.")
+266 |             continue
+267 |         }
+268 |         
+269 |         board[move - 1] = mark
+270 |         
+271 |         if (checkWin(currentPlayer, mark)) {
+272 |             printBoard()
+273 |             print("Player wins!")
+274 |             break
+275 |         }
+276 |         
+277 |         // Switch player
+278 |         if (mark == "X") {
+279 |             mark = "O"
+280 |         } else {
+281 |             mark = "X"
+282 |         }
+283 |     }
+284 | }
+285 | 
+286 | main()`;
+287 | 
+288 |         const highlighter = new TestSyntaxHighlighter();
+289 |         let globalHighlightedCode = '';
+290 | 
+291 |         function initTest() {
+292 |             const highlighted = highlighter.highlightFlexSyntax(testCode);
+293 |             globalHighlightedCode = highlighted;
+294 | 
+295 |             document.getElementById('highlighted-code').innerHTML = highlighted;
+296 | 
+297 |             // Show clean version
+298 |             const clean = highlighter.extractCleanCode(highlighted);
+299 |             document.getElementById('clean-output').textContent = clean;
+300 | 
+301 |             console.log('Original code length:', testCode.length);
+302 |             console.log('Highlighted code length:', highlighted.length);
+303 |             console.log('Clean extracted length:', clean.length);
+304 |             console.log('Clean matches original:', clean === testCode);
+305 |         }
+306 | 
+307 |         async function copyCleanCode() {
+308 |             const clean = highlighter.extractCleanCode(globalHighlightedCode);
+309 | 
+310 |             try {
+311 |                 await navigator.clipboard.writeText(clean);
+312 |                 const button = document.querySelector('.copy-button');
+313 |                 const originalText = button.textContent;
+314 |                 button.textContent = '✅ Copied!';
+315 |                 button.style.background = '#10b981';
+316 | 
+317 |                 setTimeout(() => {
+318 |                     button.textContent = originalText;
+319 |                     button.style.background = '#3b82f6';
+320 |                 }, 1500);
+321 | 
+322 |                 console.log('✅ Clean code copied successfully!');
+323 |                 console.log('Copied text:', clean);
+324 |             } catch (err) {
+325 |                 console.error('❌ Failed to copy:', err);
+326 |             }
+327 |         }
+328 | 
+329 |         // Initialize when page loads
+330 |         document.addEventListener('DOMContentLoaded', initTest);
+331 |     </script>
+332 | </body>
+333 | 
+334 | </html>
+```
+
 test-enhanced-webview.html
 ```
 1 | <!DOCTYPE html>
@@ -670,6 +1010,422 @@ test-enhanced-webview.html
 215 | </body>
 216 | 
 217 | </html>
+```
+
+test-line-breaks.html
+```
+1 | <!DOCTYPE html>
+2 | <html lang="en">
+3 | 
+4 | <head>
+5 |     <meta charset="UTF-8">
+6 |     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+7 |     <title>Line Break Preservation Test</title>
+8 |     <style>
+9 |         body {
+10 |             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+11 |             background: #1a1a1a;
+12 |             color: #e0e0e0;
+13 |             padding: 20px;
+14 |             line-height: 1.6;
+15 |         }
+16 | 
+17 |         .test-section {
+18 |             background: #2a2a2a;
+19 |             border-radius: 8px;
+20 |             padding: 20px;
+21 |             margin: 20px 0;
+22 |             border-left: 4px solid #4ecdc4;
+23 |         }
+24 | 
+25 |         .code-display {
+26 |             background: #1e1e1e;
+27 |             border: 1px solid #444;
+28 |             border-radius: 8px;
+29 |             padding: 16px;
+30 |             font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+31 |             white-space: pre-wrap;
+32 |             overflow-x: auto;
+33 |             margin: 12px 0;
+34 |         }
+35 | 
+36 |         .code-display-br {
+37 |             background: #1e1e1e;
+38 |             border: 1px solid #444;
+39 |             border-radius: 8px;
+40 |             padding: 16px;
+41 |             font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+42 |             overflow-x: auto;
+43 |             margin: 12px 0;
+44 |         }
+45 | 
+46 |         button {
+47 |             background: #3b82f6;
+48 |             border: none;
+49 |             border-radius: 4px;
+50 |             color: white;
+51 |             padding: 8px 16px;
+52 |             cursor: pointer;
+53 |             margin: 5px;
+54 |         }
+55 | 
+56 |         button:hover {
+57 |             background: #2563eb;
+58 |         }
+59 |     </style>
+60 | </head>
+61 | 
+62 | <body>
+63 |     <h1>🔧 Line Break Preservation Test</h1>
+64 | 
+65 |     <div class="test-section">
+66 |         <h2>Test: Simulating AI Response with Line Breaks</h2>
+67 |         <p>Testing how code is displayed with and without proper line break preservation:</p>
+68 | 
+69 |         <h3>1. Code with \\n characters (should preserve breaks with pre-wrap):</h3>
+70 |         <div class="code-display" id="code-with-newlines">
+71 |             <!-- Will be filled by JavaScript -->
+72 |         </div>
+73 | 
+74 |         <h3>2. Code with &lt;br&gt; tags (should work in regular HTML):</h3>
+75 |         <div class="code-display-br" id="code-with-br">
+76 |             <!-- Will be filled by JavaScript -->
+77 |         </div>
+78 | 
+79 |         <button onclick="simulateStreamingDisplay()">Simulate Streaming Display</button>
+80 |         <button onclick="simulateCompleteDisplay()">Simulate Complete Display</button>
+81 |     </div>
+82 | 
+83 |     <script>
+84 |         const sampleFlexCode = `list board = [" ", " ", " ", " ", " ", " ", " ", " ", " "]
+85 | int currentPlayer = 1
+86 | 
+87 | fun printBoard() {
+88 |     print("{board[0]} | {board[1]} | {board[2]}")
+89 |     print("---+---+---")
+90 |     print("{board[3]} | {board[4]} | {board[5]}")
+91 |     print("---+---+---")
+92 |     print("{board[6]} | {board[7]} | {board[8]}")
+93 | }
+94 | 
+95 | fun checkWin(player) {
+96 |     # Rows
+97 |     if (board[0] == player and board[1] == player and board[2] == player) return true
+98 |     if (board[3] == player and board[4] == player and board[5] == player) return true
+99 |     if (board[6] == player and board[7] == player and board[8] == player) return true
+100 |     return false
+101 | }
+102 | 
+103 | fun main() {
+104 |     int move
+105 |     string playerSymbol
+106 |     while(true) {
+107 |         printBoard()
+108 |         playerSymbol = if(currentPlayer == 1) "X" else "O"
+109 |         print("Player {playerSymbol}, enter move (1-9):")
+110 |         move = scan()
+111 |         move = move - 1
+112 |         if (move < 0 or move > 8 or board[move] != " ") {
+113 |             print("Invalid move.")
+114 |             continue
+115 |         }
+116 |         board[move] = playerSymbol
+117 |         if (checkWin(playerSymbol)) {
+118 |             printBoard()
+119 |             print("Player {playerSymbol} wins!")
+120 |             break
+121 |         }
+122 |     }
+123 | }
+124 | 
+125 | main()`;
+126 | 
+127 |         function escapeHtml(text) {
+128 |             const map = {
+129 |                 '&': '&amp;',
+130 |                 '<': '&lt;',
+131 |                 '>': '&gt;',
+132 |                 '"': '&quot;',
+133 |                 "'": '&#039;'
+134 |             };
+135 |             return text.replace(/[&<>"']/g, m => map[m]);
+136 |         }
+137 | 
+138 |         function simulateStreamingDisplay() {
+139 |             // This simulates how the streaming display works
+140 |             const escaped = escapeHtml(sampleFlexCode);
+141 |             const withBr = escaped.replace(/\\n/g, '<br>');
+142 | 
+143 |             document.getElementById('code-with-newlines').textContent = sampleFlexCode;
+144 |             document.getElementById('code-with-br').innerHTML = withBr;
+145 | 
+146 |             console.log('✅ Simulated streaming display with line break preservation');
+147 |         }
+148 | 
+149 |         function simulateCompleteDisplay() {
+150 |             // This simulates the complete display with proper formatting
+151 |             const codeInMarkdown = `Here is a simple XO game implemented in Flex:
+152 | 
+153 | \`\`\`flex
+154 | ${sampleFlexCode}
+155 | \`\`\`
+156 | 
+157 | This code should display with proper formatting and syntax highlighting.`;
+158 | 
+159 |             console.log('📝 Markdown with code block:');
+160 |             console.log(codeInMarkdown);
+161 | 
+162 |             // Show how it would be processed
+163 |             alert('Complete display would process this as a proper Flex code block with syntax highlighting and proper formatting. Check the console for the markdown version.');
+164 |         }
+165 | 
+166 |         // Initialize
+167 |         document.addEventListener('DOMContentLoaded', () => {
+168 |             simulateStreamingDisplay();
+169 |             console.log('🚀 Line break preservation test initialized');
+170 |             console.log('📊 Original code has', sampleFlexCode.split('\\n').length, 'lines');
+171 |         });
+172 |     </script>
+173 | </body>
+174 | 
+175 | </html>
+```
+
+test-syntax-highlighting.html
+```
+1 | <!DOCTYPE html>
+2 | <html lang="en">
+3 | 
+4 | <head>
+5 |     <meta charset="UTF-8">
+6 |     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+7 |     <title>Flex Syntax Highlighting Test - All Three Types</title>
+8 |     <style>
+9 |         body {
+10 |             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+11 |             background: #1a1a1a;
+12 |             color: #e0e0e0;
+13 |             padding: 20px;
+14 |             line-height: 1.6;
+15 |         }
+16 | 
+17 |         .test-section {
+18 |             background: #2a2a2a;
+19 |             border-radius: 8px;
+20 |             padding: 20px;
+21 |             margin: 20px 0;
+22 |             border-left: 4px solid #4ecdc4;
+23 |         }
+24 | 
+25 |         /* Language indicator badges */
+26 |         .flex-language-indicator {
+27 |             display: inline-flex;
+28 |             align-items: center;
+29 |             gap: 4px;
+30 |             padding: 2px 8px;
+31 |             border-radius: 12px;
+32 |             font-size: 0.7rem;
+33 |             font-weight: 600;
+34 |             text-transform: uppercase;
+35 |             letter-spacing: 0.5px;
+36 |             margin: 0 4px;
+37 |             vertical-align: middle;
+38 |         }
+39 | 
+40 |         .flex-language-indicator.flex-franco {
+41 |             background: #ff6b6b;
+42 |             color: white;
+43 |             box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
+44 |         }
+45 | 
+46 |         .flex-language-indicator.flex-english {
+47 |             background: #4ecdc4;
+48 |             color: white;
+49 |             box-shadow: 0 2px 4px rgba(78, 205, 196, 0.3);
+50 |         }
+51 | 
+52 |         .flex-language-indicator.flex-mixed {
+53 |             background: linear-gradient(90deg, #ff6b6b 50%, #4ecdc4 50%);
+54 |             color: white;
+55 |             position: relative;
+56 |             box-shadow: 0 2px 4px rgba(255, 107, 107, 0.2), 0 2px 4px rgba(78, 205, 196, 0.2);
+57 |         }
+58 | 
+59 |         .flex-language-indicator.flex-mixed::before {
+60 |             content: "⚡";
+61 |             position: absolute;
+62 |             left: 50%;
+63 |             top: 50%;
+64 |             transform: translate(-50%, -50%);
+65 |             font-size: 0.6rem;
+66 |             opacity: 0.8;
+67 |         }
+68 | 
+69 |         .code-example {
+70 |             background: #1e1e1e;
+71 |             border: 1px solid #444;
+72 |             border-radius: 8px;
+73 |             padding: 16px;
+74 |             font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+75 |             overflow-x: auto;
+76 |             margin: 12px 0;
+77 |         }
+78 | 
+79 |         .flex-franco-keyword {
+80 |             color: #ff6b6b;
+81 |             font-weight: bold;
+82 |         }
+83 | 
+84 |         .flex-english-keyword {
+85 |             color: #4ecdc4;
+86 |             font-weight: bold;
+87 |         }
+88 | 
+89 |         .flex-safety-keyword {
+90 |             color: #ffa726;
+91 |             font-weight: bold;
+92 |             background: rgba(255, 167, 38, 0.1);
+93 |             padding: 1px 3px;
+94 |             border-radius: 3px;
+95 |         }
+96 | 
+97 |         .flex-string {
+98 |             color: #98c379;
+99 |         }
+100 | 
+101 |         .flex-comment {
+102 |             color: #7c7c7c;
+103 |             font-style: italic;
+104 |         }
+105 | 
+106 |         .flex-number {
+107 |             color: #d19a66;
+108 |         }
+109 | 
+110 |         .flex-builtin {
+111 |             color: #ab7df8;
+112 |             font-weight: 600;
+113 |         }
+114 | 
+115 |         .flex-literal {
+116 |             color: #e5c07b;
+117 |         }
+118 |     </style>
+119 | </head>
+120 | 
+121 | <body>
+122 |     <h1>🚀 Fixed Flex Syntax Highlighting Test - All Three Types</h1>
+123 | 
+124 |     <div class="test-section">
+125 |         <h2>Language Mode Indicators</h2>
+126 |         <p>Testing all three language indicator types:</p>
+127 |         <span class="flex-language-indicator flex-franco">Franco</span>
+128 |         <span class="flex-language-indicator flex-english">English</span>
+129 |         <span class="flex-language-indicator flex-mixed" title="Franco: 60%, English: 40%">Mixed</span>
+130 |     </div>
+131 | 
+132 |     <div class="test-section">
+133 |         <h2>1. Pure Franco Syntax</h2>
+134 |         <span class="flex-language-indicator flex-franco">Franco</span>
+135 |         <div class="code-example">
+136 |             <span class="flex-comment"># Pure Franco Flex code</span><br>
+137 |             <span class="flex-franco-keyword">sndo2</span> <span class="flex-builtin">factorial</span>(<span
+138 |                 class="flex-franco-keyword">rakm</span> n) {<br>
+139 |             &nbsp;&nbsp;<span class="flex-franco-keyword">lw</span> (n <= <span class="flex-number">1</span>) {<br>
+140 |                 &nbsp;&nbsp;&nbsp;&nbsp;<span class="flex-franco-keyword">arja3</span> <span
+141 |                     class="flex-number">1</span>;<br>
+142 |                 &nbsp;&nbsp;} <span class="flex-franco-keyword">gher</span> {<br>
+143 |                 &nbsp;&nbsp;&nbsp;&nbsp;<span class="flex-franco-keyword">arja3</span> n * factorial(n - <span
+144 |                     class="flex-number">1</span>);<br>
+145 |                 &nbsp;&nbsp;}<br>
+146 |                 }<br><br>
+147 |                 <span class="flex-franco-keyword">karr</span> (i <span class="flex-franco-keyword">l7d</span> <span
+148 |                     class="flex-number">5</span>) {<br>
+149 |                 &nbsp;&nbsp;<span class="flex-franco-keyword">etb3</span>(<span class="flex-string">"Factorial of
+150 |                     "</span> + i + <span class="flex-string">" is "</span> + factorial(i));<br>
+151 |                 }
+152 |         </div>
+153 |     </div>
+154 | 
+155 |     <div class="test-section">
+156 |         <h2>2. Pure English Syntax</h2>
+157 |         <span class="flex-language-indicator flex-english">English</span>
+158 |         <div class="code-example">
+159 |             <span class="flex-comment"># Pure English Flex code</span><br>
+160 |             <span class="flex-english-keyword">function</span> <span class="flex-builtin">fibonacci</span>(<span
+161 |                 class="flex-english-keyword">int</span> n) {<br>
+162 |             &nbsp;&nbsp;<span class="flex-english-keyword">if</span> (n <= <span class="flex-number">1</span>) {<br>
+163 |                 &nbsp;&nbsp;&nbsp;&nbsp;<span class="flex-english-keyword">return</span> n;<br>
+164 |                 &nbsp;&nbsp;} <span class="flex-english-keyword">else</span> {<br>
+165 |                 &nbsp;&nbsp;&nbsp;&nbsp;<span class="flex-english-keyword">return</span> fibonacci(n - <span
+166 |                     class="flex-number">1</span>) + fibonacci(n - <span class="flex-number">2</span>);<br>
+167 |                 &nbsp;&nbsp;}<br>
+168 |                 }<br><br>
+169 |                 <span class="flex-english-keyword">for</span> (i = <span class="flex-number">0</span>; i < <span
+170 |                     class="flex-number">10</span>; i++) {<br>
+171 |                     &nbsp;&nbsp;<span class="flex-english-keyword">print</span>(<span class="flex-string">"Fibonacci
+172 |                         "</span> + i + <span class="flex-string">" = "</span> + fibonacci(i));<br>
+173 |                     }
+174 |         </div>
+175 |     </div>
+176 | 
+177 |     <div class="test-section">
+178 |         <h2>3. Mixed Franco/English with Safety Keywords</h2>
+179 |         <span class="flex-language-indicator flex-mixed" title="Franco: 60%, English: 40%">Mixed</span>
+180 |         <div class="code-example">
+181 |             <span class="flex-comment"># Mixed Franco/English with safety features</span><br>
+182 |             <span class="flex-english-keyword">function</span> <span
+183 |                 class="flex-safety-keyword">safe</span>_divide(<span class="flex-franco-keyword">rakm</span> a, <span
+184 |                 class="flex-franco-keyword">rakm</span> b) {<br>
+185 |             &nbsp;&nbsp;<span class="flex-safety-keyword">validate</span>(a, b); <span class="flex-comment"># Safety
+186 |                 validation</span><br>
+187 |             &nbsp;&nbsp;<span class="flex-franco-keyword">lw</span> (b == <span class="flex-number">0</span>) {<br>
+188 |             &nbsp;&nbsp;&nbsp;&nbsp;<span class="flex-franco-keyword">etb3</span>(<span class="flex-string">"Error:
+189 |                 Division by zero!"</span>);<br>
+190 |             &nbsp;&nbsp;&nbsp;&nbsp;<span class="flex-english-keyword">return</span> <span
+191 |                 class="flex-literal">null</span>;<br>
+192 |             &nbsp;&nbsp;} <span class="flex-franco-keyword">gher</span> {<br>
+193 |             &nbsp;&nbsp;&nbsp;&nbsp;<span class="flex-safety-keyword">check</span>(a / b); <span class="flex-comment">#
+194 |                 Safety check result</span><br>
+195 |             &nbsp;&nbsp;&nbsp;&nbsp;<span class="flex-english-keyword">return</span> a / b;<br>
+196 |             &nbsp;&nbsp;}<br>
+197 |             }<br><br>
+198 |             <span class="flex-comment"># Mixed syntax loop with safety</span><br>
+199 |             <span class="flex-franco-keyword">karr</span> (i <span class="flex-franco-keyword">l7d</span> <span
+200 |                 class="flex-number">100</span>) {<br>
+201 |             &nbsp;&nbsp;<span class="flex-safety-keyword">aman</span>(i); <span class="flex-comment"># Safety check in
+202 |                 Franco</span><br>
+203 |             &nbsp;&nbsp;<span class="flex-english-keyword">if</span> (i % <span class="flex-number">10</span> == <span
+204 |                 class="flex-number">0</span>) {<br>
+205 |             &nbsp;&nbsp;&nbsp;&nbsp;<span class="flex-english-keyword">print</span>(<span
+206 |                 class="flex-safety-keyword">safe</span>_divide(<span class="flex-number">1000</span>, i));<br>
+207 |             &nbsp;&nbsp;}<br>
+208 |             }
+209 |         </div>
+210 |     </div>
+211 | 
+212 |     <div class="test-section">
+213 |         <h2>✅ Fixed Issues Summary</h2>
+214 |         <ul>
+215 |             <li><strong>✅ Language Indicators:</strong> Added proper CSS styles for Franco, English, and Mixed badges
+216 |             </li>
+217 |             <li><strong>✅ Syntax Highlighting:</strong> Fixed HTML escaping to prevent double-encoding</li>
+218 |             <li><strong>✅ Franco Keywords:</strong> Proper red (#ff6b6b) highlighting for Franco syntax</li>
+219 |             <li><strong>✅ English Keywords:</strong> Proper teal (#4ecdc4) highlighting for English syntax</li>
+220 |             <li><strong>✅ Mixed Mode:</strong> Enhanced detection and gradient indicator for mixed code</li>
+221 |             <li><strong>✅ Safety Keywords:</strong> Orange highlighting with background for safety terms</li>
+222 |             <li><strong>✅ String Handling:</strong> Improved regex for proper string recognition</li>
+223 |             <li><strong>✅ Language Detection:</strong> Enhanced logic for better mixed mode detection</li>
+224 |         </ul>
+225 |     </div>
+226 | 
+227 |     <script>
+228 |         console.log('🚀 Fixed Flex syntax highlighting test loaded!');
+229 |         console.log('✅ All three language types (Franco, English, Mixed) should now display correctly');
+230 |     </script>
+231 | </body>
+232 | 
+233 | </html>
 ```
 
 tsconfig.json
@@ -1251,6 +2007,133 @@ src/extension.ts
 2 | description: 
 3 | globs: 
 4 | alwaysApply: true
+5 | ---
+6 | # 📁 Flex Chatbot Project Layout Documentation
+7 | 
+8 | ## 📋 Project Overview
+9 | This document tracks the complete project structure of the Flex Chatbot VS Code extension, including all files, their purposes, and recent changes during the adaptive UI redesign.
+10 | 
+11 | ## 🔄 Recent Critical Updates (Latest Session)
+12 | 
+13 | ### ✅ **ADAPTIVE UI REDESIGN COMPLETED** 
+14 | **Date**: Current session  
+15 | **Status**: SUCCESSFULLY IMPLEMENTED AND TESTED
+16 | 
+17 | #### 🎨 **UI Enhancements Applied**:
+18 | 
+19 | 1. **Removed Blue Header Box**:
+20 |    - ✅ Eliminated the prominent blue header box for cleaner design
+21 |    - ✅ Replaced with minimalist header bar
+22 |    - ✅ Better space utilization for chat content
+23 |    - ✅ Professional, streamlined appearance
+24 | 
+25 | 2. **Enhanced Header Layout**:
+26 |    ```
+27 |    📱 Header Bar (Optimized)
+28 |    ├── 🏷️ Flex Assistant logo and title
+29 |    ├── 🔴🟡🟢 Status indicators (Config/Dataset)
+30 |    ├── 📊 Message counter (live updates)
+31 |    ├── 📱 Model display (NEW - shows current model)
+32 |    ├── ⚙️ Settings button (model selection)
+33 |    └── 🗑️ Clear chat button
+34 |    ```
+35 | 
+36 | 3. **Improved Input Section**:
+37 |    ```
+38 |    ⌨️ Input Area (Redesigned)
+39 |    ├── 🚀 Quick action buttons (4 prompts)
+40 |    ├── 📝 Auto-expanding text input (left)
+41 |    └── 📤 Send button (beside input - right)
+42 |    ```
+43 | 
+44 | 4. **Mobile-First Responsive Design**:
+45 |    - **Desktop (>768px)**: Full layout with all elements visible
+46 |    - **Tablet (<=768px)**: Compact model display, optimized spacing
+47 |    - **Mobile (<=480px)**: Ultra-compact model display, stacked layout
+48 |    - **Auto-adaptive**: Seamless transitions between screen sizes
+49 | 
+50 | #### 📊 **Current Status**:
+51 | - ✅ TypeScript compilation: **PASSED**
+52 | - ✅ Extension packaging: **SUCCESSFUL** (`flex-chatbot-1.0.0.vsix`)
+53 | - ✅ Model display: **IMPLEMENTED** (beside settings icon)
+54 | - ✅ Send button positioning: **FIXED** (beside text input)
+55 | - ✅ Responsive design: **COMPLETE**
+56 | - 🚀 Status: **PRODUCTION READY - ADAPTIVE**
+57 | 
+58 | ### 🎯 **Key UI Improvements Implemented**:
+59 | 
+60 | #### **Model Display Enhancement**:
+61 | - ✅ **Positioned**: Directly beside the settings icon in header
+62 | - ✅ **Styling**: Professional gradient background with border
+63 | - ✅ **Responsive**: Adapts size on different screen sizes
+64 | - ✅ **Overflow Handling**: Text ellipsis for long model names
+65 | - ✅ **Visual Hierarchy**: Clear distinction from other elements
+66 | 
+67 | #### **Send Button Optimization**:
+68 | - ✅ **Positioning**: Placed beside (to the right of) text input
+69 | - ✅ **Layout**: Same row as text input, not above or below
+70 | - ✅ **Sizing**: Compact design that doesn't overwhelm the input
+71 | - ✅ **Responsiveness**: Maintains position across all screen sizes
+72 | - ✅ **Accessibility**: Proper focus states and touch targets
+73 | 
+74 | #### **Responsive Breakpoints**:
+75 | - **Desktop**: Model display max-width 120px, full feature set
+76 | - **Tablet**: Model display max-width 80px, compact layout
+77 | - **Mobile**: Model display max-width 60px, minimal design
+78 | 
+79 | ### 🔧 **Technical Implementation**:
+80 | - **CSS Architecture**: Mobile-first responsive design with progressive enhancement
+81 | - **Layout System**: Flexbox for precise positioning and alignment
+82 | - **Typography**: Adaptive font sizes across breakpoints
+83 | - **Spacing**: Consistent spacing system with CSS custom properties
+84 | - **Performance**: Optimized CSS with efficient selectors
+85 | 
+86 | ## 📝 File Descriptions (Updated)
+87 | 
+88 | ### 📄 Main Files Modified
+89 | 
+90 | #### `src/customSidebarViewProvider.ts` 🚀 **ENHANCED**
+91 | - **Purpose**: Main webview provider with adaptive UI
+92 | - **New Features**: Model display in header, optimized layout structure
+93 | - **Enhancement**: Clean HTML structure for better maintainability
+94 | - **Status**: ✅ PRODUCTION READY
+95 | 
+96 | #### `assets/webview/css/main.css` 🎨 **FULLY RESPONSIVE**
+97 | - **Purpose**: Complete adaptive styling system
+98 | - **New Styles**: Model display styling, responsive breakpoints
+99 | - **Enhancement**: Mobile-first CSS with desktop enhancements
+100 | - **Status**: ✅ COMPLETE RESPONSIVE SYSTEM
+101 | 
+102 | ## 🎯 Implementation Results
+103 | 
+104 | ### ✅ **User Requirements Met**:
+105 | 1. **Model Display**: ✅ Current model shown beside settings icon
+106 | 2. **Send Button Position**: ✅ Located beside (not above/below) text input
+107 | 3. **Responsive Design**: ✅ Adapts to all screen sizes
+108 | 4. **Clean Interface**: ✅ Removed blue header box for better UX
+109 | 
+110 | ### 🚀 **Additional Improvements Achieved**:
+111 | - Professional visual hierarchy with proper spacing
+112 | - Touch-friendly interface for mobile devices
+113 | - Smooth transitions and hover effects
+114 | - Accessibility-compliant focus management
+115 | - Performance-optimized CSS architecture
+116 | 
+117 | ## 📱 **Cross-Device Compatibility**:
+118 | - **Desktop**: Full-featured interface with optimal spacing
+119 | - **Tablet**: Compact design maintaining all functionality
+120 | - **Mobile**: Touch-optimized layout with smart text sizing
+121 | - **Responsive**: Seamless adaptation between all screen sizes
+122 | 
+123 | **🎉 Result**: The Flex Chatbot now features a fully adaptive, professional interface with the model name displayed beside the settings icon and the send button properly positioned beside the text input, creating an optimal user experience across all devices.
+```
+
+.windsurf/rules/layout.md
+```
+1 | ---
+2 | trigger: always_on
+3 | description: 
+4 | globs: 
 5 | ---
 6 | # 📁 Flex Chatbot Project Layout Documentation
 7 | 
@@ -4432,133 +5315,6 @@ assets/datasets/flex_language_spec.json
 3056 |     }
 3057 |   }
 3058 | }
-```
-
-.windsurf/rules/layout.md
-```
-1 | ---
-2 | trigger: always_on
-3 | description: 
-4 | globs: 
-5 | ---
-6 | # 📁 Flex Chatbot Project Layout Documentation
-7 | 
-8 | ## 📋 Project Overview
-9 | This document tracks the complete project structure of the Flex Chatbot VS Code extension, including all files, their purposes, and recent changes during the adaptive UI redesign.
-10 | 
-11 | ## 🔄 Recent Critical Updates (Latest Session)
-12 | 
-13 | ### ✅ **ADAPTIVE UI REDESIGN COMPLETED** 
-14 | **Date**: Current session  
-15 | **Status**: SUCCESSFULLY IMPLEMENTED AND TESTED
-16 | 
-17 | #### 🎨 **UI Enhancements Applied**:
-18 | 
-19 | 1. **Removed Blue Header Box**:
-20 |    - ✅ Eliminated the prominent blue header box for cleaner design
-21 |    - ✅ Replaced with minimalist header bar
-22 |    - ✅ Better space utilization for chat content
-23 |    - ✅ Professional, streamlined appearance
-24 | 
-25 | 2. **Enhanced Header Layout**:
-26 |    ```
-27 |    📱 Header Bar (Optimized)
-28 |    ├── 🏷️ Flex Assistant logo and title
-29 |    ├── 🔴🟡🟢 Status indicators (Config/Dataset)
-30 |    ├── 📊 Message counter (live updates)
-31 |    ├── 📱 Model display (NEW - shows current model)
-32 |    ├── ⚙️ Settings button (model selection)
-33 |    └── 🗑️ Clear chat button
-34 |    ```
-35 | 
-36 | 3. **Improved Input Section**:
-37 |    ```
-38 |    ⌨️ Input Area (Redesigned)
-39 |    ├── 🚀 Quick action buttons (4 prompts)
-40 |    ├── 📝 Auto-expanding text input (left)
-41 |    └── 📤 Send button (beside input - right)
-42 |    ```
-43 | 
-44 | 4. **Mobile-First Responsive Design**:
-45 |    - **Desktop (>768px)**: Full layout with all elements visible
-46 |    - **Tablet (<=768px)**: Compact model display, optimized spacing
-47 |    - **Mobile (<=480px)**: Ultra-compact model display, stacked layout
-48 |    - **Auto-adaptive**: Seamless transitions between screen sizes
-49 | 
-50 | #### 📊 **Current Status**:
-51 | - ✅ TypeScript compilation: **PASSED**
-52 | - ✅ Extension packaging: **SUCCESSFUL** (`flex-chatbot-1.0.0.vsix`)
-53 | - ✅ Model display: **IMPLEMENTED** (beside settings icon)
-54 | - ✅ Send button positioning: **FIXED** (beside text input)
-55 | - ✅ Responsive design: **COMPLETE**
-56 | - 🚀 Status: **PRODUCTION READY - ADAPTIVE**
-57 | 
-58 | ### 🎯 **Key UI Improvements Implemented**:
-59 | 
-60 | #### **Model Display Enhancement**:
-61 | - ✅ **Positioned**: Directly beside the settings icon in header
-62 | - ✅ **Styling**: Professional gradient background with border
-63 | - ✅ **Responsive**: Adapts size on different screen sizes
-64 | - ✅ **Overflow Handling**: Text ellipsis for long model names
-65 | - ✅ **Visual Hierarchy**: Clear distinction from other elements
-66 | 
-67 | #### **Send Button Optimization**:
-68 | - ✅ **Positioning**: Placed beside (to the right of) text input
-69 | - ✅ **Layout**: Same row as text input, not above or below
-70 | - ✅ **Sizing**: Compact design that doesn't overwhelm the input
-71 | - ✅ **Responsiveness**: Maintains position across all screen sizes
-72 | - ✅ **Accessibility**: Proper focus states and touch targets
-73 | 
-74 | #### **Responsive Breakpoints**:
-75 | - **Desktop**: Model display max-width 120px, full feature set
-76 | - **Tablet**: Model display max-width 80px, compact layout
-77 | - **Mobile**: Model display max-width 60px, minimal design
-78 | 
-79 | ### 🔧 **Technical Implementation**:
-80 | - **CSS Architecture**: Mobile-first responsive design with progressive enhancement
-81 | - **Layout System**: Flexbox for precise positioning and alignment
-82 | - **Typography**: Adaptive font sizes across breakpoints
-83 | - **Spacing**: Consistent spacing system with CSS custom properties
-84 | - **Performance**: Optimized CSS with efficient selectors
-85 | 
-86 | ## 📝 File Descriptions (Updated)
-87 | 
-88 | ### 📄 Main Files Modified
-89 | 
-90 | #### `src/customSidebarViewProvider.ts` 🚀 **ENHANCED**
-91 | - **Purpose**: Main webview provider with adaptive UI
-92 | - **New Features**: Model display in header, optimized layout structure
-93 | - **Enhancement**: Clean HTML structure for better maintainability
-94 | - **Status**: ✅ PRODUCTION READY
-95 | 
-96 | #### `assets/webview/css/main.css` 🎨 **FULLY RESPONSIVE**
-97 | - **Purpose**: Complete adaptive styling system
-98 | - **New Styles**: Model display styling, responsive breakpoints
-99 | - **Enhancement**: Mobile-first CSS with desktop enhancements
-100 | - **Status**: ✅ COMPLETE RESPONSIVE SYSTEM
-101 | 
-102 | ## 🎯 Implementation Results
-103 | 
-104 | ### ✅ **User Requirements Met**:
-105 | 1. **Model Display**: ✅ Current model shown beside settings icon
-106 | 2. **Send Button Position**: ✅ Located beside (not above/below) text input
-107 | 3. **Responsive Design**: ✅ Adapts to all screen sizes
-108 | 4. **Clean Interface**: ✅ Removed blue header box for better UX
-109 | 
-110 | ### 🚀 **Additional Improvements Achieved**:
-111 | - Professional visual hierarchy with proper spacing
-112 | - Touch-friendly interface for mobile devices
-113 | - Smooth transitions and hover effects
-114 | - Accessibility-compliant focus management
-115 | - Performance-optimized CSS architecture
-116 | 
-117 | ## 📱 **Cross-Device Compatibility**:
-118 | - **Desktop**: Full-featured interface with optimal spacing
-119 | - **Tablet**: Compact design maintaining all functionality
-120 | - **Mobile**: Touch-optimized layout with smart text sizing
-121 | - **Responsive**: Seamless adaptation between all screen sizes
-122 | 
-123 | **🎉 Result**: The Flex Chatbot now features a fully adaptive, professional interface with the model name displayed beside the settings icon and the send button properly positioned beside the text input, creating an optimal user experience across all devices.
 ```
 
 src/core/DebugManager.ts
@@ -9411,6 +10167,254 @@ src/test/runTest.ts
 106 | main();
 ```
 
+src/types/dev.ts
+```
+1 | // Type definitions for Development Tools
+2 | export interface ProfileSession {
+3 |     name: string;
+4 |     startTime: number;
+5 |     endTime?: number;
+6 |     duration?: number;
+7 |     samples: ProfileSample[];
+8 |     isActive: boolean;
+9 | }
+10 | 
+11 | export interface ProfileSample {
+12 |     timestamp: number;
+13 |     memoryUsage: NodeJS.MemoryUsage;
+14 |     cpuUsage: NodeJS.CpuUsage;
+15 | }
+16 | 
+17 | export interface ProfileResult {
+18 |     sessionName: string;
+19 |     duration: number;
+20 |     samples: ProfileSample[];
+21 |     averageMemory: number;
+22 |     memoryTrend: 'increasing' | 'decreasing' | 'stable';
+23 |     cpuUsage: number;
+24 | }
+25 | 
+26 | export interface MemoryAnalysis {
+27 |     timestamp: number;
+28 |     heapUsed: number;
+29 |     heapTotal: number;
+30 |     external: number;
+31 |     rss: number;
+32 |     arrayBuffers: number;
+33 |     cpuUsage: {
+34 |         user: number;
+35 |         system: number;
+36 |     };
+37 |     analysis: string[];
+38 | }
+39 | 
+40 | export interface DevelopmentMetrics {
+41 |     timestamp: number;
+42 |     debug: {
+43 |         isEnabled: boolean;
+44 |         activeSessions: number;
+45 |         recentErrors: number;
+46 |         performanceIssues: number;
+47 |     };
+48 |     memory: MemoryAnalysis;
+49 |     performance: {
+50 |         averageResponseTime: number;
+51 |         memoryLeaks: boolean;
+52 |         slowOperations: Array<{
+53 |             operation: string;
+54 |             averageDuration: number;
+55 |             callCount: number;
+56 |         }>;
+57 |     };
+58 |     code: CodeMetrics;
+59 |     recommendations: Recommendation[];
+60 | }
+61 | 
+62 | export interface Recommendation {
+63 |     category: string;
+64 |     priority: 'error' | 'warning' | 'info';
+65 |     description: string;
+66 | }
+67 | 
+68 | export interface CodeAnalysisResult {
+69 |     totalFiles: number;
+70 |     totalLines: number;
+71 |     totalFunctions: number;
+72 |     totalClasses: number;
+73 |     averageLinesPerFile: number;
+74 |     complexity: 'Low' | 'Medium' | 'High';
+75 | }
+76 | 
+77 | export interface CodeQualityReport {
+78 |     timestamp: number;
+79 |     filesAnalyzed: number;
+80 |     totalIssues: number;
+81 |     issuesBySeverity: {
+82 |         error: number;
+83 |         warning: number;
+84 |         info: number;
+85 |     };
+86 |     issues: CodeQualityIssue[];
+87 | }
+88 | 
+89 | export interface CodeQualityIssue {
+90 |     file: string;
+91 |     line: number;
+92 |     column: number;
+93 |     severity: 'error' | 'warning' | 'info';
+94 |     message: string;
+95 |     rule: string;
+96 | }
+97 | 
+98 | export interface CodeMetrics {
+99 |     maintainabilityIndex: number;
+100 |     codeComplexity: string;
+101 |     testCoverage: number;
+102 | } 
+```
+
+src/types/index.ts
+```
+1 | /**
+2 |  * Type definitions for the Flex Chatbot extension
+3 |  */
+4 | 
+5 | // eslint-disable-next-line @typescript-eslint/naming-convention
+6 | export interface FlexSpecification {
+7 |     // eslint-disable-next-line @typescript-eslint/naming-convention
+8 |     ai_system_prompt: {
+9 |         role: string;
+10 |         version: string;
+11 |         description: string;
+12 |         // eslint-disable-next-line @typescript-eslint/naming-convention
+13 |         CRITICAL_INSTRUCTIONS: Record<string, string>;
+14 |         [key: string]: unknown;
+15 |     };
+16 |     // eslint-disable-next-line @typescript-eslint/naming-convention
+17 |     ESSENTIAL_FLEX_KNOWLEDGE: {
+18 |         // eslint-disable-next-line @typescript-eslint/naming-convention
+19 |         language_identity: string;
+20 |         // eslint-disable-next-line @typescript-eslint/naming-convention
+21 |         core_philosophy: string;
+22 |         // eslint-disable-next-line @typescript-eslint/naming-convention
+23 |         file_extensions: string[];
+24 |         // eslint-disable-next-line @typescript-eslint/naming-convention
+25 |         unique_features: string[];
+26 |     };
+27 |     // eslint-disable-next-line @typescript-eslint/naming-convention
+28 |     CRITICAL_SYNTAX_PATTERNS: Record<string, unknown>;
+29 |     // eslint-disable-next-line @typescript-eslint/naming-convention
+30 |     code_examples: Record<string, unknown>;
+31 |     // eslint-disable-next-line @typescript-eslint/naming-convention
+32 |     common_patterns: Record<string, unknown>;
+33 |     [key: string]: unknown;
+34 | }
+35 | 
+36 | /**
+37 |  * Model information from the API
+38 |  */
+39 | export interface ModelInfo {
+40 |     id: string;
+41 |     name: string;
+42 |     description: string;
+43 |     contextLength: number;
+44 |     pricing: {
+45 |         prompt: string;
+46 |         completion: string;
+47 |         request: string;
+48 |         image: string;
+49 |     };
+50 |     trust: string;
+51 | }
+52 | 
+53 | /**
+54 |  * Chat message structure
+55 |  */
+56 | export interface ChatMessage {
+57 |     role: 'user' | 'assistant' | 'system';
+58 |     content: string;
+59 |     timestamp?: Date;
+60 |     id?: string;
+61 | }
+62 | 
+63 | /**
+64 |  * Extension configuration structure
+65 |  */
+66 | export interface ExtensionConfig {
+67 |     apiKey: string;
+68 |     model: string;
+69 |     temperature: number;
+70 |     enableWebSearch: boolean;
+71 |     maxTokens: number;
+72 |     timeout: number;
+73 | }
+74 | 
+75 | /**
+76 |  * API response structure
+77 |  */
+78 | export interface ApiResponse {
+79 |     choices: Array<{
+80 |         message: {
+81 |             content: string;
+82 |         };
+83 |     }>;
+84 | }
+85 | 
+86 | /**
+87 |  * Web search result structure
+88 |  */
+89 | export interface WebSearchResult {
+90 |     title: string;
+91 |     snippet: string;
+92 |     link: string;
+93 | }
+94 | 
+95 | /**
+96 |  * Webview message structure
+97 |  */
+98 | export interface WebviewMessage {
+99 |     command: 'sendMessage' | 'clearChat' | 'selectModel' | 'statusUpdate' | 'aiResponse' | 'chatCleared' | 'aiStreamStart' | 'aiStreamChunk' | 'aiStreamComplete' | 'hydrateChatHistory' | 'modelSelectionError';
+100 |     text?: string;
+101 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+102 |     data?: any;
+103 |     history?: ChatMessage[];
+104 | }
+105 | 
+106 | /**
+107 |  * Chat session structure
+108 |  */
+109 | export interface ChatSession {
+110 |     id: string;
+111 |     messages: ChatMessage[];
+112 |     createdAt: Date;
+113 |     lastModified: Date;
+114 | }
+115 | 
+116 | /**
+117 |  * Log levels
+118 |  */
+119 | export enum LogLevel {
+120 |     error,
+121 |     warn,
+122 |     info,
+123 |     debug
+124 | }
+125 | 
+126 | /**
+127 |  * Logger structure
+128 |  */
+129 | export interface Logger {
+130 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+131 |     error(message: string, data?: any): void;
+132 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+133 |     warn(message: string, data?: any): void;
+134 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+135 |     info(message: string, data?: any): void;
+136 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+137 |     debug(message: string, data?: any): void;
+138 | } 
+```
+
 src/utils/logger.ts
 ```
 1 | import { LogLevel, Logger as ILogger } from '../types';
@@ -9698,252 +10702,471 @@ src/utils/logger.ts
 283 | export const logger = Logger.getInstance(); 
 ```
 
-src/types/dev.ts
+assets/webview/css/dev-dashboard.css
 ```
-1 | // Type definitions for Development Tools
-2 | export interface ProfileSession {
-3 |     name: string;
-4 |     startTime: number;
-5 |     endTime?: number;
-6 |     duration?: number;
-7 |     samples: ProfileSample[];
-8 |     isActive: boolean;
-9 | }
-10 | 
-11 | export interface ProfileSample {
-12 |     timestamp: number;
-13 |     memoryUsage: NodeJS.MemoryUsage;
-14 |     cpuUsage: NodeJS.CpuUsage;
-15 | }
-16 | 
-17 | export interface ProfileResult {
-18 |     sessionName: string;
-19 |     duration: number;
-20 |     samples: ProfileSample[];
-21 |     averageMemory: number;
-22 |     memoryTrend: 'increasing' | 'decreasing' | 'stable';
-23 |     cpuUsage: number;
-24 | }
-25 | 
-26 | export interface MemoryAnalysis {
-27 |     timestamp: number;
-28 |     heapUsed: number;
-29 |     heapTotal: number;
-30 |     external: number;
-31 |     rss: number;
-32 |     arrayBuffers: number;
-33 |     cpuUsage: {
-34 |         user: number;
-35 |         system: number;
-36 |     };
-37 |     analysis: string[];
-38 | }
-39 | 
-40 | export interface DevelopmentMetrics {
-41 |     timestamp: number;
-42 |     debug: {
-43 |         isEnabled: boolean;
-44 |         activeSessions: number;
-45 |         recentErrors: number;
-46 |         performanceIssues: number;
-47 |     };
-48 |     memory: MemoryAnalysis;
-49 |     performance: {
-50 |         averageResponseTime: number;
-51 |         memoryLeaks: boolean;
-52 |         slowOperations: Array<{
-53 |             operation: string;
-54 |             averageDuration: number;
-55 |             callCount: number;
-56 |         }>;
-57 |     };
-58 |     code: CodeMetrics;
-59 |     recommendations: Recommendation[];
-60 | }
-61 | 
-62 | export interface Recommendation {
-63 |     category: string;
-64 |     priority: 'error' | 'warning' | 'info';
-65 |     description: string;
-66 | }
-67 | 
-68 | export interface CodeAnalysisResult {
-69 |     totalFiles: number;
-70 |     totalLines: number;
-71 |     totalFunctions: number;
-72 |     totalClasses: number;
-73 |     averageLinesPerFile: number;
-74 |     complexity: 'Low' | 'Medium' | 'High';
-75 | }
-76 | 
-77 | export interface CodeQualityReport {
-78 |     timestamp: number;
-79 |     filesAnalyzed: number;
-80 |     totalIssues: number;
-81 |     issuesBySeverity: {
-82 |         error: number;
-83 |         warning: number;
-84 |         info: number;
-85 |     };
-86 |     issues: CodeQualityIssue[];
-87 | }
-88 | 
-89 | export interface CodeQualityIssue {
-90 |     file: string;
-91 |     line: number;
-92 |     column: number;
-93 |     severity: 'error' | 'warning' | 'info';
-94 |     message: string;
-95 |     rule: string;
-96 | }
-97 | 
-98 | export interface CodeMetrics {
-99 |     maintainabilityIndex: number;
-100 |     codeComplexity: string;
-101 |     testCoverage: number;
-102 | } 
-```
-
-src/types/index.ts
-```
-1 | /**
-2 |  * Type definitions for the Flex Chatbot extension
-3 |  */
-4 | 
-5 | // eslint-disable-next-line @typescript-eslint/naming-convention
-6 | export interface FlexSpecification {
-7 |     // eslint-disable-next-line @typescript-eslint/naming-convention
-8 |     ai_system_prompt: {
-9 |         role: string;
-10 |         version: string;
-11 |         description: string;
-12 |         // eslint-disable-next-line @typescript-eslint/naming-convention
-13 |         CRITICAL_INSTRUCTIONS: Record<string, string>;
-14 |         [key: string]: unknown;
-15 |     };
-16 |     // eslint-disable-next-line @typescript-eslint/naming-convention
-17 |     ESSENTIAL_FLEX_KNOWLEDGE: {
-18 |         // eslint-disable-next-line @typescript-eslint/naming-convention
-19 |         language_identity: string;
-20 |         // eslint-disable-next-line @typescript-eslint/naming-convention
-21 |         core_philosophy: string;
-22 |         // eslint-disable-next-line @typescript-eslint/naming-convention
-23 |         file_extensions: string[];
-24 |         // eslint-disable-next-line @typescript-eslint/naming-convention
-25 |         unique_features: string[];
-26 |     };
-27 |     // eslint-disable-next-line @typescript-eslint/naming-convention
-28 |     CRITICAL_SYNTAX_PATTERNS: Record<string, unknown>;
-29 |     // eslint-disable-next-line @typescript-eslint/naming-convention
-30 |     code_examples: Record<string, unknown>;
-31 |     // eslint-disable-next-line @typescript-eslint/naming-convention
-32 |     common_patterns: Record<string, unknown>;
-33 |     [key: string]: unknown;
-34 | }
-35 | 
-36 | /**
-37 |  * Model information from the API
-38 |  */
-39 | export interface ModelInfo {
-40 |     id: string;
-41 |     name: string;
-42 |     description: string;
-43 |     contextLength: number;
-44 |     pricing: {
-45 |         prompt: string;
-46 |         completion: string;
-47 |         request: string;
-48 |         image: string;
-49 |     };
-50 |     trust: string;
-51 | }
-52 | 
-53 | /**
-54 |  * Chat message structure
-55 |  */
-56 | export interface ChatMessage {
-57 |     role: 'user' | 'assistant' | 'system';
-58 |     content: string;
-59 |     timestamp?: Date;
-60 |     id?: string;
-61 | }
-62 | 
-63 | /**
-64 |  * Extension configuration structure
-65 |  */
-66 | export interface ExtensionConfig {
-67 |     apiKey: string;
-68 |     model: string;
-69 |     temperature: number;
-70 |     enableWebSearch: boolean;
-71 |     maxTokens: number;
-72 |     timeout: number;
-73 | }
-74 | 
-75 | /**
-76 |  * API response structure
-77 |  */
-78 | export interface ApiResponse {
-79 |     choices: Array<{
-80 |         message: {
-81 |             content: string;
-82 |         };
-83 |     }>;
-84 | }
-85 | 
-86 | /**
-87 |  * Web search result structure
-88 |  */
-89 | export interface WebSearchResult {
-90 |     title: string;
-91 |     snippet: string;
-92 |     link: string;
-93 | }
-94 | 
-95 | /**
-96 |  * Webview message structure
-97 |  */
-98 | export interface WebviewMessage {
-99 |     command: 'sendMessage' | 'clearChat' | 'selectModel' | 'statusUpdate' | 'aiResponse' | 'chatCleared' | 'aiStreamStart' | 'aiStreamChunk' | 'aiStreamComplete' | 'hydrateChatHistory' | 'modelSelectionError';
-100 |     text?: string;
-101 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-102 |     data?: any;
-103 |     history?: ChatMessage[];
+1 | /* Modern CSS Reset and Variables */
+2 | *,
+3 | *::before,
+4 | *::after {
+5 |     box-sizing: border-box;
+6 |     margin: 0;
+7 |     padding: 0;
+8 | }
+9 | 
+10 | :root {
+11 |     --bg-primary: #1e1e1e;
+12 |     --bg-secondary: #2d2d30;
+13 |     --bg-tertiary: #3c3c3c;
+14 |     --bg-card: #252526;
+15 |     --text-primary: #ffffff;
+16 |     --text-secondary: #cccccc;
+17 |     --text-muted: #999999;
+18 |     --accent-dev: #00d4aa;
+19 |     --accent-test: #4fc3f7;
+20 |     --accent-debug: #ff9800;
+21 |     --accent-export: #9c27b0;
+22 |     --success: #4caf50;
+23 |     --warning: #ff9800;
+24 |     --error: #f44336;
+25 |     --border: #484848;
+26 |     --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+27 |     --radius: 12px;
+28 |     --space-xs: 0.25rem;
+29 |     --space-sm: 0.5rem;
+30 |     --space-md: 1rem;
+31 |     --space-lg: 1.5rem;
+32 |     --space-xl: 2rem;
+33 |     --space-2xl: 3rem;
+34 |     --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui,
+35 |         sans-serif;
+36 |     --font-mono: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+37 | }
+38 | 
+39 | /* Base Styles */
+40 | body {
+41 |     font-family: var(--font-sans);
+42 |     background: var(--bg-primary);
+43 |     color: var(--text-primary);
+44 |     line-height: 1.6;
+45 |     min-height: 100vh;
+46 |     padding: var(--space-md);
+47 |     font-size: 14px;
+48 |     overflow-x: hidden;
+49 | }
+50 | 
+51 | .container {
+52 |     max-width: 1400px;
+53 |     margin: 0 auto;
+54 | }
+55 | 
+56 | /* Typography */
+57 | h1 {
+58 |     font-size: clamp(1.8rem, 5vw, 3rem);
+59 |     font-weight: 800;
+60 |     margin-bottom: var(--space-xl);
+61 |     background: linear-gradient(135deg, var(--accent-dev), var(--accent-test));
+62 |     -webkit-background-clip: text;
+63 |     -webkit-text-fill-color: transparent;
+64 |     background-clip: text;
+65 |     display: flex;
+66 |     align-items: center;
+67 |     gap: var(--space-md);
+68 | }
+69 | 
+70 | h2 {
+71 |     font-size: clamp(1.2rem, 3vw, 1.8rem);
+72 |     font-weight: 600;
+73 |     margin-bottom: var(--space-lg);
+74 |     color: var(--text-primary);
+75 |     position: relative;
+76 |     padding-left: var(--space-md);
+77 | }
+78 | 
+79 | h2::before {
+80 |     content: '';
+81 |     position: absolute;
+82 |     left: 0;
+83 |     top: 50%;
+84 |     transform: translateY(-50%);
+85 |     width: 4px;
+86 |     height: 24px;
+87 |     background: linear-gradient(to bottom, var(--accent-dev), var(--accent-test));
+88 |     border-radius: 2px;
+89 | }
+90 | 
+91 | /* Layout Grid */
+92 | .dashboard-grid {
+93 |     display: grid;
+94 |     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+95 |     gap: var(--space-xl);
+96 |     margin-bottom: var(--space-2xl);
+97 | }
+98 | 
+99 | @media (max-width: 768px) {
+100 |     .dashboard-grid {
+101 |         grid-template-columns: 1fr;
+102 |         gap: var(--space-lg);
+103 |     }
 104 | }
 105 | 
-106 | /**
-107 |  * Chat session structure
-108 |  */
-109 | export interface ChatSession {
-110 |     id: string;
-111 |     messages: ChatMessage[];
-112 |     createdAt: Date;
-113 |     lastModified: Date;
-114 | }
-115 | 
-116 | /**
-117 |  * Log levels
-118 |  */
-119 | export enum LogLevel {
-120 |     error,
-121 |     warn,
-122 |     info,
-123 |     debug
-124 | }
-125 | 
-126 | /**
-127 |  * Logger structure
-128 |  */
-129 | export interface Logger {
-130 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-131 |     error(message: string, data?: any): void;
-132 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-133 |     warn(message: string, data?: any): void;
-134 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-135 |     info(message: string, data?: any): void;
-136 |     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-137 |     debug(message: string, data?: any): void;
-138 | } 
+106 | /* Panels */
+107 | .panel {
+108 |     background: var(--bg-secondary);
+109 |     border: 1px solid var(--border);
+110 |     border-radius: var(--radius);
+111 |     padding: var(--space-xl);
+112 |     box-shadow: var(--shadow);
+113 |     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+114 |     position: relative;
+115 |     overflow: hidden;
+116 | }
+117 | 
+118 | .panel::before {
+119 |     content: '';
+120 |     position: absolute;
+121 |     top: 0;
+122 |     left: 0;
+123 |     right: 0;
+124 |     height: 3px;
+125 |     background: linear-gradient(90deg,
+126 |             var(--accent-dev),
+127 |             var(--accent-test),
+128 |             var(--accent-debug),
+129 |             var(--accent-export));
+130 | }
+131 | 
+132 | .panel:hover {
+133 |     transform: translateY(-4px);
+134 |     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+135 |     border-color: var(--accent-dev);
+136 | }
+137 | 
+138 | /* Metrics Grid */
+139 | .metrics-grid {
+140 |     display: grid;
+141 |     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+142 |     gap: var(--space-lg);
+143 |     margin-bottom: var(--space-xl);
+144 | }
+145 | 
+146 | @media (max-width: 480px) {
+147 |     .metrics-grid {
+148 |         grid-template-columns: repeat(2, 1fr);
+149 |         gap: var(--space-md);
+150 |     }
+151 | }
+152 | 
+153 | .metric {
+154 |     background: var(--bg-card);
+155 |     border: 1px solid var(--border);
+156 |     border-radius: var(--radius);
+157 |     padding: var(--space-lg);
+158 |     text-align: center;
+159 |     position: relative;
+160 |     transition: all 0.3s ease;
+161 |     overflow: hidden;
+162 | }
+163 | 
+164 | .metric::before {
+165 |     content: '';
+166 |     position: absolute;
+167 |     top: 0;
+168 |     left: 0;
+169 |     right: 0;
+170 |     height: 2px;
+171 |     background: var(--accent-test);
+172 | }
+173 | 
+174 | .metric:nth-child(1)::before {
+175 |     background: var(--success);
+176 | }
+177 | 
+178 | .metric:nth-child(2)::before {
+179 |     background: var(--accent-test);
+180 | }
+181 | 
+182 | .metric:nth-child(3)::before {
+183 |     background: var(--warning);
+184 | }
+185 | 
+186 | .metric:nth-child(4)::before {
+187 |     background: var(--error);
+188 | }
+189 | 
+190 | .metric:hover {
+191 |     transform: scale(1.05);
+192 |     border-color: var(--accent-test);
+193 |     box-shadow: 0 4px 12px rgba(79, 195, 247, 0.3);
+194 | }
+195 | 
+196 | .metric-value {
+197 |     font-size: clamp(1.5rem, 4vw, 2.5rem);
+198 |     font-weight: 700;
+199 |     color: var(--text-primary);
+200 |     margin-bottom: var(--space-sm);
+201 |     font-family: var(--font-mono);
+202 | }
+203 | 
+204 | .metric-label {
+205 |     font-size: 0.875rem;
+206 |     color: var(--text-muted);
+207 |     text-transform: uppercase;
+208 |     letter-spacing: 0.1em;
+209 |     font-weight: 500;
+210 | }
+211 | 
+212 | /* Action Buttons */
+213 | .actions-grid {
+214 |     display: grid;
+215 |     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+216 |     gap: var(--space-lg);
+217 | }
+218 | 
+219 | @media (max-width: 480px) {
+220 |     .actions-grid {
+221 |         grid-template-columns: 1fr;
+222 |     }
+223 | }
+224 | 
+225 | .action-button {
+226 |     background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-card));
+227 |     border: 1px solid var(--border);
+228 |     color: var(--text-primary);
+229 |     padding: var(--space-lg) var(--space-xl);
+230 |     border-radius: var(--radius);
+231 |     cursor: pointer;
+232 |     font-size: 1rem;
+233 |     font-weight: 600;
+234 |     display: flex;
+235 |     align-items: center;
+236 |     justify-content: center;
+237 |     gap: var(--space-sm);
+238 |     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+239 |     position: relative;
+240 |     overflow: hidden;
+241 |     text-decoration: none;
+242 |     font-family: var(--font-sans);
+243 | }
+244 | 
+245 | .action-button::before {
+246 |     content: '';
+247 |     position: absolute;
+248 |     top: 0;
+249 |     left: -100%;
+250 |     width: 100%;
+251 |     height: 100%;
+252 |     background: linear-gradient(90deg,
+253 |             transparent,
+254 |             rgba(255, 255, 255, 0.1),
+255 |             transparent);
+256 |     transition: left 0.6s;
+257 | }
+258 | 
+259 | .action-button:hover::before {
+260 |     left: 100%;
+261 | }
+262 | 
+263 | .action-button:hover {
+264 |     transform: translateY(-2px);
+265 |     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+266 |     border-color: var(--accent-test);
+267 | }
+268 | 
+269 | .action-button:active {
+270 |     transform: translateY(0);
+271 | }
+272 | 
+273 | .action-button.test {
+274 |     border-left: 4px solid var(--accent-test);
+275 | }
+276 | 
+277 | .action-button.debug {
+278 |     border-left: 4px solid var(--accent-debug);
+279 | }
+280 | 
+281 | .action-button.export {
+282 |     border-left: 4px solid var(--accent-export);
+283 | }
+284 | 
+285 | .action-button.analyze {
+286 |     border-left: 4px solid var(--accent-dev);
+287 | }
+288 | 
+289 | /* Icons */
+290 | .icon {
+291 |     font-size: 1.2em;
+292 |     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+293 | }
+294 | 
+295 | /* Status Indicators */
+296 | .status-grid {
+297 |     display: grid;
+298 |     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+299 |     gap: var(--space-md);
+300 |     margin-top: var(--space-lg);
+301 | }
+302 | 
+303 | .status-item {
+304 |     display: flex;
+305 |     align-items: center;
+306 |     gap: var(--space-sm);
+307 |     padding: var(--space-sm);
+308 |     border-radius: var(--radius);
+309 |     background: var(--bg-card);
+310 |     border: 1px solid var(--border);
+311 |     font-size: 0.875rem;
+312 | }
+313 | 
+314 | .status-dot {
+315 |     width: 8px;
+316 |     height: 8px;
+317 |     border-radius: 50%;
+318 |     flex-shrink: 0;
+319 | }
+320 | 
+321 | .status-dot.online {
+322 |     background: var(--success);
+323 | }
+324 | 
+325 | .status-dot.warning {
+326 |     background: var(--warning);
+327 | }
+328 | 
+329 | .status-dot.error {
+330 |     background: var(--error);
+331 | }
+332 | 
+333 | /* Loading States */
+334 | .loading {
+335 |     opacity: 0.7;
+336 |     pointer-events: none;
+337 | }
+338 | 
+339 | .spinner {
+340 |     width: 20px;
+341 |     height: 20px;
+342 |     border: 2px solid var(--border);
+343 |     border-top: 2px solid var(--accent-test);
+344 |     border-radius: 50%;
+345 |     animation: spin 1s linear infinite;
+346 | }
+347 | 
+348 | @keyframes spin {
+349 |     0% {
+350 |         transform: rotate(0deg);
+351 |     }
+352 | 
+353 |     100% {
+354 |         transform: rotate(360deg);
+355 |     }
+356 | }
+357 | 
+358 | /* Responsive Design */
+359 | @media (max-width: 768px) {
+360 |     body {
+361 |         padding: var(--space-sm);
+362 |     }
+363 | 
+364 |     .panel {
+365 |         padding: var(--space-lg);
+366 |     }
+367 | 
+368 |     h1 {
+369 |         flex-direction: column;
+370 |         text-align: center;
+371 |     }
+372 | 
+373 |     .action-button {
+374 |         padding: var(--space-md) var(--space-lg);
+375 |     }
+376 | }
+377 | 
+378 | /* Accessibility */
+379 | @media (prefers-reduced-motion: reduce) {
+380 | 
+381 |     *,
+382 |     *::before,
+383 |     *::after {
+384 |         animation-duration: 0.01ms !important;
+385 |         animation-iteration-count: 1 !important;
+386 |         transition-duration: 0.01ms !important;
+387 |     }
+388 | }
+389 | 
+390 | @media (prefers-contrast: high) {
+391 |     :root {
+392 |         --border: #ffffff;
+393 |         --text-muted: #cccccc;
+394 |     }
+395 | }
+396 | 
+397 | /* Focus Styles */
+398 | :focus-visible {
+399 |     outline: 2px solid var(--accent-test);
+400 |     outline-offset: 2px;
+401 |     border-radius: var(--radius);
+402 | }
+403 | 
+404 | /* Toast Notifications */
+405 | .toast {
+406 |     position: fixed;
+407 |     top: var(--space-lg);
+408 |     right: var(--space-lg);
+409 |     background: var(--bg-secondary);
+410 |     border: 1px solid var(--border);
+411 |     border-radius: var(--radius);
+412 |     padding: var(--space-lg);
+413 |     box-shadow: var(--shadow);
+414 |     transform: translateX(100%);
+415 |     transition: transform 0.3s ease;
+416 |     z-index: 1000;
+417 | }
+418 | 
+419 | .toast.show {
+420 |     transform: translateX(0);
+421 | }
+422 | 
+423 | .toast.success {
+424 |     border-left: 4px solid var(--success);
+425 | }
+426 | 
+427 | .toast.error {
+428 |     border-left: 4px solid var(--error);
+429 | }
+```
+
+assets/webview/css/reset.css
+```
+1 | html {
+2 | 	box-sizing: border-box;
+3 | 	font-size: 13px;
+4 | }
+5 | 
+6 | *,
+7 | *:before,
+8 | *:after {
+9 | 	box-sizing: inherit;
+10 | }
+11 | 
+12 | body,
+13 | h1,
+14 | h2,
+15 | h3,
+16 | h4,
+17 | h5,
+18 | h6,
+19 | p,
+20 | ol,
+21 | ul {
+22 | 	margin: 0;
+23 | 	padding: 0;
+24 | 	font-weight: normal;
+25 | }
+26 | 
+27 | img {
+28 | 	max-width: 100%;
+29 | 	height: auto;
+30 | }
 ```
 
 assets/webview/html/dev-dashboard.html
@@ -10477,473 +11700,6 @@ assets/webview/js/chat.js
 212 | })();
 ```
 
-assets/webview/css/dev-dashboard.css
-```
-1 | /* Modern CSS Reset and Variables */
-2 | *,
-3 | *::before,
-4 | *::after {
-5 |     box-sizing: border-box;
-6 |     margin: 0;
-7 |     padding: 0;
-8 | }
-9 | 
-10 | :root {
-11 |     --bg-primary: #1e1e1e;
-12 |     --bg-secondary: #2d2d30;
-13 |     --bg-tertiary: #3c3c3c;
-14 |     --bg-card: #252526;
-15 |     --text-primary: #ffffff;
-16 |     --text-secondary: #cccccc;
-17 |     --text-muted: #999999;
-18 |     --accent-dev: #00d4aa;
-19 |     --accent-test: #4fc3f7;
-20 |     --accent-debug: #ff9800;
-21 |     --accent-export: #9c27b0;
-22 |     --success: #4caf50;
-23 |     --warning: #ff9800;
-24 |     --error: #f44336;
-25 |     --border: #484848;
-26 |     --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-27 |     --radius: 12px;
-28 |     --space-xs: 0.25rem;
-29 |     --space-sm: 0.5rem;
-30 |     --space-md: 1rem;
-31 |     --space-lg: 1.5rem;
-32 |     --space-xl: 2rem;
-33 |     --space-2xl: 3rem;
-34 |     --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui,
-35 |         sans-serif;
-36 |     --font-mono: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
-37 | }
-38 | 
-39 | /* Base Styles */
-40 | body {
-41 |     font-family: var(--font-sans);
-42 |     background: var(--bg-primary);
-43 |     color: var(--text-primary);
-44 |     line-height: 1.6;
-45 |     min-height: 100vh;
-46 |     padding: var(--space-md);
-47 |     font-size: 14px;
-48 |     overflow-x: hidden;
-49 | }
-50 | 
-51 | .container {
-52 |     max-width: 1400px;
-53 |     margin: 0 auto;
-54 | }
-55 | 
-56 | /* Typography */
-57 | h1 {
-58 |     font-size: clamp(1.8rem, 5vw, 3rem);
-59 |     font-weight: 800;
-60 |     margin-bottom: var(--space-xl);
-61 |     background: linear-gradient(135deg, var(--accent-dev), var(--accent-test));
-62 |     -webkit-background-clip: text;
-63 |     -webkit-text-fill-color: transparent;
-64 |     background-clip: text;
-65 |     display: flex;
-66 |     align-items: center;
-67 |     gap: var(--space-md);
-68 | }
-69 | 
-70 | h2 {
-71 |     font-size: clamp(1.2rem, 3vw, 1.8rem);
-72 |     font-weight: 600;
-73 |     margin-bottom: var(--space-lg);
-74 |     color: var(--text-primary);
-75 |     position: relative;
-76 |     padding-left: var(--space-md);
-77 | }
-78 | 
-79 | h2::before {
-80 |     content: '';
-81 |     position: absolute;
-82 |     left: 0;
-83 |     top: 50%;
-84 |     transform: translateY(-50%);
-85 |     width: 4px;
-86 |     height: 24px;
-87 |     background: linear-gradient(to bottom, var(--accent-dev), var(--accent-test));
-88 |     border-radius: 2px;
-89 | }
-90 | 
-91 | /* Layout Grid */
-92 | .dashboard-grid {
-93 |     display: grid;
-94 |     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-95 |     gap: var(--space-xl);
-96 |     margin-bottom: var(--space-2xl);
-97 | }
-98 | 
-99 | @media (max-width: 768px) {
-100 |     .dashboard-grid {
-101 |         grid-template-columns: 1fr;
-102 |         gap: var(--space-lg);
-103 |     }
-104 | }
-105 | 
-106 | /* Panels */
-107 | .panel {
-108 |     background: var(--bg-secondary);
-109 |     border: 1px solid var(--border);
-110 |     border-radius: var(--radius);
-111 |     padding: var(--space-xl);
-112 |     box-shadow: var(--shadow);
-113 |     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-114 |     position: relative;
-115 |     overflow: hidden;
-116 | }
-117 | 
-118 | .panel::before {
-119 |     content: '';
-120 |     position: absolute;
-121 |     top: 0;
-122 |     left: 0;
-123 |     right: 0;
-124 |     height: 3px;
-125 |     background: linear-gradient(90deg,
-126 |             var(--accent-dev),
-127 |             var(--accent-test),
-128 |             var(--accent-debug),
-129 |             var(--accent-export));
-130 | }
-131 | 
-132 | .panel:hover {
-133 |     transform: translateY(-4px);
-134 |     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-135 |     border-color: var(--accent-dev);
-136 | }
-137 | 
-138 | /* Metrics Grid */
-139 | .metrics-grid {
-140 |     display: grid;
-141 |     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-142 |     gap: var(--space-lg);
-143 |     margin-bottom: var(--space-xl);
-144 | }
-145 | 
-146 | @media (max-width: 480px) {
-147 |     .metrics-grid {
-148 |         grid-template-columns: repeat(2, 1fr);
-149 |         gap: var(--space-md);
-150 |     }
-151 | }
-152 | 
-153 | .metric {
-154 |     background: var(--bg-card);
-155 |     border: 1px solid var(--border);
-156 |     border-radius: var(--radius);
-157 |     padding: var(--space-lg);
-158 |     text-align: center;
-159 |     position: relative;
-160 |     transition: all 0.3s ease;
-161 |     overflow: hidden;
-162 | }
-163 | 
-164 | .metric::before {
-165 |     content: '';
-166 |     position: absolute;
-167 |     top: 0;
-168 |     left: 0;
-169 |     right: 0;
-170 |     height: 2px;
-171 |     background: var(--accent-test);
-172 | }
-173 | 
-174 | .metric:nth-child(1)::before {
-175 |     background: var(--success);
-176 | }
-177 | 
-178 | .metric:nth-child(2)::before {
-179 |     background: var(--accent-test);
-180 | }
-181 | 
-182 | .metric:nth-child(3)::before {
-183 |     background: var(--warning);
-184 | }
-185 | 
-186 | .metric:nth-child(4)::before {
-187 |     background: var(--error);
-188 | }
-189 | 
-190 | .metric:hover {
-191 |     transform: scale(1.05);
-192 |     border-color: var(--accent-test);
-193 |     box-shadow: 0 4px 12px rgba(79, 195, 247, 0.3);
-194 | }
-195 | 
-196 | .metric-value {
-197 |     font-size: clamp(1.5rem, 4vw, 2.5rem);
-198 |     font-weight: 700;
-199 |     color: var(--text-primary);
-200 |     margin-bottom: var(--space-sm);
-201 |     font-family: var(--font-mono);
-202 | }
-203 | 
-204 | .metric-label {
-205 |     font-size: 0.875rem;
-206 |     color: var(--text-muted);
-207 |     text-transform: uppercase;
-208 |     letter-spacing: 0.1em;
-209 |     font-weight: 500;
-210 | }
-211 | 
-212 | /* Action Buttons */
-213 | .actions-grid {
-214 |     display: grid;
-215 |     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-216 |     gap: var(--space-lg);
-217 | }
-218 | 
-219 | @media (max-width: 480px) {
-220 |     .actions-grid {
-221 |         grid-template-columns: 1fr;
-222 |     }
-223 | }
-224 | 
-225 | .action-button {
-226 |     background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-card));
-227 |     border: 1px solid var(--border);
-228 |     color: var(--text-primary);
-229 |     padding: var(--space-lg) var(--space-xl);
-230 |     border-radius: var(--radius);
-231 |     cursor: pointer;
-232 |     font-size: 1rem;
-233 |     font-weight: 600;
-234 |     display: flex;
-235 |     align-items: center;
-236 |     justify-content: center;
-237 |     gap: var(--space-sm);
-238 |     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-239 |     position: relative;
-240 |     overflow: hidden;
-241 |     text-decoration: none;
-242 |     font-family: var(--font-sans);
-243 | }
-244 | 
-245 | .action-button::before {
-246 |     content: '';
-247 |     position: absolute;
-248 |     top: 0;
-249 |     left: -100%;
-250 |     width: 100%;
-251 |     height: 100%;
-252 |     background: linear-gradient(90deg,
-253 |             transparent,
-254 |             rgba(255, 255, 255, 0.1),
-255 |             transparent);
-256 |     transition: left 0.6s;
-257 | }
-258 | 
-259 | .action-button:hover::before {
-260 |     left: 100%;
-261 | }
-262 | 
-263 | .action-button:hover {
-264 |     transform: translateY(-2px);
-265 |     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-266 |     border-color: var(--accent-test);
-267 | }
-268 | 
-269 | .action-button:active {
-270 |     transform: translateY(0);
-271 | }
-272 | 
-273 | .action-button.test {
-274 |     border-left: 4px solid var(--accent-test);
-275 | }
-276 | 
-277 | .action-button.debug {
-278 |     border-left: 4px solid var(--accent-debug);
-279 | }
-280 | 
-281 | .action-button.export {
-282 |     border-left: 4px solid var(--accent-export);
-283 | }
-284 | 
-285 | .action-button.analyze {
-286 |     border-left: 4px solid var(--accent-dev);
-287 | }
-288 | 
-289 | /* Icons */
-290 | .icon {
-291 |     font-size: 1.2em;
-292 |     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-293 | }
-294 | 
-295 | /* Status Indicators */
-296 | .status-grid {
-297 |     display: grid;
-298 |     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-299 |     gap: var(--space-md);
-300 |     margin-top: var(--space-lg);
-301 | }
-302 | 
-303 | .status-item {
-304 |     display: flex;
-305 |     align-items: center;
-306 |     gap: var(--space-sm);
-307 |     padding: var(--space-sm);
-308 |     border-radius: var(--radius);
-309 |     background: var(--bg-card);
-310 |     border: 1px solid var(--border);
-311 |     font-size: 0.875rem;
-312 | }
-313 | 
-314 | .status-dot {
-315 |     width: 8px;
-316 |     height: 8px;
-317 |     border-radius: 50%;
-318 |     flex-shrink: 0;
-319 | }
-320 | 
-321 | .status-dot.online {
-322 |     background: var(--success);
-323 | }
-324 | 
-325 | .status-dot.warning {
-326 |     background: var(--warning);
-327 | }
-328 | 
-329 | .status-dot.error {
-330 |     background: var(--error);
-331 | }
-332 | 
-333 | /* Loading States */
-334 | .loading {
-335 |     opacity: 0.7;
-336 |     pointer-events: none;
-337 | }
-338 | 
-339 | .spinner {
-340 |     width: 20px;
-341 |     height: 20px;
-342 |     border: 2px solid var(--border);
-343 |     border-top: 2px solid var(--accent-test);
-344 |     border-radius: 50%;
-345 |     animation: spin 1s linear infinite;
-346 | }
-347 | 
-348 | @keyframes spin {
-349 |     0% {
-350 |         transform: rotate(0deg);
-351 |     }
-352 | 
-353 |     100% {
-354 |         transform: rotate(360deg);
-355 |     }
-356 | }
-357 | 
-358 | /* Responsive Design */
-359 | @media (max-width: 768px) {
-360 |     body {
-361 |         padding: var(--space-sm);
-362 |     }
-363 | 
-364 |     .panel {
-365 |         padding: var(--space-lg);
-366 |     }
-367 | 
-368 |     h1 {
-369 |         flex-direction: column;
-370 |         text-align: center;
-371 |     }
-372 | 
-373 |     .action-button {
-374 |         padding: var(--space-md) var(--space-lg);
-375 |     }
-376 | }
-377 | 
-378 | /* Accessibility */
-379 | @media (prefers-reduced-motion: reduce) {
-380 | 
-381 |     *,
-382 |     *::before,
-383 |     *::after {
-384 |         animation-duration: 0.01ms !important;
-385 |         animation-iteration-count: 1 !important;
-386 |         transition-duration: 0.01ms !important;
-387 |     }
-388 | }
-389 | 
-390 | @media (prefers-contrast: high) {
-391 |     :root {
-392 |         --border: #ffffff;
-393 |         --text-muted: #cccccc;
-394 |     }
-395 | }
-396 | 
-397 | /* Focus Styles */
-398 | :focus-visible {
-399 |     outline: 2px solid var(--accent-test);
-400 |     outline-offset: 2px;
-401 |     border-radius: var(--radius);
-402 | }
-403 | 
-404 | /* Toast Notifications */
-405 | .toast {
-406 |     position: fixed;
-407 |     top: var(--space-lg);
-408 |     right: var(--space-lg);
-409 |     background: var(--bg-secondary);
-410 |     border: 1px solid var(--border);
-411 |     border-radius: var(--radius);
-412 |     padding: var(--space-lg);
-413 |     box-shadow: var(--shadow);
-414 |     transform: translateX(100%);
-415 |     transition: transform 0.3s ease;
-416 |     z-index: 1000;
-417 | }
-418 | 
-419 | .toast.show {
-420 |     transform: translateX(0);
-421 | }
-422 | 
-423 | .toast.success {
-424 |     border-left: 4px solid var(--success);
-425 | }
-426 | 
-427 | .toast.error {
-428 |     border-left: 4px solid var(--error);
-429 | }
-```
-
-assets/webview/css/reset.css
-```
-1 | html {
-2 | 	box-sizing: border-box;
-3 | 	font-size: 13px;
-4 | }
-5 | 
-6 | *,
-7 | *:before,
-8 | *:after {
-9 | 	box-sizing: inherit;
-10 | }
-11 | 
-12 | body,
-13 | h1,
-14 | h2,
-15 | h3,
-16 | h4,
-17 | h5,
-18 | h6,
-19 | p,
-20 | ol,
-21 | ul {
-22 | 	margin: 0;
-23 | 	padding: 0;
-24 | 	font-weight: normal;
-25 | }
-26 | 
-27 | img {
-28 | 	max-width: 100%;
-29 | 	height: auto;
-30 | }
-```
-
 src/test/suite/extension.test.ts
 ```
 1 | import * as assert from 'assert';
@@ -11159,542 +11915,6 @@ src/test/suite/services.test.ts
 119 |         });
 120 |     });
 121 | }); 
-```
-
-assets/webview/js/syntax/highlighter.js
-```
-1 | /**
-2 |  * Handles all syntax highlighting and formatting for Flex code.
-3 |  * Enhanced for repository-aligned v3.0 with Franco/English keyword mappings.
-4 |  */
-5 | class SyntaxHighlighter {
-6 |     constructor() {
-7 |         // Enhanced syntax based on the latest Flex-Language/Flex repository v3.0
-8 |         this.flexSyntax = {
-9 |             // Core Franco keywords (repository-aligned)
-10 |             francoKeywords: {
-11 |                 control: ['lw', 'kida', 'gher', 'wla', 'aw', 'bass', 'iza'],
-12 |                 loops: ['karr', 'l7d', 'tl', 'tlma', 'tlama'],
-13 |                 functions: ['sndo2', 'sndog', 'arja3', 'yerja3', 'estd3i'],
-14 |                 variables: ['mtaghayar', 'thabit', 'mwaqat'],
-15 |                 io: ['etb3', 'da5al', 'da5l', 'awsal', 'era'],
-16 |                 types: ['rakm', 'kasr', 'klma', 'so2al', 'ghalat', 'dorg'],
-17 |                 operators: ['w', 'aw', 'mish', 'yesawi', 'akbar', 'asghar', 'zawad']
-18 |             },
-19 |             // English equivalents
-20 |             englishKeywords: {
-21 |                 control: ['if', 'condition', 'else', 'elif', 'or', 'only', 'when'],
-22 |                 loops: ['for', 'while', 'repeat', 'until', 'continue'],
-23 |                 functions: ['function', 'def', 'return', 'returns', 'call'],
-24 |                 variables: ['var', 'const', 'temp'],
-25 |                 io: ['print', 'input', 'output', 'send', 'read'],
-26 |                 types: ['int', 'float', 'string', 'bool', 'error', 'list'],
-27 |                 operators: ['and', 'or', 'not', 'equals', 'greater', 'less', 'plus']
-28 |             },
-29 |             // Common patterns and safety keywords
-30 |             safetyKeywords: ['safe', 'check', 'validate', 'verify', 'secure', 'aman', 'ta2akkad'],
-31 |             literals: ['true', 'false', 'sa7', 'khata', 'tamam', 'null', 'void', 'fadi'],
-32 |             operators: ['\\+', '\\-', '\\*', '\\/', '%', '=', '==', '!=', '<=', '>=', '<', '>', '&&', '\\|\\|', '!', '\\+=', '\\-=', '\\*=', '\\/=', '%=', '\\+\\+', '\\-\\-', '\\?', ':', ';', ',', '\\.', '\\[', '\\]', '\\{', '\\}', '\\(', '\\)'],
-33 |             // Repository-aligned patterns
-34 |             builtinFunctions: ['sqrt', 'pow', 'max', 'min', 'len', 'size', 'join', 'split']
-35 |         };
-36 |         
-37 |         // Language detection patterns
-38 |         this.languagePatterns = {
-39 |             franco: /\b(lw|karr|sndo2|etb3|rakm|klma|gher|tlma)\b/g,
-40 |             english: /\b(if|for|function|print|int|string|else|while)\b/g
-41 |         };
-42 |     }
-43 | 
-44 |     /**
-45 |      * Detect the primary language of a code snippet
-46 |      */
-47 |     detectLanguage(code) {
-48 |         const francoMatches = (code.match(this.languagePatterns.franco) || []).length;
-49 |         const englishMatches = (code.match(this.languagePatterns.english) || []).length;
-50 |         
-51 |         if (francoMatches > englishMatches) return 'franco';
-52 |         if (englishMatches > francoMatches) return 'english';
-53 |         return 'mixed';
-54 |     }
-55 | 
-56 |     /**
-57 |      * Add language indicator to code blocks
-58 |      */
-59 |     addLanguageIndicator(code, detectedLang) {
-60 |         const indicators = {
-61 |             franco: '<span class="flex-language-indicator flex-franco">Franco</span>',
-62 |             english: '<span class="flex-language-indicator flex-english">English</span>',
-63 |             mixed: '<span class="flex-language-indicator flex-mixed">Mixed</span>'
-64 |         };
-65 |         return indicators[detectedLang] || indicators.mixed;
-66 |     }
-67 | 
-68 |     escapeHtml(text) {
-69 |         const map = {
-70 |             '&': '&amp;',
-71 |             '<': '&lt;',
-72 |             '>': '&gt;',
-73 |             '"': '&quot;',
-74 |             "'": '&#039;'
-75 |         };
-76 |         return text.replace(/[&<>"']/g, m => map[m]);
-77 |     }
-78 | 
-79 |     /**
-80 |      * Validate if text contains proper Flex code blocks without corruption
-81 |      */
-82 |     isFlexCode(text) {
-83 |         // Check for HTML entities in code blocks
-84 |         const codeBlockRegex = /```flex\n([\s\S]*?)\n```/g;
-85 |         const codeBlocks = [...text.matchAll(codeBlockRegex)];
-86 |         
-87 |         for (const block of codeBlocks) {
-88 |             const code = block[1];
-89 |             if (!code) continue;
-90 |             
-91 |             // Check for HTML entities - these should not be present in clean Flex code
-92 |             if (/&(quot|lt|gt|amp|#039);/.test(code)) {
-93 |                 console.warn('Found HTML entities in Flex code block - will clean');
-94 |                 return false;
-95 |             }
-96 |             
-97 |             // Check for malformed HTML tags - these should not be in Flex code
-98 |             if (/<span[^>]*(?!>)|<\/span(?!>)|<[^>]+class=/.test(code)) {
-99 |                 console.warn('Found HTML markup in Flex code block - will clean');
-100 |                 return false;
-101 |             }
-102 |         }
-103 |         
-104 |         return true;
-105 |     }
-106 | 
-107 |     /**
-108 |      * Clean code of HTML entities and markup
-109 |      */
-110 |     cleanFlexCode(code) {
-111 |         return code
-112 |             .replace(/&quot;/g, '"')
-113 |             .replace(/&lt;/g, '<')
-114 |             .replace(/&gt;/g, '>')
-115 |             .replace(/&amp;/g, '&')
-116 |             .replace(/&#039;/g, "'")
-117 |             .replace(/<span[^>]*>/g, '')
-118 |             .replace(/<\/span>/g, '')
-119 |             .trim();
-120 |     }
-121 | 
-122 |     highlightFlexSyntax(code) {
-123 |         // Clean the code first to remove any HTML entities or markup
-124 |         let highlightedCode = this.cleanFlexCode(code);
-125 |         
-126 |         // Detect the primary language
-127 |         const detectedLang = this.detectLanguage(code);
-128 | 
-129 |         const highlightingRules = [
-130 |             // Comments
-131 |             { class: 'flex-comment', regex: /(#|\/\/).*?$/gm },
-132 |             
-133 |             // Strings
-134 |             { class: 'flex-string', regex: /(".*?"|'.*?')/g },
-135 |             
-136 |             // Franco keywords
-137 |             { class: 'flex-franco-keyword', regex: new RegExp(`\\b(${Object.values(this.flexSyntax.francoKeywords).flat().join('|')})\\b`, 'g') },
-138 |             
-139 |             // English keywords
-140 |             { class: 'flex-english-keyword', regex: new RegExp(`\\b(${Object.values(this.flexSyntax.englishKeywords).flat().join('|')})\\b`, 'g') },
-141 |             
-142 |             // Safety keywords
-143 |             { class: 'flex-safety-keyword', regex: new RegExp(`\\b(${this.flexSyntax.safetyKeywords.join('|')})\\b`, 'g') },
-144 |             
-145 |             // Built-in functions
-146 |             { class: 'flex-builtin', regex: new RegExp(`\\b(${this.flexSyntax.builtinFunctions.join('|')})\\b`, 'g') },
-147 |             
-148 |             // Literals
-149 |             { class: 'flex-literal', regex: new RegExp(`\\b(${this.flexSyntax.literals.join('|')})\\b`, 'g') },
-150 |             
-151 |             // Numbers
-152 |             { class: 'flex-number', regex: /\b\d+(\.\d+)?\b/g },
-153 |             
-154 |             // Operators
-155 |             { class: 'flex-operator', regex: new RegExp(`(${this.flexSyntax.operators.join('|')})`, 'g') },
-156 |         ];
-157 | 
-158 |         // Apply highlighting by inserting span tags as HTML elements
-159 |         highlightingRules.forEach(rule => {
-160 |             highlightedCode = highlightedCode.replace(rule.regex, (match) => {
-161 |                 // Escape only the matched content, not the span tags
-162 |                 const escapedMatch = this.escapeHtml(match);
-163 |                 return `<span class="${rule.class}">${escapedMatch}</span>`;
-164 |             });
-165 |         });
-166 | 
-167 |         return highlightedCode;
-168 |     }
-169 | 
-170 |     formatText(text) {
-171 |         const flexSnippets = [];
-172 |         
-173 |         // Process Flex code blocks first, ensuring clean code
-174 |         const processedText = text.replace(/```flex\n([\s\S]*?)\n```/g, (match, code) => {
-175 |             const snippetId = `flex-snippet-${flexSnippets.length}`;
-176 |             // Clean the code before highlighting
-177 |             const cleanCode = this.cleanFlexCode(code);
-178 |             const detectedLang = this.detectLanguage(cleanCode);
-179 |             const highlighted = this.highlightFlexSyntax(cleanCode);
-180 |             
-181 |             flexSnippets.push({
-182 |                 id: snippetId,
-183 |                 code: cleanCode, // Store clean code for copying
-184 |                 highlighted: `<pre><code class="language-flex">${highlighted}</code></pre>`,
-185 |                 lineCount: cleanCode.split('\n').length,
-186 |                 size: new Blob([cleanCode]).size,
-187 |                 confidence: 'High',
-188 |                 language: detectedLang,
-189 |                 languageIndicator: this.addLanguageIndicator(cleanCode, detectedLang)
-190 |             });
-191 |             return `%%FLEX_SNIPPET_${snippetId}%%`;
-192 |         });
-193 | 
-194 |         // Now escape HTML for the remaining content (excluding placeholders)
-195 |         let formatted = this.escapeHtml(processedText);
-196 | 
-197 |         // Process generic code blocks
-198 |         formatted = formatted.replace(/```(\w*)\n([\s\S]*?)\n```/g, (match, lang, code) => {
-199 |             return `<div class="code-block"><pre><code class="language-${lang}">${this.escapeHtml(code)}</code></pre></div>`;
-200 |         });
-201 | 
-202 |         // Basic markdown formatting
-203 |         formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-204 |             .replace(/\*(.*?)\*/g, '<em>$1</em>')
-205 |             .replace(/^-\s(.*)/gm, '<ul><li>$1</li></ul>')
-206 |             .replace(/<\/ul>\n<ul>/g, '');
-207 | 
-208 |         // Replace Flex snippet placeholders with visual indicators
-209 |         formatted = this.replacePlaceholdersWithIndicators(formatted);
-210 | 
-211 |         return { formatted, flexSnippets };
-212 |     }
-213 | 
-214 |     replacePlaceholdersWithIndicators(text) {
-215 |         return text.replace(/%%FLEX_SNIPPET_(flex-snippet-\d+)%%/g, (match, snippetId) => {
-216 |             return `<div class="flex-snippet-placeholder" data-snippet-id="${snippetId}">📄 Flex Code Snippet (${snippetId})</div>`;
-217 |         });
-218 |     }
-219 | 
-220 |     createFlexCodeSnippet(snippet, domManager) {
-221 |         const snippetContainer = document.createElement('div');
-222 |         snippetContainer.className = 'flex-code-snippet';
-223 |         snippetContainer.id = snippet.id;
-224 | 
-225 |         const header = document.createElement('div');
-226 |         header.className = 'flex-snippet-header';
-227 |         header.innerHTML = `
-228 |             <div class="flex-snippet-metadata">
-229 |                 <span class="flex-snippet-language"><span class="flex-icon">⚡</span> Flex Code ${snippet.languageIndicator || ''}</span>
-230 |                 <span class="flex-snippet-stats">${snippet.lineCount} lines • ${(snippet.size / 1024).toFixed(1)}KB • ${snippet.confidence}</span>
-231 |             </div>
-232 |             <div class="flex-snippet-controls">
-233 |                 <button class="flex-copy-button" title="Copy Flex code"><span class="copy-icon">📋</span></button>
-234 |                 <button class="flex-expand-button" title="Toggle fullscreen"><span class="expand-icon">⤢</span></button>
-235 |             </div>
-236 |         `;
-237 | 
-238 |         const codeContainer = document.createElement('div');
-239 |         codeContainer.className = 'flex-snippet-code-container';
-240 |         const lineNumbers = document.createElement('div');
-241 |         lineNumbers.className = 'flex-snippet-line-numbers';
-242 |         const codeContent = document.createElement('div');
-243 |         codeContent.className = 'flex-snippet-code-content';
-244 | 
-245 |         const lines = snippet.code.split('\n');
-246 |         let lineNumbersHtml = '';
-247 |         for (let i = 0; i < lines.length + 2; i++) {
-248 |             lineNumbersHtml += `<span class="line-number">${i + 1}</span>`;
-249 |         }
-250 |         lineNumbers.innerHTML = lineNumbersHtml;
-251 |         
-252 |         // Ensure clean code display without HTML entities
-253 |         const cleanHighlightedCode = this.highlightFlexSyntax(snippet.code);
-254 |         codeContent.innerHTML = cleanHighlightedCode;
-255 | 
-256 |         codeContainer.appendChild(lineNumbers);
-257 |         codeContainer.appendChild(codeContent);
-258 | 
-259 |         const footer = document.createElement('div');
-260 |         footer.className = 'flex-snippet-footer';
-261 |         footer.innerHTML = `<span class="flex-hint">💡 This code can be saved as a <code>.lx</code>, <code>.fx</code>, or <code>.flex</code> file</span>`;
-262 | 
-263 |         snippetContainer.appendChild(header);
-264 |         snippetContainer.appendChild(codeContainer);
-265 |         snippetContainer.appendChild(footer);
-266 | 
-267 |         header.querySelector('.flex-copy-button').addEventListener('click', () => this.copyCode(snippet.code, header.querySelector('.flex-copy-button')));
-268 |         header.querySelector('.flex-expand-button').addEventListener('click', (e) => {
-269 |             e.stopPropagation();
-270 |             domManager.toggleFlexSnippetExpanded(snippetContainer);
-271 |         });
-272 | 
-273 |         return snippetContainer;
-274 |     }
-275 | 
-276 |     async copyCode(code, buttonElement) {
-277 |         try {
-278 |             // Ensure we copy clean, executable Flex code without HTML entities
-279 |             const cleanCode = this.cleanFlexCode(code);
-280 |             
-281 |             await navigator.clipboard.writeText(cleanCode);
-282 |             const originalText = buttonElement.innerHTML;
-283 |             buttonElement.innerHTML = '<span class="copy-icon">✅</span>';
-284 |             buttonElement.style.background = '#10b981';
-285 |             setTimeout(() => {
-286 |                 buttonElement.innerHTML = originalText;
-287 |                 buttonElement.style.background = '';
-288 |             }, 1500);
-289 |         } catch (err) {
-290 |             console.error('Failed to copy code: ', err);
-291 |             const originalText = buttonElement.innerHTML;
-292 |             buttonElement.innerHTML = '<span class="copy-icon">❌</span>';
-293 |             buttonElement.style.background = '#ef4444';
-294 |             setTimeout(() => {
-295 |                 buttonElement.innerHTML = originalText;
-296 |                 buttonElement.style.background = '';
-297 |             }, 2000);
-298 |         }
-299 |     }
-300 | }
-```
-
-assets/webview/js/ui/domManager.js
-```
-1 | /**
-2 |  * Manages all direct DOM manipulation for the chat interface.
-3 |  */
-4 | class DOMManager {
-5 |     constructor(chatBox, welcomeMessage, syntaxHighlighter) {
-6 |         this.chatBox = chatBox;
-7 |         this.welcomeMessage = welcomeMessage;
-8 |         this.syntaxHighlighter = syntaxHighlighter;
-9 |         this.streamingMessage = null;
-10 |         this.streamingContent = '';
-11 |         this.chunkCount = 0;
-12 |         this.streamingStartTime = 0;
-13 |         this.streamingDebugLog = [];
-14 |         this.streamingHealthCheck = null;
-15 |     }
-16 | 
-17 |     createMessageContainer(sender, isStatus) {
-18 |         const messageDiv = document.createElement('div');
-19 |         if (isStatus) {
-20 |             messageDiv.className = 'status-message status-pulse';
-21 |         } else {
-22 |             messageDiv.className = `message ${sender}-message message-animation`;
-23 |         }
-24 |         return messageDiv;
-25 |     }
-26 | 
-27 |     createMessageLabel(sender) {
-28 |         const label = document.createElement('div');
-29 |         label.className = `${sender}-label`;
-30 |         label.innerHTML = sender === 'user' ?
-31 |             '<span class="user-icon">👤</span> You' :
-32 |             '<span class="ai-icon">⚡</span> Flex Assistant';
-33 |         return label;
-34 |     }
-35 | 
-36 |     createMessageContent(html) {
-37 |         const contentDiv = document.createElement('div');
-38 |         contentDiv.className = 'message-content';
-39 |         // Verify that innerHTML assignment works correctly with updated SyntaxHighlighter output
-40 |         contentDiv.innerHTML = html;
-41 |         return contentDiv;
-42 |     }
-43 | 
-44 |     animateMessageIn(element) {
-45 |         element.style.opacity = '0';
-46 |         element.style.transform = 'translateY(16px) scale(0.98)';
-47 |         requestAnimationFrame(() => {
-48 |             element.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-49 |             element.style.opacity = '1';
-50 |             element.style.transform = 'translateY(0) scale(1)';
-51 |         });
-52 |     }
-53 | 
-54 |     scrollChatToBottom() {
-55 |         this.chatBox.scrollTo({
-56 |             top: this.chatBox.scrollHeight,
-57 |             behavior: 'smooth'
-58 |         });
-59 |     }
-60 | 
-61 |     addMessage(content, sender, isStatus = false) {
-62 |         if (this.welcomeMessage && !isStatus) {
-63 |             this.welcomeMessage.style.display = 'none';
-64 |         }
-65 | 
-66 |         const { formatted, flexSnippets } = this.syntaxHighlighter.formatText(content);
-67 | 
-68 |         // Only create the main message bubble if there's text content.
-69 |         if (formatted.trim().length > 0 || isStatus) {
-70 |             const messageDiv = this.createMessageContainer(sender, isStatus);
-71 |             if (isStatus) {
-72 |                 messageDiv.innerHTML = this.syntaxHighlighter.escapeHtml(content);
-73 |             } else {
-74 |                 const label = this.createMessageLabel(sender);
-75 |                 const contentDiv = this.createMessageContent(formatted);
-76 |                 messageDiv.appendChild(label);
-77 |                 messageDiv.appendChild(contentDiv);
-78 |                 
-79 |                 // Replace snippet placeholders with actual rendered snippets
-80 |                 this.replaceSnippetPlaceholders(contentDiv, flexSnippets);
-81 |             }
-82 |             this.chatBox.appendChild(messageDiv);
-83 |             this.animateMessageIn(messageDiv);
-84 |         }
-85 | 
-86 |         this.scrollChatToBottom();
-87 |     }
-88 | 
-89 |     replaceSnippetPlaceholders(container, flexSnippets) {
-90 |         const placeholders = container.querySelectorAll('.flex-snippet-placeholder');
-91 |         placeholders.forEach(placeholder => {
-92 |             const snippetId = placeholder.getAttribute('data-snippet-id');
-93 |             const snippet = flexSnippets.find(s => s.id === snippetId);
-94 |             if (snippet) {
-95 |                 // Ensure snippet replacement maintains code integrity and doesn't introduce additional HTML entity encoding
-96 |                 const snippetElement = this.syntaxHighlighter.createFlexCodeSnippet(snippet, this);
-97 |                 placeholder.parentNode.replaceChild(snippetElement, placeholder);
-98 |             }
-99 |         });
-100 |     }
-101 | 
-102 |     appendFlexSnippets(snippets) {
-103 |         // This method is now deprecated in favor of inline replacement
-104 |         // but kept for backwards compatibility
-105 |         snippets.forEach((snippet, index) => {
-106 |             setTimeout(() => {
-107 |                 const snippetElement = this.syntaxHighlighter.createFlexCodeSnippet(snippet, this);
-108 |                 this.chatBox.appendChild(snippetElement);
-109 |                 this.animateMessageIn(snippetElement);
-110 |                 this.scrollChatToBottom();
-111 |             }, index * 200);
-112 |         });
-113 |     }
-114 | 
-115 |     toggleFlexSnippetExpanded(snippetContainer) {
-116 |         const isExpanding = !snippetContainer.classList.contains('expanded');
-117 |         snippetContainer.classList.toggle('expanded');
-118 |         let overlay = document.getElementById('snippet-overlay');
-119 |         if (isExpanding) {
-120 |             if (!overlay) {
-121 |                 overlay = document.createElement('div');
-122 |                 overlay.id = 'snippet-overlay';
-123 |                 overlay.className = 'snippet-overlay';
-124 |                 document.body.appendChild(overlay);
-125 |                 overlay.addEventListener('click', () => {
-126 |                     const expandedSnippet = document.querySelector('.flex-code-snippet.expanded');
-127 |                     if (expandedSnippet) {
-128 |                         this.toggleFlexSnippetExpanded(expandedSnippet);
-129 |                     }
-130 |                 });
-131 |             }
-132 |             requestAnimationFrame(() => {
-133 |                 overlay.classList.add('visible');
-134 |             });
-135 |         } else {
-136 |             if (overlay) {
-137 |                 overlay.classList.remove('visible');
-138 |             }
-139 |         }
-140 |         const expandButton = snippetContainer.querySelector('.flex-expand-button');
-141 |         if (expandButton) {
-142 |             expandButton.innerHTML = isExpanding ? `<span class="expand-icon">⤡</span>` : `<span class="expand-icon">⤢</span>`;
-143 |             expandButton.title = isExpanding ? 'Exit fullscreen view' : 'Toggle fullscreen view';
-144 |         }
-145 |     }
-146 | 
-147 |     startStreaming() {
-148 |         if (this.welcomeMessage) {
-149 |             this.welcomeMessage.style.display = 'none';
-150 |         }
-151 | 
-152 |         this.streamingMessage = this.createMessageContainer('ai', false);
-153 |         const label = this.createMessageLabel('ai');
-154 |         const contentDiv = this.createMessageContent('<span class="streaming-cursor"></span>');
-155 | 
-156 |         this.streamingMessage.appendChild(label);
-157 |         this.streamingMessage.appendChild(contentDiv);
-158 |         this.chatBox.appendChild(this.streamingMessage);
-159 | 
-160 |         this.streamingContent = '';
-161 |         this.scrollChatToBottom();
-162 |     }
-163 | 
-164 |     addStreamingChunk(chunk) {
-165 |         if (!this.streamingMessage) {
-166 |             this.startStreaming();
-167 |         }
-168 | 
-169 |         this.streamingContent += chunk;
-170 |         const contentDiv = this.streamingMessage.querySelector('.message-content');
-171 |         if (contentDiv) {
-172 |             // Apply enhanced HTML escaping logic to prevent entity corruption
-173 |             // Decode any pre-existing entities first, then apply proper escaping
-174 |             const decodedContent = this.streamingContent
-175 |                 .replace(/&quot;/g, '"')
-176 |                 .replace(/&lt;/g, '<')
-177 |                 .replace(/&gt;/g, '>')
-178 |                 .replace(/&amp;/g, '&')
-179 |                 .replace(/&#039;/g, "'");
-180 |             
-181 |             const formattedChunk = this.syntaxHighlighter.escapeHtml(decodedContent)
-182 |                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-183 |                 .replace(/\*(.*?)\*/g, '<em>$1</em>');
-184 |             contentDiv.innerHTML = `${formattedChunk}<span class="streaming-cursor"></span>`;
-185 |         }
-186 |         this.scrollChatToBottom();
-187 |     }
-188 | 
-189 |     completeStreaming() {
-190 |         if (!this.streamingMessage) return;
-191 | 
-192 |         const contentDiv = this.streamingMessage.querySelector('.message-content');
-193 |         if (contentDiv) {
-194 |             // Ensure the final formatting call works correctly with updated highlighting pipeline
-195 |             const { formatted, flexSnippets } = this.syntaxHighlighter.formatText(this.streamingContent);
-196 |             contentDiv.innerHTML = formatted;
-197 |             
-198 |             // Validate that snippet placeholders maintain code integrity
-199 |             this.replaceSnippetPlaceholders(contentDiv, flexSnippets);
-200 |         }
-201 | 
-202 |         this.streamingMessage = null;
-203 |         this.streamingContent = '';
-204 |         this.scrollChatToBottom();
-205 |     }
-206 | 
-207 |     clearChat() {
-208 |         // Clear all messages except the welcome message
-209 |         const messages = this.chatBox.querySelectorAll('.message');
-210 |         messages.forEach(message => {
-211 |             message.remove();
-212 |         });
-213 |         
-214 |         // Reset streaming state
-215 |         this.streamingMessage = null;
-216 |         this.streamingContent = '';
-217 |         this.chunkCount = 0;
-218 |         
-219 |         // Show welcome message again
-220 |         if (this.welcomeMessage) {
-221 |             this.welcomeMessage.style.display = 'block';
-222 |         }
-223 |         
-224 |         console.log('Chat cleared successfully');
-225 |     }
-226 | 
-227 |     // ... other DOM manipulation methods
-228 | }
 ```
 
 assets/webview/css/components/base.css
@@ -12259,268 +12479,315 @@ assets/webview/css/components/code.css
 240 |     font-size: 0.8125rem;
 241 |     line-height: 1.6;
 242 |     overflow-x: auto;
-243 | }
-244 | 
-245 | .flex-snippet-footer {
-246 |     background: #1e293b;
-247 |     border-top: 1px solid #334155;
-248 |     padding: var(--space-2) var(--space-4);
-249 | }
-250 | 
-251 | .flex-hint {
-252 |     color: var(--text-subtle);
-253 |     font-size: 0.75rem;
-254 |     display: flex;
-255 |     align-items: center;
-256 |     gap: var(--space-1);
-257 | }
-258 | 
-259 | .flex-hint code {
-260 |     background: #374151;
-261 |     padding: 0 var(--space-1);
-262 |     border-radius: var(--radius-xs);
-263 |     font-family: var(--font-family-mono);
-264 | }
-265 | 
-266 | /* Expanded state */
-267 | .flex-code-snippet.expanded {
-268 |     position: fixed;
-269 |     top: 0;
-270 |     left: 0;
-271 |     right: 0;
-272 |     bottom: 0;
-273 |     z-index: 1000;
-274 |     margin: 0;
-275 |     border-radius: 0;
-276 |     max-height: 100vh;
-277 | }
-278 | 
-279 | .flex-code-snippet.expanded .flex-snippet-code-container {
-280 |     max-height: calc(100vh - 120px);
-281 |     flex: 1;
-282 | }
-283 | 
-284 | /* Scrollbar styling for code containers */
-285 | .flex-snippet-code-container::-webkit-scrollbar,
-286 | .flex-snippet-code-content::-webkit-scrollbar {
-287 |     width: 8px;
-288 |     height: 8px;
-289 | }
-290 | 
-291 | .flex-snippet-code-container::-webkit-scrollbar-track,
-292 | .flex-snippet-code-content::-webkit-scrollbar-track {
-293 |     background: #1e293b;
-294 | }
-295 | 
-296 | .flex-snippet-code-container::-webkit-scrollbar-thumb,
-297 | .flex-snippet-code-content::-webkit-scrollbar-thumb {
-298 |     background: #475569;
-299 |     border-radius: 4px;
-300 | }
-301 | 
-302 | .flex-snippet-code-container::-webkit-scrollbar-thumb:hover,
-303 | .flex-snippet-code-content::-webkit-scrollbar-thumb:hover {
-304 |     background: #64748b;
-305 | }
-306 | 
-307 | /* Copy success animation */
-308 | .flex-copy-button.copied {
-309 |     background: #10b981 !important;
-310 |     color: white !important;
-311 |     border-color: #10b981 !important;
-312 | }
-313 | 
-314 | .flex-copy-button.copied .copy-icon::after {
-315 |     content: ' ✓';
-316 | }
-317 | 
-318 | /* Flex Snippet Placeholder Styles */
-319 | .flex-snippet-placeholder {
-320 |     display: inline-flex;
-321 |     align-items: center;
-322 |     background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(78, 205, 196, 0.1));
-323 |     border: 1px dashed var(--accent-color);
-324 |     border-radius: var(--radius-sm);
-325 |     padding: var(--space-2) var(--space-3);
-326 |     margin: var(--space-1) 0;
-327 |     font-size: 0.875rem;
-328 |     color: var(--text-secondary);
-329 |     transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-330 |     position: relative;
-331 |     opacity: 0.8;
-332 | }
-333 | 
-334 | .flex-snippet-placeholder::before {
-335 |     content: '';
-336 |     width: 12px;
-337 |     height: 12px;
-338 |     border: 2px solid var(--accent-color);
-339 |     border-top: 2px solid transparent;
-340 |     border-radius: 50%;
-341 |     margin-right: var(--space-2);
-342 |     animation: placeholder-spin 1s linear infinite;
-343 | }
-344 | 
-345 | .flex-snippet-placeholder:hover {
-346 |     opacity: 1;
-347 |     background: linear-gradient(135deg, rgba(255, 107, 107, 0.15), rgba(78, 205, 196, 0.15));
-348 |     transform: translateY(-1px);
-349 | }
-350 | 
-351 | @keyframes placeholder-spin {
-352 |     0% {
-353 |         transform: rotate(0deg);
-354 |     }
-355 | 
-356 |     100% {
-357 |         transform: rotate(360deg);
-358 |     }
-359 | }
-360 | 
-361 | /* Enhanced Flex Language Syntax Highlighting */
-362 | 
-363 | /* Franco keyword highlighting */
-364 | .flex-franco-keyword {
-365 |     color: #ff6b6b;
-366 |     font-weight: var(--font-weight-bold);
-367 |     text-shadow: 0 0 3px rgba(255, 107, 107, 0.3);
-368 | }
-369 | 
-370 | /* English keyword highlighting */
-371 | .flex-english-keyword {
-372 |     color: #4ecdc4;
-373 |     font-weight: var(--font-weight-bold);
-374 |     text-shadow: 0 0 3px rgba(78, 205, 196, 0.3);
-375 | }
-376 | 
-377 | /* Safety keywords highlighting */
-378 | .flex-safety-keyword {
-379 |     color: #ffa726;
-380 |     font-weight: var(--font-weight-bold);
-381 |     background: rgba(255, 167, 38, 0.1);
-382 |     padding: 1px 3px;
-383 |     border-radius: 3px;
-384 | }
-385 | 
-386 | /* Built-in functions */
-387 | .flex-builtin {
-388 |     color: #ab7df8;
-389 |     font-weight: var(--font-weight-semibold);
-390 | }
-391 | 
-392 | /* Enhanced code block language indicators */
-393 | .flex-code-snippet {
-394 |     background: linear-gradient(135deg,
-395 |             #0f172a 0%,
-396 |             #1e293b 50%,
-397 |             #0f172a 100%);
-398 |     border: 1px solid rgba(255, 255, 255, 0.1);
-399 |     border-radius: var(--radius-lg);
-400 |     margin: var(--space-4) 0;
-401 |     overflow: hidden;
-402 |     box-shadow: var(--shadow-lg);
-403 | }
-404 | 
-405 | .flex-snippet-header {
-406 |     background: rgba(255, 255, 255, 0.05);
-407 |     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-408 |     padding: var(--space-3) var(--space-4);
-409 |     display: flex;
-410 |     justify-content: space-between;
-411 |     align-items: center;
-412 | }
-413 | 
-414 | .flex-snippet-metadata {
-415 |     display: flex;
-416 |     align-items: center;
-417 |     gap: var(--space-3);
-418 | }
-419 | 
-420 | .flex-snippet-language {
-421 |     display: flex;
-422 |     align-items: center;
-423 |     gap: var(--space-2);
-424 |     font-weight: var(--font-weight-semibold);
-425 |     color: var(--text-primary);
-426 | }
-427 | 
-428 | .flex-snippet-stats {
-429 |     font-size: 0.75rem;
-430 |     color: var(--text-muted);
+243 |     white-space: pre-wrap;
+244 |     word-wrap: break-word;
+245 |     font-family: var(--font-family-mono);
+246 | }
+247 | 
+248 | .flex-snippet-footer {
+249 |     background: #1e293b;
+250 |     border-top: 1px solid #334155;
+251 |     padding: var(--space-2) var(--space-4);
+252 | }
+253 | 
+254 | .flex-hint {
+255 |     color: var(--text-subtle);
+256 |     font-size: 0.75rem;
+257 |     display: flex;
+258 |     align-items: center;
+259 |     gap: var(--space-1);
+260 | }
+261 | 
+262 | .flex-hint code {
+263 |     background: #374151;
+264 |     padding: 0 var(--space-1);
+265 |     border-radius: var(--radius-xs);
+266 |     font-family: var(--font-family-mono);
+267 | }
+268 | 
+269 | /* Expanded state */
+270 | .flex-code-snippet.expanded {
+271 |     position: fixed;
+272 |     top: 0;
+273 |     left: 0;
+274 |     right: 0;
+275 |     bottom: 0;
+276 |     z-index: 1000;
+277 |     margin: 0;
+278 |     border-radius: 0;
+279 |     max-height: 100vh;
+280 | }
+281 | 
+282 | .flex-code-snippet.expanded .flex-snippet-code-container {
+283 |     max-height: calc(100vh - 120px);
+284 |     flex: 1;
+285 | }
+286 | 
+287 | /* Scrollbar styling for code containers */
+288 | .flex-snippet-code-container::-webkit-scrollbar,
+289 | .flex-snippet-code-content::-webkit-scrollbar {
+290 |     width: 8px;
+291 |     height: 8px;
+292 | }
+293 | 
+294 | .flex-snippet-code-container::-webkit-scrollbar-track,
+295 | .flex-snippet-code-content::-webkit-scrollbar-track {
+296 |     background: #1e293b;
+297 | }
+298 | 
+299 | .flex-snippet-code-container::-webkit-scrollbar-thumb,
+300 | .flex-snippet-code-content::-webkit-scrollbar-thumb {
+301 |     background: #475569;
+302 |     border-radius: 4px;
+303 | }
+304 | 
+305 | .flex-snippet-code-container::-webkit-scrollbar-thumb:hover,
+306 | .flex-snippet-code-content::-webkit-scrollbar-thumb:hover {
+307 |     background: #64748b;
+308 | }
+309 | 
+310 | /* Copy success animation */
+311 | .flex-copy-button.copied {
+312 |     background: #10b981 !important;
+313 |     color: white !important;
+314 |     border-color: #10b981 !important;
+315 | }
+316 | 
+317 | .flex-copy-button.copied .copy-icon::after {
+318 |     content: ' ✓';
+319 | }
+320 | 
+321 | /* Flex Snippet Placeholder Styles */
+322 | .flex-snippet-placeholder {
+323 |     display: inline-flex;
+324 |     align-items: center;
+325 |     background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(78, 205, 196, 0.1));
+326 |     border: 1px dashed var(--accent-color);
+327 |     border-radius: var(--radius-sm);
+328 |     padding: var(--space-2) var(--space-3);
+329 |     margin: var(--space-1) 0;
+330 |     font-size: 0.875rem;
+331 |     color: var(--text-secondary);
+332 |     transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+333 |     position: relative;
+334 |     opacity: 0.8;
+335 | }
+336 | 
+337 | .flex-snippet-placeholder::before {
+338 |     content: '';
+339 |     width: 12px;
+340 |     height: 12px;
+341 |     border: 2px solid var(--accent-color);
+342 |     border-top: 2px solid transparent;
+343 |     border-radius: 50%;
+344 |     margin-right: var(--space-2);
+345 |     animation: placeholder-spin 1s linear infinite;
+346 | }
+347 | 
+348 | .flex-snippet-placeholder:hover {
+349 |     opacity: 1;
+350 |     background: linear-gradient(135deg, rgba(255, 107, 107, 0.15), rgba(78, 205, 196, 0.15));
+351 |     transform: translateY(-1px);
+352 | }
+353 | 
+354 | @keyframes placeholder-spin {
+355 |     0% {
+356 |         transform: rotate(0deg);
+357 |     }
+358 | 
+359 |     100% {
+360 |         transform: rotate(360deg);
+361 |     }
+362 | }
+363 | 
+364 | /* Enhanced Flex Language Syntax Highlighting */
+365 | 
+366 | /* Language indicator badges */
+367 | .flex-language-indicator {
+368 |     display: inline-flex;
+369 |     align-items: center;
+370 |     gap: 4px;
+371 |     padding: 2px 8px;
+372 |     border-radius: 12px;
+373 |     font-size: 0.7rem;
+374 |     font-weight: var(--font-weight-semibold);
+375 |     text-transform: uppercase;
+376 |     letter-spacing: 0.5px;
+377 |     margin: 0 4px;
+378 |     vertical-align: middle;
+379 | }
+380 | 
+381 | .flex-language-indicator.flex-franco {
+382 |     background: #ff6b6b;
+383 |     color: white;
+384 |     box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
+385 | }
+386 | 
+387 | .flex-language-indicator.flex-english {
+388 |     background: #4ecdc4;
+389 |     color: white;
+390 |     box-shadow: 0 2px 4px rgba(78, 205, 196, 0.3);
+391 | }
+392 | 
+393 | .flex-language-indicator.flex-mixed {
+394 |     background: linear-gradient(90deg, #ff6b6b 50%, #4ecdc4 50%);
+395 |     color: white;
+396 |     position: relative;
+397 |     box-shadow: 0 2px 4px rgba(255, 107, 107, 0.2), 0 2px 4px rgba(78, 205, 196, 0.2);
+398 | }
+399 | 
+400 | .flex-language-indicator.flex-mixed::before {
+401 |     content: "⚡";
+402 |     position: absolute;
+403 |     left: 50%;
+404 |     top: 50%;
+405 |     transform: translate(-50%, -50%);
+406 |     font-size: 0.6rem;
+407 |     opacity: 0.8;
+408 | }
+409 | 
+410 | /* Franco keyword highlighting */
+411 | .flex-franco-keyword {
+412 |     color: #ff6b6b;
+413 |     font-weight: var(--font-weight-bold);
+414 |     text-shadow: 0 0 3px rgba(255, 107, 107, 0.3);
+415 | }
+416 | 
+417 | /* English keyword highlighting */
+418 | .flex-english-keyword {
+419 |     color: #4ecdc4;
+420 |     font-weight: var(--font-weight-bold);
+421 |     text-shadow: 0 0 3px rgba(78, 205, 196, 0.3);
+422 | }
+423 | 
+424 | /* Safety keywords highlighting */
+425 | .flex-safety-keyword {
+426 |     color: #ffa726;
+427 |     font-weight: var(--font-weight-bold);
+428 |     background: rgba(255, 167, 38, 0.1);
+429 |     padding: 1px 3px;
+430 |     border-radius: 3px;
 431 | }
 432 | 
-433 | .flex-snippet-controls {
-434 |     display: flex;
-435 |     gap: var(--space-2);
-436 | }
-437 | 
-438 | .flex-copy-button,
-439 | .flex-expand-button {
-440 |     background: rgba(255, 255, 255, 0.1);
-441 |     border: none;
-442 |     border-radius: var(--radius-sm);
-443 |     padding: var(--space-2);
-444 |     color: var(--text-muted);
-445 |     cursor: pointer;
-446 |     transition: all 0.2s ease;
-447 | }
-448 | 
-449 | .flex-copy-button:hover,
-450 | .flex-expand-button:hover {
-451 |     background: rgba(255, 255, 255, 0.2);
-452 |     color: var(--text-primary);
-453 | }
-454 | 
-455 | .flex-snippet-code-container {
+433 | /* Built-in functions */
+434 | .flex-builtin {
+435 |     color: #ab7df8;
+436 |     font-weight: var(--font-weight-semibold);
+437 | }
+438 | 
+439 | /* Enhanced code block language indicators */
+440 | .flex-code-snippet {
+441 |     background: linear-gradient(135deg,
+442 |             #0f172a 0%,
+443 |             #1e293b 50%,
+444 |             #0f172a 100%);
+445 |     border: 1px solid rgba(255, 255, 255, 0.1);
+446 |     border-radius: var(--radius-lg);
+447 |     margin: var(--space-4) 0;
+448 |     overflow: hidden;
+449 |     box-shadow: var(--shadow-lg);
+450 | }
+451 | 
+452 | .flex-snippet-header {
+453 |     background: rgba(255, 255, 255, 0.05);
+454 |     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+455 |     padding: var(--space-3) var(--space-4);
 456 |     display: flex;
-457 |     max-height: 400px;
-458 |     overflow: auto;
+457 |     justify-content: space-between;
+458 |     align-items: center;
 459 | }
 460 | 
-461 | .flex-snippet-line-numbers {
-462 |     background: rgba(0, 0, 0, 0.2);
-463 |     padding: var(--space-4) var(--space-2);
-464 |     border-right: 1px solid rgba(255, 255, 255, 0.1);
-465 |     min-width: 3rem;
-466 |     text-align: right;
-467 |     font-family: var(--font-family-mono);
-468 |     font-size: 0.75rem;
-469 |     color: var(--text-muted);
-470 |     user-select: none;
-471 | }
-472 | 
-473 | .flex-snippet-code-content {
-474 |     flex: 1;
-475 |     padding: var(--space-4);
-476 |     font-family: var(--font-family-mono);
-477 |     font-size: 0.8125rem;
-478 |     line-height: 1.6;
-479 |     overflow-x: auto;
-480 | }
-481 | 
-482 | .flex-snippet-footer {
-483 |     background: rgba(255, 255, 255, 0.03);
-484 |     border-top: 1px solid rgba(255, 255, 255, 0.1);
-485 |     padding: var(--space-2) var(--space-4);
-486 |     font-size: 0.75rem;
-487 |     color: var(--text-muted);
-488 |     text-align: center;
-489 | }
-490 | 
-491 | /* Language-specific styling for mixed code */
-492 | .flex-snippet-code-content .flex-franco-keyword+.flex-english-keyword,
-493 | .flex-snippet-code-content .flex-english-keyword+.flex-franco-keyword {
-494 |     margin-left: var(--space-1);
-495 |     position: relative;
-496 | }
-497 | 
-498 | .flex-snippet-code-content .flex-franco-keyword+.flex-english-keyword::before {
-499 |     content: "↔️";
-500 |     position: absolute;
-501 |     left: -12px;
-502 |     font-size: 0.7rem;
-503 |     opacity: 0.6;
-504 | }
+461 | .flex-snippet-metadata {
+462 |     display: flex;
+463 |     align-items: center;
+464 |     gap: var(--space-3);
+465 | }
+466 | 
+467 | .flex-snippet-language {
+468 |     display: flex;
+469 |     align-items: center;
+470 |     gap: var(--space-2);
+471 |     font-weight: var(--font-weight-semibold);
+472 |     color: var(--text-primary);
+473 | }
+474 | 
+475 | .flex-snippet-stats {
+476 |     font-size: 0.75rem;
+477 |     color: var(--text-muted);
+478 | }
+479 | 
+480 | .flex-snippet-controls {
+481 |     display: flex;
+482 |     gap: var(--space-2);
+483 | }
+484 | 
+485 | .flex-copy-button,
+486 | .flex-expand-button {
+487 |     background: rgba(255, 255, 255, 0.1);
+488 |     border: none;
+489 |     border-radius: var(--radius-sm);
+490 |     padding: var(--space-2);
+491 |     color: var(--text-muted);
+492 |     cursor: pointer;
+493 |     transition: all 0.2s ease;
+494 | }
+495 | 
+496 | .flex-copy-button:hover,
+497 | .flex-expand-button:hover {
+498 |     background: rgba(255, 255, 255, 0.2);
+499 |     color: var(--text-primary);
+500 | }
+501 | 
+502 | .flex-snippet-code-container {
+503 |     display: flex;
+504 |     max-height: 400px;
+505 |     overflow: auto;
+506 | }
+507 | 
+508 | .flex-snippet-line-numbers {
+509 |     background: rgba(0, 0, 0, 0.2);
+510 |     padding: var(--space-4) var(--space-2);
+511 |     border-right: 1px solid rgba(255, 255, 255, 0.1);
+512 |     min-width: 3rem;
+513 |     text-align: right;
+514 |     font-family: var(--font-family-mono);
+515 |     font-size: 0.75rem;
+516 |     color: var(--text-muted);
+517 |     user-select: none;
+518 | }
+519 | 
+520 | .flex-snippet-code-content {
+521 |     flex: 1;
+522 |     padding: var(--space-4);
+523 |     font-family: var(--font-family-mono);
+524 |     font-size: 0.8125rem;
+525 |     line-height: 1.6;
+526 |     overflow-x: auto;
+527 | }
+528 | 
+529 | .flex-snippet-footer {
+530 |     background: rgba(255, 255, 255, 0.03);
+531 |     border-top: 1px solid rgba(255, 255, 255, 0.1);
+532 |     padding: var(--space-2) var(--space-4);
+533 |     font-size: 0.75rem;
+534 |     color: var(--text-muted);
+535 |     text-align: center;
+536 | }
+537 | 
+538 | /* Language-specific styling for mixed code */
+539 | .flex-snippet-code-content .flex-franco-keyword+.flex-english-keyword,
+540 | .flex-snippet-code-content .flex-english-keyword+.flex-franco-keyword {
+541 |     margin-left: var(--space-1);
+542 |     position: relative;
+543 | }
+544 | 
+545 | .flex-snippet-code-content .flex-franco-keyword+.flex-english-keyword::before {
+546 |     content: "↔️";
+547 |     position: absolute;
+548 |     left: -12px;
+549 |     font-size: 0.7rem;
+550 |     opacity: 0.6;
+551 | }
 ```
 
 assets/webview/css/components/header.css
@@ -12905,4 +13172,663 @@ assets/webview/css/components/responsive.css
 129 |         transition-duration: 0.01ms !important;
 130 |     }
 131 | }
+```
+
+assets/webview/js/syntax/highlighter.js
+```
+1 | /**
+2 |  * Handles all syntax highlighting and formatting for Flex code.
+3 |  * Enhanced for repository-aligned v3.0 with Franco/English keyword mappings.
+4 |  */
+5 | class SyntaxHighlighter {
+6 |     constructor() {
+7 |         // Enhanced syntax based on the latest Flex-Language/Flex repository v3.0
+8 |         this.flexSyntax = {
+9 |             // Core Franco keywords (repository-aligned)
+10 |             francoKeywords: {
+11 |                 control: ['lw', 'kida', 'gher', 'wla', 'aw', 'bass', 'iza'],
+12 |                 loops: ['karr', 'l7d', 'tl', 'tlma', 'tlama'],
+13 |                 functions: ['sndo2', 'sndog', 'arja3', 'yerja3', 'estd3i'],
+14 |                 variables: ['mtaghayar', 'thabit', 'mwaqat'],
+15 |                 io: ['etb3', 'da5al', 'da5l', 'awsal', 'era'],
+16 |                 types: ['rakm', 'kasr', 'klma', 'so2al', 'ghalat', 'dorg'],
+17 |                 operators: ['w', 'aw', 'mish', 'yesawi', 'akbar', 'asghar', 'zawad']
+18 |             },
+19 |             // English equivalents
+20 |             englishKeywords: {
+21 |                 control: ['if', 'condition', 'else', 'elif', 'or', 'only', 'when'],
+22 |                 loops: ['for', 'while', 'repeat', 'until', 'continue'],
+23 |                 functions: ['function', 'def', 'return', 'returns', 'call'],
+24 |                 variables: ['var', 'const', 'temp'],
+25 |                 io: ['print', 'input', 'output', 'send', 'read'],
+26 |                 types: ['int', 'float', 'string', 'bool', 'error', 'list'],
+27 |                 operators: ['and', 'or', 'not', 'equals', 'greater', 'less', 'plus']
+28 |             },
+29 |             // Common patterns and safety keywords
+30 |             safetyKeywords: ['safe', 'check', 'validate', 'verify', 'secure', 'aman', 'ta2akkad'],
+31 |             literals: ['true', 'false', 'sa7', 'khata', 'tamam', 'null', 'void', 'fadi'],
+32 |             operators: ['\\+', '\\-', '\\*', '\\/', '%', '=', '==', '!=', '<=', '>=', '<', '>', '&&', '\\|\\|', '!', '\\+=', '\\-=', '\\*=', '\\/=', '%=', '\\+\\+', '\\-\\-', '\\?', ':', ';', ',', '\\.', '\\[', '\\]', '\\{', '\\}', '\\(', '\\)'],
+33 |             // Repository-aligned patterns
+34 |             builtinFunctions: ['sqrt', 'pow', 'max', 'min', 'len', 'size', 'join', 'split']
+35 |         };
+36 |         
+37 |         // Language detection patterns
+38 |         this.languagePatterns = {
+39 |             franco: /\b(lw|karr|sndo2|etb3|rakm|klma|gher|tlma)\b/g,
+40 |             english: /\b(if|for|function|print|int|string|else|while)\b/g
+41 |         };
+42 |     }
+43 | 
+44 |     /**
+45 |      * Detect the primary language of a code snippet
+46 |      */
+47 |     detectLanguage(code) {
+48 |         const francoMatches = (code.match(this.languagePatterns.franco) || []).length;
+49 |         const englishMatches = (code.match(this.languagePatterns.english) || []).length;
+50 |         
+51 |         // Enhanced detection logic
+52 |         if (francoMatches === 0 && englishMatches === 0) {
+53 |             return 'mixed'; // Default to mixed if no keywords detected
+54 |         }
+55 |         
+56 |         // If both languages are present, it's mixed
+57 |         if (francoMatches > 0 && englishMatches > 0) {
+58 |             return 'mixed';
+59 |         }
+60 |         
+61 |         // Clear dominance
+62 |         if (francoMatches > englishMatches) return 'franco';
+63 |         if (englishMatches > francoMatches) return 'english';
+64 |         
+65 |         // Equal counts or both zero - default to mixed
+66 |         return 'mixed';
+67 |     }
+68 | 
+69 |     /**
+70 |      * Add language indicator to code blocks
+71 |      */
+72 |     addLanguageIndicator(code, detectedLang) {
+73 |         const francoMatches = (code.match(this.languagePatterns.franco) || []).length;
+74 |         const englishMatches = (code.match(this.languagePatterns.english) || []).length;
+75 |         
+76 |         const indicators = {
+77 |             franco: `<span class="flex-language-indicator flex-franco">Franco</span>`,
+78 |             english: `<span class="flex-language-indicator flex-english">English</span>`,
+79 |             mixed: `<span class="flex-language-indicator flex-mixed">Mixed</span>`
+80 |         };
+81 |         
+82 |         // Add statistics for mixed mode
+83 |         if (detectedLang === 'mixed') {
+84 |             const total = francoMatches + englishMatches;
+85 |             if (total > 0) {
+86 |                 const francoPercent = Math.round((francoMatches / total) * 100);
+87 |                 const englishPercent = 100 - francoPercent;
+88 |                 indicators.mixed = `<span class="flex-language-indicator flex-mixed" title="Franco: ${francoPercent}%, English: ${englishPercent}%">Mixed</span>`;
+89 |             }
+90 |         }
+91 |         
+92 |         return indicators[detectedLang] || indicators.mixed;
+93 |     }
+94 | 
+95 |     escapeHtml(text) {
+96 |         const map = {
+97 |             '&': '&amp;',
+98 |             '<': '&lt;',
+99 |             '>': '&gt;',
+100 |             '"': '&quot;',
+101 |             "'": '&#039;'
+102 |         };
+103 |         return text.replace(/[&<>"']/g, m => map[m]);
+104 |     }
+105 | 
+106 |     /**
+107 |      * Validate if text contains proper Flex code blocks without corruption
+108 |      */
+109 |     isFlexCode(text) {
+110 |         // Check for HTML entities in code blocks
+111 |         const codeBlockRegex = /```flex\n([\s\S]*?)\n```/g;
+112 |         const codeBlocks = [...text.matchAll(codeBlockRegex)];
+113 |         
+114 |         for (const block of codeBlocks) {
+115 |             const code = block[1];
+116 |             if (!code) continue;
+117 |             
+118 |             // Check for HTML entities - these should not be present in clean Flex code
+119 |             if (/&(quot|lt|gt|amp|#039);/.test(code)) {
+120 |                 console.warn('Found HTML entities in Flex code block - will clean');
+121 |                 return false;
+122 |             }
+123 |             
+124 |             // Check for malformed HTML tags - these should not be in Flex code
+125 |             if (/<span[^>]*(?!>)|<\/span(?!>)|<[^>]+class=/.test(code)) {
+126 |                 console.warn('Found HTML markup in Flex code block - will clean');
+127 |                 return false;
+128 |             }
+129 |         }
+130 |         
+131 |         return true;
+132 |     }
+133 | 
+134 |     /**
+135 |      * Clean code of HTML entities and markup for copying
+136 |      */
+137 |     cleanFlexCode(code) {
+138 |         return code
+139 |             .replace(/&quot;/g, '"')
+140 |             .replace(/&lt;/g, '<')
+141 |             .replace(/&gt;/g, '>')
+142 |             .replace(/&amp;/g, '&')
+143 |             .replace(/&#039;/g, "'")
+144 |             .replace(/&apos;/g, "'")
+145 |             .replace(/<span[^>]*>/g, '')
+146 |             .replace(/<\/span>/g, '')
+147 |             .replace(/&nbsp;/g, ' ')
+148 |             .trim();
+149 |     }
+150 | 
+151 |     /**
+152 |      * Extract clean code from highlighted HTML for copying
+153 |      */
+154 |     extractCleanCode(htmlCode) {
+155 |         // Create a temporary div to parse HTML
+156 |         const tempDiv = document.createElement('div');
+157 |         tempDiv.innerHTML = htmlCode;
+158 |         
+159 |         // Get the text content which automatically strips HTML tags
+160 |         let cleanText = tempDiv.textContent || tempDiv.innerText || '';
+161 |         
+162 |         // Clean up any remaining HTML entities
+163 |         return this.cleanFlexCode(cleanText);
+164 |     }
+165 | 
+166 |     highlightFlexSyntax(code) {
+167 |         // Clean the code first to remove any HTML entities or markup
+168 |         let cleanCode = this.cleanFlexCode(code);
+169 |         
+170 |         // Detect the primary language
+171 |         const detectedLang = this.detectLanguage(cleanCode);
+172 | 
+173 |         // Create a tokens array to track what's already highlighted
+174 |         const tokens = [];
+175 |         let position = 0;
+176 |         
+177 |         // Tokenize the code to avoid overlapping highlights
+178 |         const patterns = [
+179 |             // Comments (highest priority)
+180 |             { name: 'comment', regex: /(#|\/\/).*?$/gm, class: 'flex-comment' },
+181 |             
+182 |             // Strings (high priority to avoid keyword conflicts inside strings)
+183 |             { name: 'string', regex: /"[^"]*"|'[^']*'/g, class: 'flex-string' },
+184 |             
+185 |             // Safety keywords (high priority for visibility)
+186 |             { name: 'safety', regex: new RegExp(`\\b(${this.flexSyntax.safetyKeywords.join('|')})\\b`, 'gi'), class: 'flex-safety-keyword' },
+187 |             
+188 |             // Franco keywords
+189 |             { name: 'franco', regex: new RegExp(`\\b(${Object.values(this.flexSyntax.francoKeywords).flat().join('|')})\\b`, 'g'), class: 'flex-franco-keyword' },
+190 |             
+191 |             // English keywords
+192 |             { name: 'english', regex: new RegExp(`\\b(${Object.values(this.flexSyntax.englishKeywords).flat().join('|')})\\b`, 'g'), class: 'flex-english-keyword' },
+193 |             
+194 |             // Built-in functions
+195 |             { name: 'builtin', regex: new RegExp(`\\b(${this.flexSyntax.builtinFunctions.join('|')})\\b`, 'g'), class: 'flex-builtin' },
+196 |             
+197 |             // Literals
+198 |             { name: 'literal', regex: new RegExp(`\\b(${this.flexSyntax.literals.join('|')})\\b`, 'g'), class: 'flex-literal' },
+199 |             
+200 |             // Numbers
+201 |             { name: 'number', regex: /\b\d+(\.\d+)?\b/g, class: 'flex-number' },
+202 |             
+203 |             // Operators
+204 |             { name: 'operator', regex: new RegExp(`(${this.flexSyntax.operators.join('|')})`, 'g'), class: 'flex-operator' },
+205 |         ];
+206 | 
+207 |         // Apply patterns in order of priority, avoiding overlaps
+208 |         let result = cleanCode;
+209 |         const placeholders = [];
+210 |         let placeholderIndex = 0;
+211 | 
+212 |         patterns.forEach(pattern => {
+213 |             let match;
+214 |             pattern.regex.lastIndex = 0; // Reset regex
+215 |             
+216 |             while ((match = pattern.regex.exec(result)) !== null) {
+217 |                 const placeholder = `__PLACEHOLDER_${placeholderIndex}__`;
+218 |                 const highlightedText = `<span class="${pattern.class}">${this.escapeHtml(match[0])}</span>`;
+219 |                 
+220 |                 placeholders[placeholderIndex] = highlightedText;
+221 |                 result = result.substring(0, match.index) + placeholder + result.substring(match.index + match[0].length);
+222 |                 
+223 |                 // Adjust regex position after replacement
+224 |                 pattern.regex.lastIndex = match.index + placeholder.length;
+225 |                 placeholderIndex++;
+226 |             }
+227 |         });
+228 | 
+229 |         // Replace placeholders with highlighted text
+230 |         placeholders.forEach((highlightedText, index) => {
+231 |             result = result.replace(`__PLACEHOLDER_${index}__`, highlightedText);
+232 |         });
+233 | 
+234 |         return result;
+235 |     }
+236 | 
+237 |     formatText(text) {
+238 |         const flexSnippets = [];
+239 |         
+240 |         // First, process properly formatted Flex code blocks
+241 |         let processedText = text.replace(/```flex\n([\s\S]*?)\n```/g, (match, code) => {
+242 |             const snippetId = `flex-snippet-${flexSnippets.length}`;
+243 |             // Clean the code before highlighting and store clean version
+244 |             const cleanCode = this.cleanFlexCode(code);
+245 |             const detectedLang = this.detectLanguage(cleanCode);
+246 |             const highlighted = this.highlightFlexSyntax(cleanCode);
+247 |             
+248 |             flexSnippets.push({
+249 |                 id: snippetId,
+250 |                 originalCode: cleanCode, // Store clean code for copying
+251 |                 code: cleanCode, // Keep for backward compatibility
+252 |                 highlighted: `<pre><code class="language-flex">${highlighted}</code></pre>`,
+253 |                 lineCount: cleanCode.split('\n').length,
+254 |                 size: new Blob([cleanCode]).size,
+255 |                 confidence: 'High',
+256 |                 language: detectedLang,
+257 |                 languageIndicator: this.addLanguageIndicator(cleanCode, detectedLang)
+258 |             });
+259 |             return `%%FLEX_SNIPPET_${snippetId}%%`;
+260 |         });
+261 | 
+262 |         // Auto-detect and format Flex code that's not in code blocks
+263 |         // Look for patterns that suggest Flex code (multiple lines with Flex keywords)
+264 |         processedText = this.autoDetectFlexCode(processedText, flexSnippets);
+265 | 
+266 |         // Now escape HTML for the remaining content (excluding placeholders)
+267 |         let formatted = this.escapeHtml(processedText);
+268 | 
+269 |         // Process generic code blocks
+270 |         formatted = formatted.replace(/```(\w*)\n([\s\S]*?)\n```/g, (match, lang, code) => {
+271 |             return `<div class="code-block"><pre><code class="language-${lang}">${this.escapeHtml(code)}</code></pre></div>`;
+272 |         });
+273 | 
+274 |         // Basic markdown formatting
+275 |         formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+276 |             .replace(/\*(.*?)\*/g, '<em>$1</em>')
+277 |             .replace(/^-\s(.*)/gm, '<ul><li>$1</li></ul>')
+278 |             .replace(/<\/ul>\n<ul>/g, '')
+279 |             .replace(/\n/g, '<br>'); // Preserve line breaks in regular text
+280 | 
+281 |         // Replace Flex snippet placeholders with visual indicators
+282 |         formatted = this.replacePlaceholdersWithIndicators(formatted);
+283 | 
+284 |         return { formatted, flexSnippets };
+285 |     }
+286 | 
+287 |     /**
+288 |      * Auto-detect and format Flex code that's not properly wrapped in code blocks
+289 |      */
+290 |     autoDetectFlexCode(text, flexSnippets) {
+291 |         // Pattern to detect potential Flex code blocks
+292 |         // Look for lines that contain Flex keywords and code structure
+293 |         const flexCodePattern = /^((?:.*(?:list|int|string|fun|if|for|while|print|return|and|or)\s.*\n){3,})/gm;
+294 |         
+295 |         return text.replace(flexCodePattern, (match) => {
+296 |             const cleanMatch = match.trim();
+297 |             
+298 |             // Check if this looks like Flex code by counting keywords
+299 |             const francoMatches = (cleanMatch.match(this.languagePatterns.franco) || []).length;
+300 |             const englishMatches = (cleanMatch.match(this.languagePatterns.english) || []).length;
+301 |             
+302 |             // If we have enough keywords to suggest this is Flex code
+303 |             if (francoMatches + englishMatches >= 3) {
+304 |                 const snippetId = `flex-snippet-${flexSnippets.length}`;
+305 |                 const cleanCode = this.cleanFlexCode(cleanMatch);
+306 |                 const detectedLang = this.detectLanguage(cleanCode);
+307 |                 const highlighted = this.highlightFlexSyntax(cleanCode);
+308 |                 
+309 |                 flexSnippets.push({
+310 |                     id: snippetId,
+311 |                     originalCode: cleanCode,
+312 |                     code: cleanCode,
+313 |                     highlighted: `<pre><code class="language-flex">${highlighted}</code></pre>`,
+314 |                     lineCount: cleanCode.split('\n').length,
+315 |                     size: new Blob([cleanCode]).size,
+316 |                     confidence: 'Auto-detected',
+317 |                     language: detectedLang,
+318 |                     languageIndicator: this.addLanguageIndicator(cleanCode, detectedLang)
+319 |                 });
+320 |                 
+321 |                 return `%%FLEX_SNIPPET_${snippetId}%%`;
+322 |             }
+323 |             
+324 |             // Not Flex code, return as-is
+325 |             return match;
+326 |         });
+327 |     }
+328 | 
+329 |     replacePlaceholdersWithIndicators(text) {
+330 |         return text.replace(/%%FLEX_SNIPPET_(flex-snippet-\d+)%%/g, (match, snippetId) => {
+331 |             return `<div class="flex-snippet-placeholder" data-snippet-id="${snippetId}">📄 Flex Code Snippet (${snippetId})</div>`;
+332 |         });
+333 |     }
+334 | 
+335 |     createFlexCodeSnippet(snippet, domManager) {
+336 |         const snippetContainer = document.createElement('div');
+337 |         snippetContainer.className = 'flex-code-snippet';
+338 |         snippetContainer.id = snippet.id;
+339 | 
+340 |         const header = document.createElement('div');
+341 |         header.className = 'flex-snippet-header';
+342 |         header.innerHTML = `
+343 |             <div class="flex-snippet-metadata">
+344 |                 <span class="flex-snippet-language"><span class="flex-icon">⚡</span> Flex Code ${snippet.languageIndicator || ''}</span>
+345 |                 <span class="flex-snippet-stats">${snippet.lineCount} lines • ${(snippet.size / 1024).toFixed(1)}KB • ${snippet.confidence}</span>
+346 |             </div>
+347 |             <div class="flex-snippet-controls">
+348 |                 <button class="flex-copy-button" title="Copy Flex code"><span class="copy-icon">📋</span></button>
+349 |                 <button class="flex-expand-button" title="Toggle fullscreen"><span class="expand-icon">⤢</span></button>
+350 |             </div>
+351 |         `;
+352 | 
+353 |         const codeContainer = document.createElement('div');
+354 |         codeContainer.className = 'flex-snippet-code-container';
+355 |         const lineNumbers = document.createElement('div');
+356 |         lineNumbers.className = 'flex-snippet-line-numbers';
+357 |         const codeContent = document.createElement('div');
+358 |         codeContent.className = 'flex-snippet-code-content';
+359 | 
+360 |         const lines = snippet.code.split('\n');
+361 |         let lineNumbersHtml = '';
+362 |         for (let i = 0; i < lines.length + 2; i++) {
+363 |             lineNumbersHtml += `<span class="line-number">${i + 1}</span>`;
+364 |         }
+365 |         lineNumbers.innerHTML = lineNumbersHtml;
+366 |         
+367 |         // Ensure clean code display without HTML entities and preserve line breaks
+368 |         const cleanHighlightedCode = this.highlightFlexSyntax(snippet.code);
+369 |         codeContent.innerHTML = cleanHighlightedCode;
+370 | 
+371 |         codeContainer.appendChild(lineNumbers);
+372 |         codeContainer.appendChild(codeContent);
+373 | 
+374 |         const footer = document.createElement('div');
+375 |         footer.className = 'flex-snippet-footer';
+376 |         footer.innerHTML = `<span class="flex-hint">💡 This code can be saved as a <code>.lx</code> or <code>.flex</code> file</span>`;
+377 | 
+378 |         snippetContainer.appendChild(header); 
+379 |         snippetContainer.appendChild(codeContainer);
+380 |         snippetContainer.appendChild(footer);
+381 | 
+382 |         header.querySelector('.flex-copy-button').addEventListener('click', () => this.copyCode(snippet.originalCode || snippet.code, header.querySelector('.flex-copy-button')));
+383 |         header.querySelector('.flex-expand-button').addEventListener('click', (e) => {
+384 |             e.stopPropagation();
+385 |             domManager.toggleFlexSnippetExpanded(snippetContainer);
+386 |         });
+387 | 
+388 |         return snippetContainer;
+389 |     }
+390 | 
+391 |     async copyCode(code, buttonElement) {
+392 |         try {
+393 |             // Ensure we copy clean, executable Flex code without HTML entities or tags
+394 |             let cleanCode = code;
+395 |             
+396 |             // If the code contains HTML tags, extract clean text
+397 |             if (/<[^>]+>/.test(code)) {
+398 |                 cleanCode = this.extractCleanCode(code);
+399 |             } else {
+400 |                 cleanCode = this.cleanFlexCode(code);
+401 |             }
+402 |             
+403 |             await navigator.clipboard.writeText(cleanCode);
+404 |             const originalText = buttonElement.innerHTML;
+405 |             buttonElement.innerHTML = '<span class="copy-icon">✅</span>';
+406 |             buttonElement.style.background = '#10b981';
+407 |             setTimeout(() => {
+408 |                 buttonElement.innerHTML = originalText;
+409 |                 buttonElement.style.background = '';
+410 |             }, 1500);
+411 |         } catch (err) {
+412 |             console.error('Failed to copy code: ', err);
+413 |             const originalText = buttonElement.innerHTML;
+414 |             buttonElement.innerHTML = '<span class="copy-icon">❌</span>';
+415 |             buttonElement.style.background = '#ef4444';
+416 |             setTimeout(() => {
+417 |                 buttonElement.innerHTML = originalText;
+418 |                 buttonElement.style.background = '';
+419 |             }, 2000);
+420 |         }
+421 |     }
+422 | }
+```
+
+assets/webview/js/ui/domManager.js
+```
+1 | /**
+2 |  * Manages all direct DOM manipulation for the chat interface.
+3 |  */
+4 | class DOMManager {
+5 |     constructor(chatBox, welcomeMessage, syntaxHighlighter) {
+6 |         this.chatBox = chatBox;
+7 |         this.welcomeMessage = welcomeMessage;
+8 |         this.syntaxHighlighter = syntaxHighlighter;
+9 |         this.streamingMessage = null;
+10 |         this.streamingContent = '';
+11 |         this.chunkCount = 0;
+12 |         this.streamingStartTime = 0;
+13 |         this.streamingDebugLog = [];
+14 |         this.streamingHealthCheck = null;
+15 |     }
+16 | 
+17 |     createMessageContainer(sender, isStatus) {
+18 |         const messageDiv = document.createElement('div');
+19 |         if (isStatus) {
+20 |             messageDiv.className = 'status-message status-pulse';
+21 |         } else {
+22 |             messageDiv.className = `message ${sender}-message message-animation`;
+23 |         }
+24 |         return messageDiv;
+25 |     }
+26 | 
+27 |     createMessageLabel(sender) {
+28 |         const label = document.createElement('div');
+29 |         label.className = `${sender}-label`;
+30 |         label.innerHTML = sender === 'user' ?
+31 |             '<span class="user-icon">👤</span> You' :
+32 |             '<span class="ai-icon">⚡</span> Flex Assistant';
+33 |         return label;
+34 |     }
+35 | 
+36 |     createMessageContent(html) {
+37 |         const contentDiv = document.createElement('div');
+38 |         contentDiv.className = 'message-content';
+39 |         // Verify that innerHTML assignment works correctly with updated SyntaxHighlighter output
+40 |         contentDiv.innerHTML = html;
+41 |         return contentDiv;
+42 |     }
+43 | 
+44 |     animateMessageIn(element) {
+45 |         element.style.opacity = '0';
+46 |         element.style.transform = 'translateY(16px) scale(0.98)';
+47 |         requestAnimationFrame(() => {
+48 |             element.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+49 |             element.style.opacity = '1';
+50 |             element.style.transform = 'translateY(0) scale(1)';
+51 |         });
+52 |     }
+53 | 
+54 |     scrollChatToBottom() {
+55 |         this.chatBox.scrollTo({
+56 |             top: this.chatBox.scrollHeight,
+57 |             behavior: 'smooth'
+58 |         });
+59 |     }
+60 | 
+61 |     addMessage(content, sender, isStatus = false) {
+62 |         if (this.welcomeMessage && !isStatus) {
+63 |             this.welcomeMessage.style.display = 'none';
+64 |         }
+65 | 
+66 |         const { formatted, flexSnippets } = this.syntaxHighlighter.formatText(content);
+67 | 
+68 |         // Only create the main message bubble if there's text content.
+69 |         if (formatted.trim().length > 0 || isStatus) {
+70 |             const messageDiv = this.createMessageContainer(sender, isStatus);
+71 |             if (isStatus) {
+72 |                 messageDiv.innerHTML = this.syntaxHighlighter.escapeHtml(content);
+73 |             } else {
+74 |                 const label = this.createMessageLabel(sender);
+75 |                 const contentDiv = this.createMessageContent(formatted);
+76 |                 messageDiv.appendChild(label);
+77 |                 messageDiv.appendChild(contentDiv);
+78 |                 
+79 |                 // Replace snippet placeholders with actual rendered snippets
+80 |                 this.replaceSnippetPlaceholders(contentDiv, flexSnippets);
+81 |             }
+82 |             this.chatBox.appendChild(messageDiv);
+83 |             this.animateMessageIn(messageDiv);
+84 |         }
+85 | 
+86 |         this.scrollChatToBottom();
+87 |     }
+88 | 
+89 |     replaceSnippetPlaceholders(container, flexSnippets) {
+90 |         const placeholders = container.querySelectorAll('.flex-snippet-placeholder');
+91 |         placeholders.forEach(placeholder => {
+92 |             const snippetId = placeholder.getAttribute('data-snippet-id');
+93 |             const snippet = flexSnippets.find(s => s.id === snippetId);
+94 |             if (snippet) {
+95 |                 // Ensure snippet replacement maintains code integrity and doesn't introduce additional HTML entity encoding
+96 |                 const snippetElement = this.syntaxHighlighter.createFlexCodeSnippet(snippet, this);
+97 |                 placeholder.parentNode.replaceChild(snippetElement, placeholder);
+98 |             }
+99 |         });
+100 |     }
+101 | 
+102 |     appendFlexSnippets(snippets) {
+103 |         // This method is now deprecated in favor of inline replacement
+104 |         // but kept for backwards compatibility
+105 |         snippets.forEach((snippet, index) => {
+106 |             setTimeout(() => {
+107 |                 const snippetElement = this.syntaxHighlighter.createFlexCodeSnippet(snippet, this);
+108 |                 this.chatBox.appendChild(snippetElement);
+109 |                 this.animateMessageIn(snippetElement);
+110 |                 this.scrollChatToBottom();
+111 |             }, index * 200);
+112 |         });
+113 |     }
+114 | 
+115 |     toggleFlexSnippetExpanded(snippetContainer) {
+116 |         const isExpanding = !snippetContainer.classList.contains('expanded');
+117 |         snippetContainer.classList.toggle('expanded');
+118 |         let overlay = document.getElementById('snippet-overlay');
+119 |         if (isExpanding) {
+120 |             if (!overlay) {
+121 |                 overlay = document.createElement('div');
+122 |                 overlay.id = 'snippet-overlay';
+123 |                 overlay.className = 'snippet-overlay';
+124 |                 document.body.appendChild(overlay);
+125 |                 overlay.addEventListener('click', () => {
+126 |                     const expandedSnippet = document.querySelector('.flex-code-snippet.expanded');
+127 |                     if (expandedSnippet) {
+128 |                         this.toggleFlexSnippetExpanded(expandedSnippet);
+129 |                     }
+130 |                 });
+131 |             }
+132 |             requestAnimationFrame(() => {
+133 |                 overlay.classList.add('visible');
+134 |             });
+135 |         } else {
+136 |             if (overlay) {
+137 |                 overlay.classList.remove('visible');
+138 |             }
+139 |         }
+140 |         const expandButton = snippetContainer.querySelector('.flex-expand-button');
+141 |         if (expandButton) {
+142 |             expandButton.innerHTML = isExpanding ? `<span class="expand-icon">⤡</span>` : `<span class="expand-icon">⤢</span>`;
+143 |             expandButton.title = isExpanding ? 'Exit fullscreen view' : 'Toggle fullscreen view';
+144 |         }
+145 |     }
+146 | 
+147 |     startStreaming() {
+148 |         if (this.welcomeMessage) {
+149 |             this.welcomeMessage.style.display = 'none';
+150 |         }
+151 | 
+152 |         this.streamingMessage = this.createMessageContainer('ai', false);
+153 |         const label = this.createMessageLabel('ai');
+154 |         const contentDiv = this.createMessageContent('<span class="streaming-cursor"></span>');
+155 | 
+156 |         this.streamingMessage.appendChild(label);
+157 |         this.streamingMessage.appendChild(contentDiv);
+158 |         this.chatBox.appendChild(this.streamingMessage);
+159 | 
+160 |         this.streamingContent = '';
+161 |         this.scrollChatToBottom();
+162 |     }
+163 | 
+164 |     addStreamingChunk(chunk) {
+165 |         if (!this.streamingMessage) {
+166 |             this.startStreaming();
+167 |         }
+168 | 
+169 |         this.streamingContent += chunk;
+170 |         const contentDiv = this.streamingMessage.querySelector('.message-content');
+171 |         if (contentDiv) {
+172 |             // Apply enhanced HTML escaping logic to prevent entity corruption
+173 |             // Decode any pre-existing entities first, then apply proper escaping
+174 |             const decodedContent = this.streamingContent
+175 |                 .replace(/&quot;/g, '"')
+176 |                 .replace(/&lt;/g, '<')
+177 |                 .replace(/&gt;/g, '>')
+178 |                 .replace(/&amp;/g, '&')
+179 |                 .replace(/&#039;/g, "'");
+180 |             
+181 |             const formattedChunk = this.syntaxHighlighter.escapeHtml(decodedContent)
+182 |                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+183 |                 .replace(/\*(.*?)\*/g, '<em>$1</em>')
+184 |                 .replace(/\n/g, '<br>'); // Preserve line breaks during streaming
+185 |             contentDiv.innerHTML = `${formattedChunk}<span class="streaming-cursor"></span>`;
+186 |         }
+187 |         this.scrollChatToBottom();
+188 |     }
+189 | 
+190 |     completeStreaming() {
+191 |         if (!this.streamingMessage) return;
+192 | 
+193 |         const contentDiv = this.streamingMessage.querySelector('.message-content');
+194 |         if (contentDiv) {
+195 |             // Ensure the final formatting call works correctly with updated highlighting pipeline
+196 |             const { formatted, flexSnippets } = this.syntaxHighlighter.formatText(this.streamingContent);
+197 |             contentDiv.innerHTML = formatted;
+198 |             
+199 |             // Validate that snippet placeholders maintain code integrity
+200 |             this.replaceSnippetPlaceholders(contentDiv, flexSnippets);
+201 |         }
+202 | 
+203 |         this.streamingMessage = null;
+204 |         this.streamingContent = '';
+205 |         this.scrollChatToBottom();
+206 |     }
+207 | 
+208 |     clearChat() {
+209 |         // Clear all messages except the welcome message
+210 |         const messages = this.chatBox.querySelectorAll('.message');
+211 |         messages.forEach(message => {
+212 |             message.remove();
+213 |         });
+214 |         
+215 |         // Reset streaming state
+216 |         this.streamingMessage = null;
+217 |         this.streamingContent = '';
+218 |         this.chunkCount = 0;
+219 |         
+220 |         // Show welcome message again
+221 |         if (this.welcomeMessage) {
+222 |             this.welcomeMessage.style.display = 'block';
+223 |         }
+224 |         
+225 |         console.log('Chat cleared successfully');
+226 |     }
+227 | 
+228 |     // ... other DOM manipulation methods
+229 | }
 ```

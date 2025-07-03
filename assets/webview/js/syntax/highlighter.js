@@ -373,9 +373,9 @@ class SyntaxHighlighter {
 
         const footer = document.createElement('div');
         footer.className = 'flex-snippet-footer';
-        footer.innerHTML = `<span class="flex-hint">💡 This code can be saved as a <code>.lx</code>, <code>.fx</code>, or <code>.flex</code> file</span>`;
+        footer.innerHTML = `<span class="flex-hint">💡 This code can be saved as a <code>.lx</code> or <code>.flex</code> file</span>`;
 
-        snippetContainer.appendChild(header);
+        snippetContainer.appendChild(header); 
         snippetContainer.appendChild(codeContainer);
         snippetContainer.appendChild(footer);
 
