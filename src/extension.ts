@@ -7,21 +7,21 @@ import { logger } from './utils/logger';
 import { ModelInfo } from './types';
 import { debugManager } from './core/DebugManager';
 import { errorHandler } from './core/ErrorHandler';
-import { testFramework } from './test/TestFramework';
 import { devTools } from './dev/DevTools';
 
 /**
  * Extension activation function
  */
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext): void {
 	logger.logExtensionEvent('activate', {
 		version: vscode.extensions.getExtension('Flex-proagramming-language.flex-chatbot')?.packageJSON.version
 	});
 
 	try {
 		// Initialize services
-		const flexDatasetService = FlexDatasetService.getInstance(context.extensionPath);
+		FlexDatasetService.getInstance(context.extensionPath);
 		const provider = new CustomSidebarViewProvider(context.extensionUri);
+		devTools.initialize(context.extensionUri);
 
 		// Register webview provider
 		context.subscriptions.push(
@@ -170,7 +170,7 @@ async function handleSelectModel(provider: CustomSidebarViewProvider): Promise<v
 		// Create QuickPick items with enhanced information
 		const items = models.map((model: ModelInfo) => ({
 			label: model.id,
-			description: `${model.context_length.toLocaleString()} tokens - ${ApiService.formatModelPricing(model)}`,
+			description: `${model.contextLength.toLocaleString()} tokens - ${ApiService.formatModelPricing(model)}`,
 			detail: model.description || 'No description available',
 			model: model
 		}));
@@ -181,8 +181,8 @@ async function handleSelectModel(provider: CustomSidebarViewProvider): Promise<v
 			const aRecommended = recommendedModels.includes(a.model.id);
 			const bRecommended = recommendedModels.includes(b.model.id);
 
-			if (aRecommended && !bRecommended) return -1;
-			if (!aRecommended && bRecommended) return 1;
+			if (aRecommended && !bRecommended) { return -1; }
+			if (!aRecommended && bRecommended) { return 1; }
 
 			// Sort by name if both are recommended or both are not
 			return a.label.localeCompare(b.label);
@@ -263,12 +263,11 @@ ${!isLoaded ? '⚠️ Using fallback documentation. Check that flex_language_spe
 /**
  * Extension deactivation function
  */
-export function deactivate() {
+export function deactivate(): void {
 	logger.logExtensionEvent('deactivate');
 
 	// Dispose of debugging and development resources
 	debugManager.dispose();
 	errorHandler.dispose();
-	testFramework.dispose();
 	devTools.dispose();
 }

@@ -8,12 +8,74 @@
     "plugins": [
         "@typescript-eslint"
     ],
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended"
+    ],
     "rules": {
-        "@typescript-eslint/naming-convention": "warn",
+        "@typescript-eslint/naming-convention": [
+            "error",
+            {
+                "selector": "default",
+                "format": [
+                    "camelCase",
+                    "PascalCase"
+                ]
+            },
+            {
+                "selector": "variable",
+                "format": [
+                    "camelCase",
+                    "UPPER_CASE",
+                    "PascalCase"
+                ]
+            },
+            {
+                "selector": "parameter",
+                "format": [
+                    "camelCase"
+                ],
+                "leadingUnderscore": "allow"
+            },
+            {
+                "selector": "property",
+                "format": null,
+                "filter": {
+                    "regex": "^(Content-Type|Authorization|HTTP-Referer|X-Title|JSON Files|api_key|context_length)$",
+                    "match": true
+                }
+            },
+            {
+                "selector": "memberLike",
+                "modifiers": [
+                    "private"
+                ],
+                "format": [
+                    "camelCase"
+                ],
+                "leadingUnderscore": "allow"
+            },
+            {
+                "selector": "typeLike",
+                "format": [
+                    "PascalCase"
+                ]
+            },
+            {
+                "selector": "enumMember",
+                "format": [
+                    "camelCase"
+                ]
+            }
+        ],
         "@typescript-eslint/semi": "warn",
-        "curly": "warn",
+        "curly": [
+            "warn",
+            "multi-line"
+        ],
         "eqeqeq": "warn",
         "no-throw-literal": "warn",
+        "no-console": "off",
         "semi": "off"
     },
     "ignorePatterns": [

@@ -5,13 +5,13 @@ import { ExtensionConfig } from '../types';
  * Service for managing extension configuration
  */
 export class ConfigService {
-    private static readonly CONFIG_SECTION = 'flexChatbot';
+    private static readonly configSection = 'flexChatbot';
 
     /**
      * Get all extension configuration
      */
     public static getConfig(): ExtensionConfig {
-        const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
+        const config = vscode.workspace.getConfiguration(this.configSection);
         let model = config.get<string>('model', 'openai/gpt-4o-mini');
 
         // Fix common invalid model names
@@ -23,11 +23,13 @@ export class ConfigService {
         };
 
         if (modelFixes[model]) {
-            const newModel = modelFixes[model]!; // Non-null assertion since we checked the key exists
-            console.warn(`⚠️ Fixing invalid model: ${model} → ${newModel}`);
-            // Auto-update the configuration
-            this.set('model', newModel).catch(console.error);
-            model = newModel;
+            const newModel = modelFixes[model];
+            if (newModel) {
+                console.warn(`⚠️ Fixing invalid model: ${model} → ${newModel}`);
+                // Auto-update the configuration
+                this.set('model', newModel).catch(console.error);
+                model = newModel;
+            }
         }
 
         return {
@@ -44,7 +46,7 @@ export class ConfigService {
      * Get specific configuration value
      */
     public static get<T>(key: keyof ExtensionConfig, defaultValue?: T): T {
-        const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
+        const config = vscode.workspace.getConfiguration(this.configSection);
         return config.get<T>(key, defaultValue as T);
     }
 
@@ -56,7 +58,7 @@ export class ConfigService {
         value: T,
         target: vscode.ConfigurationTarget = vscode.ConfigurationTarget.Global
     ): Promise<void> {
-        const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
+        const config = vscode.workspace.getConfiguration(this.configSection);
         await config.update(key, value, target);
     }
 
@@ -93,12 +95,12 @@ export class ConfigService {
         }
 
         // Validate max tokens
-        if (config.maxTokens && (config.maxTokens < 1 || config.maxTokens > 32000)) {
+        if (config.maxTokens < 1 || config.maxTokens > 32000) {
             errors.push('Max tokens must be between 1 and 32000');
         }
 
         // Validate timeout
-        if (config.timeout && (config.timeout < 5000 || config.timeout > 300000)) {
+        if (config.timeout < 5000 || config.timeout > 300000) {
             errors.push('Timeout must be between 5 and 300 seconds');
         }
 
@@ -127,7 +129,7 @@ export class ConfigService {
      */
     public static async resetToDefaults(): Promise<void> {
         const defaultConfig = this.getDefaultConfig();
-        const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
+        const config = vscode.workspace.getConfiguration(this.configSection);
 
         for (const [key, value] of Object.entries(defaultConfig)) {
             if (key !== 'apiKey') { // Don't reset API key
@@ -153,7 +155,7 @@ export class ConfigService {
 
         switch (selectedAction) {
             case 'Open Settings':
-                await vscode.commands.executeCommand('workbench.action.openSettings', this.CONFIG_SECTION);
+                await vscode.commands.executeCommand('workbench.action.openSettings', this.configSection);
                 break;
 
             case 'Set API Key':
@@ -208,8 +210,8 @@ export class ConfigService {
 
         try {
             // Import ApiService dynamically to avoid circular dependencies
-            const { ApiService } = await import('./apiService');
-            const isConnected = await ApiService.testApiConnection(config.apiKey);
+            const apiServiceModule = await import('./apiService');
+            const isConnected = await apiServiceModule.ApiService.testApiConnection(config.apiKey);
 
             if (isConnected) {
                 vscode.window.showInformationMessage('✅ API connection successful!');
@@ -217,7 +219,8 @@ export class ConfigService {
                 vscode.window.showErrorMessage('❌ API connection failed. Please check your API key.');
             }
         } catch (error) {
-            vscode.window.showErrorMessage(`❌ Connection test failed: ${error}`);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            vscode.window.showErrorMessage(`❌ Connection test failed: ${errorMessage}`);
         }
     }
 
@@ -228,7 +231,7 @@ export class ConfigService {
         callback: (config: ExtensionConfig) => void
     ): vscode.Disposable {
         return vscode.workspace.onDidChangeConfiguration((event) => {
-            if (event.affectsConfiguration(this.CONFIG_SECTION)) {
+            if (event.affectsConfiguration(this.configSection)) {
                 callback(this.getConfig());
             }
         });
@@ -253,7 +256,7 @@ export class ConfigService {
      * Import configuration (excluding sensitive data)
      */
     public static async importConfig(importedConfig: Partial<ExtensionConfig>): Promise<void> {
-        const config = vscode.workspace.getConfiguration(this.CONFIG_SECTION);
+        const config = vscode.workspace.getConfiguration(this.configSection);
 
         for (const [key, value] of Object.entries(importedConfig)) {
             if (key !== 'apiKey' && value !== undefined) {

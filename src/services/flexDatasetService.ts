@@ -1,13 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { FlexLanguageSpec } from '../types';
+import { FlexSpecification } from '../types';
 
 /**
  * Service for managing the Flex language dataset and generating system prompts
  */
 export class FlexDatasetService {
     private static instance: FlexDatasetService;
-    private flexSpec: FlexLanguageSpec | null = null;
+    private flexSpec: FlexSpecification | null = null;
     private readonly datasetPath: string;
 
     private constructor(extensionPath: string) {
@@ -35,7 +35,7 @@ export class FlexDatasetService {
         try {
             if (fs.existsSync(this.datasetPath)) {
                 const fileContent = fs.readFileSync(this.datasetPath, 'utf-8');
-                this.flexSpec = JSON.parse(fileContent) as FlexLanguageSpec;
+                this.flexSpec = JSON.parse(fileContent) as FlexSpecification;
                 console.log('✅ Flex language specification loaded successfully');
             } else {
                 console.warn(`⚠️ Flex dataset file not found at: ${this.datasetPath}`);
@@ -56,58 +56,34 @@ export class FlexDatasetService {
         }
 
         try {
-            const aiPrompt = this.flexSpec.ai_system_prompt;
-            const essentialKnowledge = this.flexSpec.ESSENTIAL_FLEX_KNOWLEDGE;
-            const syntaxPatterns = this.flexSpec.CRITICAL_SYNTAX_PATTERNS;
-            const codeExamples = this.formatCodeExamples(this.flexSpec.code_examples);
-            const commonPatterns = this.formatCommonPatterns(this.flexSpec.common_patterns);
-            const errorHandling = this.formatErrorHandling(this.flexSpec.error_handling);
+            const {
+                ai_system_prompt: aiSystemPrompt,
+                ESSENTIAL_FLEX_KNOWLEDGE: essentialKnowledge,
+                CRITICAL_SYNTAX_PATTERNS: syntaxPatterns,
+                code_examples: codeExamples,
+                common_patterns: commonPatterns,
+            } = this.flexSpec;
 
-            return `# Flex Programming Assistant for VSCode
-
-${aiPrompt.description}
-
-You are integrated into a VSCode extension to provide real-time assistance to Flex developers. Your responses will be displayed in a professional chat interface within their development environment.
-
-## VSCODE EXTENSION CONTEXT:
-- **Environment**: Integrated VSCode extension sidebar
-- **User Context**: Active Flex developers writing code
-- **Response Format**: Markdown with syntax highlighting support
-- **Interaction Style**: Professional, concise, immediately actionable
-
-## CRITICAL INSTRUCTIONS:
-${Object.entries(aiPrompt.CRITICAL_INSTRUCTIONS).map(([key, value]) => `- **${key}**: ${value}`).join('\n')}
-
-## ESSENTIAL FLEX LANGUAGE KNOWLEDGE:
+            const promptSections = {
+                "ROLE": `${aiSystemPrompt.role} - ${aiSystemPrompt.description}`,
+                "CRITICAL INSTRUCTIONS": Object.values(aiSystemPrompt.CRITICAL_INSTRUCTIONS).map(instr => `- ${instr}`).join('\n'),
+                "ESSENTIAL FLEX LANGUAGE KNOWLEDGE": `
 - **Language**: ${essentialKnowledge.language_identity}
 - **Philosophy**: ${essentialKnowledge.core_philosophy}
 - **File Extensions**: ${essentialKnowledge.file_extensions.join(', ')}
-- **Unique Features**: ${essentialKnowledge.unique_features.join(', ')}
+- **Unique Features**: 
+  - ${essentialKnowledge.unique_features.join('\n  - ')}
+`.trim(),
+                "CRITICAL SYNTAX PATTERNS": this.formatSyntaxPatterns(syntaxPatterns),
+                "CODE EXAMPLES": this.formatCodeExamples(codeExamples),
+                "COMMON PATTERNS": this.formatCommonPatterns(commonPatterns),
+            };
 
-## CRITICAL SYNTAX PATTERNS:
-${this.formatSyntaxPatterns(syntaxPatterns)}
+            const fullPrompt = Object.entries(promptSections)
+                .map(([title, content]) => `## ${title}\n${content}`)
+                .join('\n\n');
 
-## CODE EXAMPLES:
-${codeExamples}
-
-## COMMON PATTERNS:
-${commonPatterns}
-
-## ERROR HANDLING GUIDE:
-${errorHandling}
-
-## PERFORMANCE OPTIMIZATION:
-${this.formatPerformanceGuidelines()}
-
-## VSCODE INTEGRATION GUIDELINES:
-- Use \`\`\`flex code blocks for all Flex code examples
-- Provide copy-pasteable, production-ready code snippets
-- Assume users may have limited time - prioritize immediate solutions
-- Reference line numbers when helping with debugging (if provided)
-- Suggest VSCode shortcuts or extensions when relevant
-- Format responses for easy scanning with headers and bullet points
-
-Remember: You are an expert Flex programming assistant integrated into VSCode, helping developers write better Flex code efficiently. Always prioritize working code first, then provide clear explanations adapted to the user's expertise level.`;
+            return `# Flex Programming Assistant for VSCode\n\n${fullPrompt}\n\n## VSCODE INTEGRATION GUIDELINES:\n- Use \`\`\`flex code blocks for all Flex code examples.\n- Provide copy-pasteable, production-ready code snippets.\n- Format responses for easy scanning with headers and bullet points.\n\nRemember: You are an expert Flex programming assistant. Prioritize working code first, then provide clear explanations adapted to the user's expertise level.`;
 
         } catch (error) {
             console.error('Error generating system prompt:', error);
@@ -118,8 +94,9 @@ Remember: You are an expert Flex programming assistant integrated into VSCode, h
     /**
      * Format code examples for the system prompt
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private formatCodeExamples(examples: Record<string, any>): string {
-        if (!examples) return '';
+        if (!examples) { return ''; }
 
         return Object.entries(examples)
             .map(([name, example]) => {
@@ -138,8 +115,9 @@ ${example.code.join('\n')}
     /**
      * Format common patterns for the system prompt
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private formatCommonPatterns(patterns: Record<string, any>): string {
-        if (!patterns) return '';
+        if (!patterns) { return ''; }
 
         return Object.entries(patterns)
             .map(([name, pattern]) => {
@@ -158,8 +136,9 @@ ${pattern.join('\n')}
     /**
      * Format syntax patterns for the system prompt
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private formatSyntaxPatterns(patterns: Record<string, any>): string {
-        if (!patterns) return '';
+        if (!patterns) { return ''; }
 
         return Object.entries(patterns)
             .map(([category, pattern]) => {
@@ -171,49 +150,6 @@ ${Array.isArray(pattern.examples) ? pattern.examples.join('\n') : pattern.exampl
             })
             .filter(Boolean)
             .join('\n\n');
-    }
-
-    /**
-     * Format error handling information
-     */
-    private formatErrorHandling(errorHandling: any): string {
-        if (!errorHandling || !errorHandling.error_categories) return '';
-
-        const categories = errorHandling.error_categories;
-        return Object.entries(categories)
-            .map(([categoryName, category]: [string, any]) => {
-                const errors = Object.entries(category)
-                    .filter(([key]) => key !== 'description')
-                    .map(([errorName, errorInfo]: [string, any]) => {
-                        return `**${errorName}**: ${errorInfo.solution || errorInfo.cause || 'See documentation'}`;
-                    })
-                    .join('\n');
-
-                return `### ${categoryName}:
-${category.description || ''}
-${errors}`;
-            })
-            .join('\n\n');
-    }
-
-    /**
-     * Format performance optimization guidelines
-     */
-    private formatPerformanceGuidelines(): string {
-        if (!this.flexSpec?.performance_optimization) return '';
-
-        const perf = this.flexSpec.performance_optimization;
-        let guidelines = '';
-
-        if (perf.optimization_guidelines) {
-            guidelines += '### Guidelines:\n' + perf.optimization_guidelines.map((g: string) => `- ${g}`).join('\n') + '\n\n';
-        }
-
-        if (perf.memory_management?.best_practices) {
-            guidelines += '### Memory Management:\n' + perf.memory_management.best_practices.map((p: string) => `- ${p}`).join('\n');
-        }
-
-        return guidelines;
     }
 
     /**
@@ -263,7 +199,8 @@ Always help users write safe, efficient Flex code while respecting their syntax 
     /**
      * Get specific section of the specification
      */
-    public getSpecSection(section: keyof FlexLanguageSpec): any {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public getSpecSection(section: keyof FlexSpecification): any {
         return this.flexSpec?.[section] || null;
     }
 
@@ -294,7 +231,6 @@ Always help users write safe, efficient Flex code while respecting their syntax 
             codeExamples: Object.keys(this.flexSpec.code_examples || {}).length,
             commonPatterns: Object.keys(this.flexSpec.common_patterns || {}).length,
             syntaxPatterns: Object.keys(this.flexSpec.CRITICAL_SYNTAX_PATTERNS || {}).length,
-            tokens: Object.keys(this.flexSpec.tokens || {}).length
         };
     }
 } 

@@ -1,0 +1,105 @@
+/* assets/webview/css/components/input.css */
+
+/* Enhanced Input Section */
+#input-section {
+    flex-shrink: 0;
+    background: var(--secondary-bg);
+    border-top: 1px solid var(--border-color);
+    padding: var(--space-4);
+    position: relative;
+    z-index: 5;
+}
+
+.input-container {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: stretch;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2);
+    gap: var(--space-2);
+    backdrop-filter: blur(20px);
+    transition: all 0.2s ease;
+    position: relative;
+    min-height: 48px;
+}
+
+.input-wrapper:focus-within {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+#user-input {
+    flex: 1;
+    min-height: 44px;
+    max-height: 120px;
+    padding: var(--space-3);
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    resize: none;
+    overflow-y: auto;
+    outline: none;
+    margin: 0;
+    box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(248, 250, 252, 0.2) transparent;
+}
+
+#user-input::-webkit-scrollbar {
+    width: 4px;
+}
+
+#user-input::-webkit-scrollbar-thumb {
+    background: rgba(248, 250, 252, 0.2);
+    border-radius: 2px;
+}
+
+.send-button {
+    background: var(--accent-color) !important;
+    border: none !important;
+    border-radius: var(--radius-md) !important;
+    color: white !important;
+    width: 36px !important;
+    height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    flex-shrink: 0 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+.send-button:hover:not(:disabled) {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.send-button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.send-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.send-icon {
+    font-size: 0.875rem;
+    line-height: 1;
+}

@@ -6,337 +6,337 @@ import { logger } from '../utils/logger';
  * Provides comprehensive debugging capabilities for the Flex Chatbot
  */
 export class DebugManager {
-    private static instance: DebugManager;
-    private debugChannel: vscode.OutputChannel;
-    private performanceMetrics: Map<string, PerformanceMetric> = new Map();
-    private errorHistory: ErrorEntry[] = [];
-    private debugSessions: Map<string, DebugSession> = new Map();
-    private isDebugMode: boolean = false;
+  private static instance: DebugManager;
+  private debugChannel: vscode.OutputChannel;
+  private performanceMetrics: Map<string, PerformanceMetric> = new Map();
+  private errorHistory: ErrorEntry[] = [];
+  private debugSessions: Map<string, DebugSession> = new Map();
+  private isDebugMode = false;
 
-    private constructor() {
-        this.debugChannel = vscode.window.createOutputChannel('Flex Chatbot Debug');
-        this.initializeDebugMode();
+  private constructor() {
+    this.debugChannel = vscode.window.createOutputChannel('Flex Chatbot Debug');
+    this.initializeDebugMode();
+  }
+
+  public static getInstance(): DebugManager {
+    if (!DebugManager.instance) {
+      DebugManager.instance = new DebugManager();
+    }
+    return DebugManager.instance;
+  }
+
+  /**
+   * Initialize debug mode based on environment
+   */
+  private initializeDebugMode(): void {
+    const config = vscode.workspace.getConfiguration('flexChatbot');
+    this.isDebugMode = config.get('debug.enabled', false) ||
+      process.env.NODE_ENV === 'development';
+
+    if (this.isDebugMode) {
+      this.debugChannel.appendLine('🐛 Debug mode enabled');
+      // Don't automatically show debug channel - let user decide
+    }
+  }
+
+  /**
+   * Start a new debug session
+   */
+  public startDebugSession(sessionId: string, context: Record<string, unknown>): DebugSession {
+    const session: DebugSession = {
+      id: sessionId,
+      startTime: Date.now(),
+      context,
+      steps: [],
+      status: 'active',
+      memoryUsage: process.memoryUsage()
+    };
+
+    this.debugSessions.set(sessionId, session);
+    // Only log session start for important operations
+    if (context.operation === 'chat_completion' || context.operation === 'fetch_models') {
+      this.debug(`Started debug session: ${sessionId}`, { operation: context.operation });
     }
 
-    public static getInstance(): DebugManager {
-        if (!DebugManager.instance) {
-            DebugManager.instance = new DebugManager();
-        }
-        return DebugManager.instance;
+    return session;
+  }
+
+  /**
+   * Add a step to a debug session
+   */
+  public addDebugStep(sessionId: string, step: string, data?: Record<string, unknown>): void {
+    const session = this.debugSessions.get(sessionId);
+    if (session) {
+      session.steps.push({
+        step,
+        timestamp: Date.now(),
+        data,
+        memoryDelta: this.getMemoryDelta(session.memoryUsage)
+      });
+      // Only log important steps to reduce verbosity
+      if (step.includes('failed') || step.includes('error') || step.includes('completed')) {
+        this.debug(`[${sessionId}] ${step}`, data);
+      }
     }
+  }
 
-    /**
-     * Initialize debug mode based on environment
-     */
-    private initializeDebugMode(): void {
-        const config = vscode.workspace.getConfiguration('flexChatbot');
-        this.isDebugMode = config.get('debug.enabled', false) ||
-            process.env.NODE_ENV === 'development';
+  /**
+   * End a debug session
+   */
+  public endDebugSession(sessionId: string, result?: Record<string, unknown>): void {
+    const session = this.debugSessions.get(sessionId);
+    if (session) {
+      session.status = 'completed';
+      session.endTime = Date.now();
+      session.duration = session.endTime - session.startTime;
+      session.result = result;
 
-        if (this.isDebugMode) {
-            this.debugChannel.appendLine('🐛 Debug mode enabled');
-            // Don't automatically show debug channel - let user decide
-        }
-    }
-
-    /**
-     * Start a new debug session
-     */
-    public startDebugSession(sessionId: string, context: any): DebugSession {
-        const session: DebugSession = {
-            id: sessionId,
-            startTime: Date.now(),
-            context,
-            steps: [],
-            status: 'active',
-            memoryUsage: process.memoryUsage()
-        };
-
-        this.debugSessions.set(sessionId, session);
-        // Only log session start for important operations
-        if (context.operation === 'chat_completion' || context.operation === 'fetch_models') {
-            this.debug(`Started debug session: ${sessionId}`, { operation: context.operation });
-        }
-
-        return session;
-    }
-
-    /**
-     * Add a step to a debug session
-     */
-    public addDebugStep(sessionId: string, step: string, data?: any): void {
-        const session = this.debugSessions.get(sessionId);
-        if (session) {
-            session.steps.push({
-                step,
-                timestamp: Date.now(),
-                data,
-                memoryDelta: this.getMemoryDelta(session.memoryUsage)
-            });
-            // Only log important steps to reduce verbosity
-            if (step.includes('failed') || step.includes('error') || step.includes('completed')) {
-                this.debug(`[${sessionId}] ${step}`, data);
-            }
-        }
-    }
-
-    /**
-     * End a debug session
-     */
-    public endDebugSession(sessionId: string, result?: any): void {
-        const session = this.debugSessions.get(sessionId);
-        if (session) {
-            session.status = 'completed';
-            session.endTime = Date.now();
-            session.duration = session.endTime - session.startTime;
-            session.result = result;
-
-            // Only log completion for important operations or failures
-            if (result?.success === false || session.context.operation === 'chat_completion') {
-                this.debug(`Completed debug session: ${sessionId}`, {
-                    duration: session.duration,
-                    success: result?.success,
-                    operation: session.context.operation
-                });
-            }
-
-            // Keep session for analysis
-            setTimeout(() => {
-                this.debugSessions.delete(sessionId);
-            }, 60000); // Keep for 1 minute
-        }
-    }
-
-    /**
-     * Track performance metrics
-     */
-    public trackPerformance(operation: string, duration: number, metadata?: any): void {
-        const metric = this.performanceMetrics.get(operation) || {
-            operation,
-            totalCalls: 0,
-            totalDuration: 0,
-            averageDuration: 0,
-            minDuration: Infinity,
-            maxDuration: 0,
-            lastCalled: 0
-        };
-
-        metric.totalCalls++;
-        metric.totalDuration += duration;
-        metric.averageDuration = metric.totalDuration / metric.totalCalls;
-        metric.minDuration = Math.min(metric.minDuration, duration);
-        metric.maxDuration = Math.max(metric.maxDuration, duration);
-        metric.lastCalled = Date.now();
-
-        this.performanceMetrics.set(operation, metric);
-
-        if (duration > 1000) { // Log slow operations
-            this.warn(`Slow operation detected: ${operation}`, {
-                duration,
-                metadata,
-                averageDuration: metric.averageDuration
-            });
-        }
-    }
-
-    /**
-     * Record an error with context
-     */
-    public recordError(error: Error, context?: any, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium'): void {
-        const errorEntry: ErrorEntry = {
-            id: this.generateId(),
-            timestamp: Date.now(),
-            error: {
-                name: error.name,
-                message: error.message,
-                stack: error.stack
-            },
-            context,
-            severity,
-            resolved: false
-        };
-
-        this.errorHistory.push(errorEntry);
-
-        // Keep only last 100 errors
-        if (this.errorHistory.length > 100) {
-            this.errorHistory = this.errorHistory.slice(-100);
-        }
-
-        this.error(`Error recorded [${severity}]:`, {
-            errorId: errorEntry.id,
-            error: error.message,
-            context
+      // Only log completion for important operations or failures
+      if (result?.success === false || session.context.operation === 'chat_completion') {
+        this.debug(`Completed debug session: ${sessionId}`, {
+          duration: session.duration,
+          success: result?.success,
+          operation: session.context.operation
         });
+      }
 
-        // Auto-report critical errors
-        if (severity === 'critical') {
-            this.showCriticalErrorDialog(errorEntry);
-        }
+      // Keep session for analysis
+      setTimeout(() => {
+        this.debugSessions.delete(sessionId);
+      }, 60000); // Keep for 1 minute
+    }
+  }
+
+  /**
+   * Track performance metrics
+   */
+  public trackPerformance(operation: string, duration: number, metadata?: Record<string, unknown>): void {
+    const metric = this.performanceMetrics.get(operation) || {
+      operation,
+      totalCalls: 0,
+      totalDuration: 0,
+      averageDuration: 0,
+      minDuration: Infinity,
+      maxDuration: 0,
+      lastCalled: 0
+    };
+
+    metric.totalCalls++;
+    metric.totalDuration += duration;
+    metric.averageDuration = metric.totalDuration / metric.totalCalls;
+    metric.minDuration = Math.min(metric.minDuration, duration);
+    metric.maxDuration = Math.max(metric.maxDuration, duration);
+    metric.lastCalled = Date.now();
+
+    this.performanceMetrics.set(operation, metric);
+
+    if (duration > 1000) { // Log slow operations
+      this.warn(`Slow operation detected: ${operation}`, {
+        duration,
+        metadata,
+        averageDuration: metric.averageDuration
+      });
+    }
+  }
+
+  /**
+   * Record an error with context
+   */
+  public recordError(error: Error, context?: Record<string, unknown>, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium'): void {
+    const errorEntry: ErrorEntry = {
+      id: this.generateId(),
+      timestamp: Date.now(),
+      error: {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      },
+      context,
+      severity,
+      resolved: false
+    };
+
+    this.errorHistory.push(errorEntry);
+
+    // Keep only last 100 errors
+    if (this.errorHistory.length > 100) {
+      this.errorHistory = this.errorHistory.slice(-100);
     }
 
-    /**
-     * Debug logging
-     */
-    public debug(message: string, data?: any): void {
-        if (this.isDebugMode) {
-            const timestamp = new Date().toISOString();
-            const logMessage = `[${timestamp}] DEBUG: ${message}`;
+    this.error(`Error recorded [${severity}]:`, {
+      errorId: errorEntry.id,
+      error: error.message,
+      context
+    });
 
-            this.debugChannel.appendLine(logMessage);
-            if (data) {
-                this.debugChannel.appendLine(`  Data: ${JSON.stringify(data, null, 2)}`);
-            }
+    // Auto-report critical errors
+    if (severity === 'critical') {
+      this.showCriticalErrorDialog(errorEntry);
+    }
+  }
 
-            logger.debug(message, data);
-        }
+  /**
+   * Debug logging
+   */
+  public debug(message: string, data?: Record<string, unknown>): void {
+    if (this.isDebugMode) {
+      const timestamp = new Date().toISOString();
+      const logMessage = `[${timestamp}] DEBUG: ${message}`;
+
+      this.debugChannel.appendLine(logMessage);
+      if (data) {
+        this.debugChannel.appendLine(`  Data: ${JSON.stringify(data, null, 2)}`);
+      }
+
+      logger.debug(message, data);
+    }
+  }
+
+  /**
+   * Warning logging
+   */
+  public warn(message: string, data?: Record<string, unknown>): void {
+    const timestamp = new Date().toISOString();
+    const logMessage = `[${timestamp}] WARN: ${message}`;
+
+    this.debugChannel.appendLine(logMessage);
+    if (data) {
+      this.debugChannel.appendLine(`  Data: ${JSON.stringify(data, null, 2)}`);
     }
 
-    /**
-     * Warning logging
-     */
-    public warn(message: string, data?: any): void {
-        const timestamp = new Date().toISOString();
-        const logMessage = `[${timestamp}] WARN: ${message}`;
+    logger.warn(message, data);
+  }
 
-        this.debugChannel.appendLine(logMessage);
-        if (data) {
-            this.debugChannel.appendLine(`  Data: ${JSON.stringify(data, null, 2)}`);
-        }
+  /**
+   * Error logging
+   */
+  public error(message: string, data?: Record<string, unknown>): void {
+    const timestamp = new Date().toISOString();
+    const logMessage = `[${timestamp}] ERROR: ${message}`;
 
-        logger.warn(message, data);
+    this.debugChannel.appendLine(logMessage);
+    if (data) {
+      this.debugChannel.appendLine(`  Data: ${JSON.stringify(data, null, 2)}`);
     }
 
-    /**
-     * Error logging
-     */
-    public error(message: string, data?: any): void {
-        const timestamp = new Date().toISOString();
-        const logMessage = `[${timestamp}] ERROR: ${message}`;
+    logger.error(message, data);
+  }
 
-        this.debugChannel.appendLine(logMessage);
-        if (data) {
-            this.debugChannel.appendLine(`  Data: ${JSON.stringify(data, null, 2)}`);
-        }
+  /**
+   * Get comprehensive debug report
+   */
+  public getDebugReport(): DebugReport {
+    const activeSessions = Array.from(this.debugSessions.values())
+      .filter(session => session.status === 'active');
 
-        logger.error(message, data);
+    const recentErrors = this.errorHistory
+      .filter(error => Date.now() - error.timestamp < 3600000) // Last hour
+      .sort((a, b) => b.timestamp - a.timestamp);
+
+    const performanceIssues = Array.from(this.performanceMetrics.values())
+      .filter(metric => metric.averageDuration > 500)
+      .sort((a, b) => b.averageDuration - a.averageDuration);
+
+    return {
+      timestamp: Date.now(),
+      isDebugMode: this.isDebugMode,
+      activeSessions,
+      recentErrors,
+      performanceMetrics: Array.from(this.performanceMetrics.values()),
+      performanceIssues,
+      memoryUsage: process.memoryUsage(),
+      systemInfo: {
+        platform: process.platform,
+        nodeVersion: process.version,
+        vscodeVersion: vscode.version
+      }
+    };
+  }
+
+  /**
+   * Export debug data for analysis
+   */
+  public exportDebugData(): string {
+    const report = this.getDebugReport();
+    return JSON.stringify(report, null, 2);
+  }
+
+  /**
+   * Clear debug data
+   */
+  public clearDebugData(): void {
+    this.errorHistory = [];
+    this.performanceMetrics.clear();
+    this.debugSessions.clear();
+    this.debugChannel.clear();
+    this.debug('Debug data cleared');
+  }
+
+  /**
+   * Show debug dashboard
+   */
+  public async showDebugDashboard(): Promise<void> {
+    const report = this.getDebugReport();
+
+    const panel = vscode.window.createWebviewPanel(
+      'flexDebugDashboard',
+      'Flex Chatbot Debug Dashboard',
+      vscode.ViewColumn.Beside,
+      { enableScripts: true }
+    );
+
+    panel.webview.html = this.generateDebugDashboardHTML(report);
+  }
+
+  /**
+   * Private helper methods
+   */
+  private getMemoryDelta(baseline: NodeJS.MemoryUsage): number {
+    const current = process.memoryUsage();
+    return current.heapUsed - baseline.heapUsed;
+  }
+
+  private generateId(): string {
+    return `debug_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private async showCriticalErrorDialog(errorEntry: ErrorEntry): Promise<void> {
+    const action = await vscode.window.showErrorMessage(
+      `Critical error in Flex Chatbot: ${errorEntry.error.message}`,
+      'View Details',
+      'Report Issue',
+      'Dismiss'
+    );
+
+    switch (action) {
+      case 'View Details':
+        this.showDebugDashboard();
+        break;
+      case 'Report Issue':
+        this.generateErrorReport(errorEntry);
+        break;
     }
+  }
 
-    /**
-     * Get comprehensive debug report
-     */
-    public getDebugReport(): DebugReport {
-        const activeSessions = Array.from(this.debugSessions.values())
-            .filter(session => session.status === 'active');
+  private generateErrorReport(errorEntry: ErrorEntry): void {
+    const report = {
+      errorId: errorEntry.id,
+      error: errorEntry.error,
+      context: errorEntry.context,
+      timestamp: new Date(errorEntry.timestamp).toISOString(),
+      systemInfo: {
+        platform: process.platform,
+        nodeVersion: process.version,
+        vscodeVersion: vscode.version
+      }
+    };
 
-        const recentErrors = this.errorHistory
-            .filter(error => Date.now() - error.timestamp < 3600000) // Last hour
-            .sort((a, b) => b.timestamp - a.timestamp);
+    vscode.env.clipboard.writeText(JSON.stringify(report, null, 2));
+    vscode.window.showInformationMessage('Error report copied to clipboard');
+  }
 
-        const performanceIssues = Array.from(this.performanceMetrics.values())
-            .filter(metric => metric.averageDuration > 500)
-            .sort((a, b) => b.averageDuration - a.averageDuration);
-
-        return {
-            timestamp: Date.now(),
-            isDebugMode: this.isDebugMode,
-            activeSessions,
-            recentErrors,
-            performanceMetrics: Array.from(this.performanceMetrics.values()),
-            performanceIssues,
-            memoryUsage: process.memoryUsage(),
-            systemInfo: {
-                platform: process.platform,
-                nodeVersion: process.version,
-                vscodeVersion: vscode.version
-            }
-        };
-    }
-
-    /**
-     * Export debug data for analysis
-     */
-    public exportDebugData(): string {
-        const report = this.getDebugReport();
-        return JSON.stringify(report, null, 2);
-    }
-
-    /**
-     * Clear debug data
-     */
-    public clearDebugData(): void {
-        this.errorHistory = [];
-        this.performanceMetrics.clear();
-        this.debugSessions.clear();
-        this.debugChannel.clear();
-        this.debug('Debug data cleared');
-    }
-
-    /**
-     * Show debug dashboard
-     */
-    public async showDebugDashboard(): Promise<void> {
-        const report = this.getDebugReport();
-
-        const panel = vscode.window.createWebviewPanel(
-            'flexDebugDashboard',
-            'Flex Chatbot Debug Dashboard',
-            vscode.ViewColumn.Beside,
-            { enableScripts: true }
-        );
-
-        panel.webview.html = this.generateDebugDashboardHTML(report);
-    }
-
-    /**
-     * Private helper methods
-     */
-    private getMemoryDelta(baseline: NodeJS.MemoryUsage): number {
-        const current = process.memoryUsage();
-        return current.heapUsed - baseline.heapUsed;
-    }
-
-    private generateId(): string {
-        return `debug_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    }
-
-    private async showCriticalErrorDialog(errorEntry: ErrorEntry): Promise<void> {
-        const action = await vscode.window.showErrorMessage(
-            `Critical error in Flex Chatbot: ${errorEntry.error.message}`,
-            'View Details',
-            'Report Issue',
-            'Dismiss'
-        );
-
-        switch (action) {
-            case 'View Details':
-                this.showDebugDashboard();
-                break;
-            case 'Report Issue':
-                this.generateErrorReport(errorEntry);
-                break;
-        }
-    }
-
-    private generateErrorReport(errorEntry: ErrorEntry): void {
-        const report = {
-            errorId: errorEntry.id,
-            error: errorEntry.error,
-            context: errorEntry.context,
-            timestamp: new Date(errorEntry.timestamp).toISOString(),
-            systemInfo: {
-                platform: process.platform,
-                nodeVersion: process.version,
-                vscodeVersion: vscode.version
-            }
-        };
-
-        vscode.env.clipboard.writeText(JSON.stringify(report, null, 2));
-        vscode.window.showInformationMessage('Error report copied to clipboard');
-    }
-
-    private generateDebugDashboardHTML(report: DebugReport): string {
-        return `
+  private generateDebugDashboardHTML(report: DebugReport): string {
+    return `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -927,75 +927,75 @@ export class DebugManager {
       </body>
       </html>
     `;
-    }
+  }
 
-    /**
-     * Dispose resources
-     */
-    public dispose(): void {
-        this.debugChannel.dispose();
-        this.debugSessions.clear();
-        this.performanceMetrics.clear();
-        this.errorHistory = [];
-    }
+  /**
+   * Dispose resources
+   */
+  public dispose(): void {
+    this.debugChannel.dispose();
+    this.debugSessions.clear();
+    this.performanceMetrics.clear();
+    this.errorHistory = [];
+  }
 }
 
 // Type definitions
 interface PerformanceMetric {
-    operation: string;
-    totalCalls: number;
-    totalDuration: number;
-    averageDuration: number;
-    minDuration: number;
-    maxDuration: number;
-    lastCalled: number;
+  operation: string;
+  totalCalls: number;
+  totalDuration: number;
+  averageDuration: number;
+  minDuration: number;
+  maxDuration: number;
+  lastCalled: number;
 }
 
 interface ErrorEntry {
-    id: string;
-    timestamp: number;
-    error: {
-        name: string;
-        message: string;
-        stack?: string;
-    };
-    context?: any;
-    severity: 'low' | 'medium' | 'high' | 'critical';
-    resolved: boolean;
+  id: string;
+  timestamp: number;
+  error: {
+    name: string;
+    message: string;
+    stack?: string;
+  };
+  context?: Record<string, unknown>;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  resolved: boolean;
 }
 
 interface DebugSession {
-    id: string;
-    startTime: number;
-    endTime?: number;
-    duration?: number;
-    context: any;
-    steps: DebugStep[];
-    status: 'active' | 'completed' | 'failed';
-    memoryUsage: NodeJS.MemoryUsage;
-    result?: any;
+  id: string;
+  startTime: number;
+  endTime?: number;
+  duration?: number;
+  context: Record<string, unknown>;
+  steps: DebugStep[];
+  status: 'active' | 'completed' | 'failed';
+  memoryUsage: NodeJS.MemoryUsage;
+  result?: Record<string, unknown>;
 }
 
 interface DebugStep {
-    step: string;
-    timestamp: number;
-    data?: any;
-    memoryDelta: number;
+  step: string;
+  timestamp: number;
+  data?: Record<string, unknown>;
+  memoryDelta: number;
 }
 
 interface DebugReport {
-    timestamp: number;
-    isDebugMode: boolean;
-    activeSessions: DebugSession[];
-    recentErrors: ErrorEntry[];
-    performanceMetrics: PerformanceMetric[];
-    performanceIssues: PerformanceMetric[];
-    memoryUsage: NodeJS.MemoryUsage;
-    systemInfo: {
-        platform: string;
-        nodeVersion: string;
-        vscodeVersion: string;
-    };
+  timestamp: number;
+  isDebugMode: boolean;
+  activeSessions: DebugSession[];
+  recentErrors: ErrorEntry[];
+  performanceMetrics: PerformanceMetric[];
+  performanceIssues: PerformanceMetric[];
+  memoryUsage: NodeJS.MemoryUsage;
+  systemInfo: {
+    platform: string;
+    nodeVersion: string;
+    vscodeVersion: string;
+  };
 }
 
 export const debugManager = DebugManager.getInstance(); 

@@ -1,18 +1,23 @@
 import { LogLevel, Logger as ILogger } from '../types';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const vscode = require('vscode');
 
 /**
  * Enhanced logging utility for the Flex Chatbot extension
  */
 export class Logger implements ILogger {
     private static instance: Logger;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private readonly outputChannel: any; // VS Code OutputChannel
-    private logLevel: LogLevel = LogLevel.INFO;
-    private enableConsoleLogging: boolean = true;
+    private logLevel: LogLevel = LogLevel.info;
+    private enableConsoleLogging = true;
+    private performanceTimers: Map<string, number> = new Map();
+    private logHistory: string[] = [];
+    private readonly maxLogHistory = 200;
 
     private constructor() {
         // Try to get VS Code output channel if available
         try {
-            const vscode = require('vscode');
             this.outputChannel = vscode.window.createOutputChannel('Flex Chatbot');
         } catch {
             this.outputChannel = null;
@@ -46,34 +51,39 @@ export class Logger implements ILogger {
     /**
      * Log error message
      */
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     public error(message: string, data?: any): void {
-        this.log(LogLevel.ERROR, message, data);
+        this.log(LogLevel.error, message, data);
     }
 
     /**
      * Log warning message
      */
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     public warn(message: string, data?: any): void {
-        this.log(LogLevel.WARN, message, data);
+        this.log(LogLevel.warn, message, data);
     }
 
     /**
      * Log info message
      */
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     public info(message: string, data?: any): void {
-        this.log(LogLevel.INFO, message, data);
+        this.log(LogLevel.info, message, data);
     }
 
     /**
      * Log debug message
      */
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     public debug(message: string, data?: any): void {
-        this.log(LogLevel.DEBUG, message, data);
+        this.log(LogLevel.debug, message, data);
     }
 
     /**
      * Core logging method
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private log(level: LogLevel, message: string, data?: any): void {
         if (!this.shouldLog(level)) {
             return;
@@ -90,13 +100,13 @@ export class Logger implements ILogger {
         // Log to console if enabled
         if (this.enableConsoleLogging) {
             switch (level) {
-                case LogLevel.ERROR:
+                case LogLevel.error:
                     console.error(logMessage, data || '');
                     break;
-                case LogLevel.WARN:
+                case LogLevel.warn:
                     console.warn(logMessage, data || '');
                     break;
-                case LogLevel.DEBUG:
+                case LogLevel.debug:
                     console.debug(logMessage, data || '');
                     break;
                 default:
@@ -109,7 +119,7 @@ export class Logger implements ILogger {
      * Check if message should be logged based on current log level
      */
     private shouldLog(level: LogLevel): boolean {
-        const levels = [LogLevel.ERROR, LogLevel.WARN, LogLevel.INFO, LogLevel.DEBUG];
+        const levels = [LogLevel.error, LogLevel.warn, LogLevel.info, LogLevel.debug];
         const currentLevelIndex = levels.indexOf(this.logLevel);
         const messageLevelIndex = levels.indexOf(level);
 
@@ -119,9 +129,18 @@ export class Logger implements ILogger {
     /**
      * Format log message
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private formatMessage(level: LogLevel, timestamp: string, message: string, data?: any): string {
-        const levelEmoji = this.getLevelEmoji(level);
-        let formatted = `${levelEmoji} [${timestamp}] [${level.toUpperCase()}] ${message}`;
+        const levelInfo = {
+            [LogLevel.error]: { emoji: '❌', text: 'ERROR' },
+            [LogLevel.warn]: { emoji: '⚠️', text: 'WARN' },
+            [LogLevel.info]: { emoji: 'ℹ️', text: 'INFO' },
+            [LogLevel.debug]: { emoji: '🐛', text: 'DEBUG' }
+        };
+
+        const { emoji, text: levelString } = levelInfo[level] || { emoji: '❓', text: 'UNKNOWN' };
+
+        let formatted = `${emoji} [${timestamp}] [${levelString}] ${message}`;
 
         if (data) {
             const dataString = typeof data === 'object' ? JSON.stringify(data, null, 2) : String(data);
@@ -136,22 +155,23 @@ export class Logger implements ILogger {
      */
     private getLevelEmoji(level: LogLevel): string {
         switch (level) {
-            case LogLevel.ERROR:
+            case LogLevel.error:
                 return '❌';
-            case LogLevel.WARN:
+            case LogLevel.warn:
                 return '⚠️';
-            case LogLevel.INFO:
+            case LogLevel.info:
                 return 'ℹ️';
-            case LogLevel.DEBUG:
+            case LogLevel.debug:
                 return '🐛';
             default:
-                return '📝';
+                return '❓';
         }
     }
 
     /**
      * Log API request
      */
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     public logApiRequest(endpoint: string, method: string, data?: any): void {
         this.debug(`API Request: ${method} ${endpoint}`, data);
     }
@@ -171,6 +191,7 @@ export class Logger implements ILogger {
     /**
      * Log user interaction
      */
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     public logUserAction(action: string, details?: any): void {
         this.info(`User Action: ${action}`, details);
     }
@@ -178,6 +199,7 @@ export class Logger implements ILogger {
     /**
      * Log performance metric
      */
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     public logPerformance(operation: string, duration: number, details?: any): void {
         const message = `Performance: ${operation} took ${duration}ms`;
         if (duration > 5000) {
@@ -190,6 +212,7 @@ export class Logger implements ILogger {
     /**
      * Log configuration change
      */
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     public logConfigChange(key: string, oldValue: any, newValue: any): void {
         this.info(`Config Change: ${key}`, { oldValue, newValue });
     }
@@ -197,6 +220,7 @@ export class Logger implements ILogger {
     /**
      * Log extension lifecycle event
      */
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     public logExtensionEvent(event: 'activate' | 'deactivate' | 'error', details?: any): void {
         const message = `Extension Event: ${event}`;
         if (event === 'error') {
@@ -259,6 +283,7 @@ export class TimedOperation {
     /**
      * End the timed operation and log the duration
      */
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     public end(details?: any): void {
         const duration = Date.now() - this.startTime;
         this.logger.logPerformance(this.operation, duration, details);

@@ -8,9 +8,9 @@ import { errorHandler } from '../core/ErrorHandler';
  * Service for handling API communications with OpenRouter and web search
  */
 export class ApiService {
-    private static readonly OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
-    private static readonly DEFAULT_TIMEOUT = 300000; // 5 minutes for large responses
-    private static readonly MAX_RETRIES = 3;
+    private static readonly openrouterBaseUrl = 'https://openrouter.ai/api/v1';
+    private static readonly defaultTimeout = 30000; // 30 seconds
+    private static readonly maxRetries = 3;
 
     /**
      * Call OpenRouter API for streaming chat completions with progressive response
@@ -33,15 +33,8 @@ export class ApiService {
         });
 
         try {
-            // Validate and fix model name if needed
-            let modelName = config.model;
-            if (modelName === 'openai/gpt-4.1-mini') {
-                modelName = 'openai/gpt-4o-mini';
-                console.warn('⚠️ Fixed invalid model name: openai/gpt-4.1-mini → openai/gpt-4o-mini');
-            }
-
             const requestData = {
-                model: modelName,
+                model: config.model,
                 messages: messages.map(msg => ({
                     role: msg.role,
                     content: msg.content
@@ -51,21 +44,22 @@ export class ApiService {
                 stream: true
             };
 
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             const headers = {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${config.apiKey}`,
-                'HTTP-Referer': 'https://github.com/flex/flex-chatbot',
-                'X-Title': 'Flex Chat Bot'
+                'HTTP-Referer': 'https://github.com/Flex-Language/chatbot',
+                'X-Title': 'Flex Chatbot'
             };
 
             let fullResponse = '';
 
             const response = await axios.post(
-                `${this.OPENROUTER_BASE_URL}/chat/completions`,
+                `${this.openrouterBaseUrl}/chat/completions`,
                 requestData,
                 {
                     headers,
-                    timeout: this.DEFAULT_TIMEOUT,
+                    timeout: config.timeout || this.defaultTimeout,
                     responseType: 'stream'
                 }
             );
@@ -116,15 +110,15 @@ export class ApiService {
 
                         const chunkStr = chunk.toString('utf8');
                         const lines = chunkStr.split('\n');
-                        
+
                         for (let i = 0; i < lines.length; i++) {
                             const lineRaw = lines[i];
-                            if (!lineRaw) continue;
+                            if (!lineRaw) { continue; }
                             const line = lineRaw.trim();
-                            
+
                             if (line.startsWith('data: ')) {
                                 const data = line.slice(6).trim();
-                                
+
                                 if (data === '[DONE]') {
                                     clearInterval(chunkTimer);
                                     const duration = Date.now() - startTime;
@@ -139,20 +133,20 @@ export class ApiService {
                                         responseLength: fullResponse.length,
                                         chunks: chunkCount
                                     });
-                                    if (onComplete) onComplete();
+                                    if (onComplete) { onComplete(); }
                                     resolve(fullResponse);
                                     return;
                                 }
-                                
+
                                 if (data && data !== '') {
                                     try {
                                         const parsed = JSON.parse(data);
                                         const content = parsed.choices?.[0]?.delta?.content;
-                                        
+
                                         if (content && typeof content === 'string') {
                                             fullResponse += content;
                                             onChunk(content);
-                                            
+
                                             // Log progress every 100 chunks
                                             if (chunkCount % 100 === 0) {
                                                 debugManager.addDebugStep(sessionId, 'progress_update', {
@@ -184,7 +178,7 @@ export class ApiService {
                             chunkNumber: chunkCount,
                             chunkSize: chunk?.length || 0
                         });
-                        if (onError) onError(chunkError as Error);
+                        if (onError) { onError(chunkError as Error); }
                         reject(chunkError);
                     }
                 });
@@ -203,21 +197,21 @@ export class ApiService {
                         duration: Date.now() - startTime,
                         chunks: chunkCount
                     });
-                    if (onError) onError(error);
+                    if (onError) { onError(error); }
                     reject(error);
                 });
 
                 response.data.on('end', () => {
                     clearInterval(chunkTimer);
                     const duration = Date.now() - startTime;
-                    
+
                     debugManager.addDebugStep(sessionId, 'stream_ended', {
                         chunkCount,
                         responseLength: fullResponse.length,
                         totalBytes,
                         hasResponse: !!fullResponse
                     });
-                    
+
                     if (fullResponse && fullResponse.length > 0) {
                         debugManager.endDebugSession(sessionId, {
                             success: true,
@@ -225,7 +219,7 @@ export class ApiService {
                             responseLength: fullResponse.length,
                             chunks: chunkCount
                         });
-                        if (onComplete) onComplete();
+                        if (onComplete) { onComplete(); }
                         resolve(fullResponse);
                     } else {
                         const error = new Error('Stream ended without complete response');
@@ -235,7 +229,7 @@ export class ApiService {
                             duration,
                             chunks: chunkCount
                         });
-                        if (onError) onError(error);
+                        if (onError) { onError(error); }
                         reject(error);
                     }
                 });
@@ -248,8 +242,8 @@ export class ApiService {
                 error: (error as Error).message,
                 duration
             });
-            
-            if (onError) onError(error as Error);
+
+            if (onError) { onError(error as Error); }
             throw error;
         }
     }
@@ -273,15 +267,8 @@ export class ApiService {
         });
 
         try {
-            // Validate and fix model name if needed
-            let modelName = config.model;
-            if (modelName === 'openai/gpt-4.1-mini') {
-                modelName = 'openai/gpt-4o-mini'; // Fix incorrect model name
-                console.warn('⚠️ Fixed invalid model name: openai/gpt-4.1-mini → openai/gpt-4o-mini');
-            }
-
             const requestData = {
-                model: modelName,
+                model: config.model,
                 messages: messages.map(msg => ({
                     role: msg.role,
                     content: msg.content
@@ -291,11 +278,12 @@ export class ApiService {
                 stream: false
             };
 
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             const headers = {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${config.apiKey}`,
-                'HTTP-Referer': 'https://github.com/flex/flex-chatbot',
-                'X-Title': 'Flex Chat Bot'
+                'HTTP-Referer': 'https://github.com/Flex-Language/chatbot',
+                'X-Title': 'Flex Chatbot'
             };
 
             debugManager.addDebugStep(sessionId, 'request_prepared', {
@@ -305,16 +293,16 @@ export class ApiService {
 
             let lastError: Error | null = null;
 
-            for (let attempt = 1; attempt <= this.MAX_RETRIES; attempt++) {
+            for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
                 try {
                     debugManager.addDebugStep(sessionId, `attempt_${attempt}`, { attempt });
 
                     const response: AxiosResponse<ApiResponse> = await axios.post(
-                        `${this.OPENROUTER_BASE_URL}/chat/completions`,
+                        `${this.openrouterBaseUrl}/chat/completions`,
                         requestData,
                         {
                             headers,
-                            timeout: config.timeout || this.DEFAULT_TIMEOUT,
+                            timeout: config.timeout || this.defaultTimeout,
                             validateStatus: (status) => status < 500 // Retry on 5xx errors
                         }
                     );
@@ -354,7 +342,7 @@ export class ApiService {
 
                     lastError = this.handleApiError(error as AxiosError, attempt);
 
-                    if (attempt === this.MAX_RETRIES) {
+                    if (attempt === this.maxRetries) {
                         const errorResult = await errorHandler.handleError(lastError, {
                             component: 'api',
                             operation: 'chat_completion',
@@ -408,24 +396,30 @@ export class ApiService {
         debugManager.startDebugSession(sessionId, { operation: 'fetch_models' });
 
         try {
-            const response = await axios.get(`${this.OPENROUTER_BASE_URL}/models`, {
+            const response = await axios.get(`${this.openrouterBaseUrl}/models`, {
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 headers: {
                     'Authorization': `Bearer ${apiKey}`,
-                    'HTTP-Referer': 'https://github.com/flex/flex-chatbot',
-                    'X-Title': 'Flex Chat Bot'
+                    'HTTP-Referer': 'https://github.com/Flex-Language/chatbot',
+                    'X-Title': 'Flex Chatbot'
                 },
-                timeout: this.DEFAULT_TIMEOUT
+                timeout: this.defaultTimeout
             });
 
             if (response.data?.data && Array.isArray(response.data.data)) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const models = response.data.data.map((model: any) => ({
                     id: model.id,
-                    description: model.description || '',
-                    context_length: model.context_length || 0,
-                    pricing: model.pricing ? {
-                        prompt: parseFloat(model.pricing.prompt) || 0,
-                        completion: parseFloat(model.pricing.completion) || 0
-                    } : undefined
+                    name: model.name,
+                    description: model.description,
+                    contextLength: model.context_length,
+                    pricing: {
+                        prompt: model.pricing.prompt,
+                        completion: model.pricing.completion,
+                        request: model.pricing.request,
+                        image: model.pricing.image
+                    },
+                    trust: 'N/A'
                 }));
 
                 debugManager.endDebugSession(sessionId, {
@@ -468,6 +462,7 @@ export class ApiService {
             const response = await axios.get('https://serpapi.com/search.json', {
                 params: {
                     q: query,
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
                     api_key: 'demo',
                     num: 5,
                     format: 'json'
@@ -476,6 +471,7 @@ export class ApiService {
             });
 
             if (response.data?.organic_results) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 return response.data.organic_results.map((result: any) => ({
                     title: result.title || 'No title',
                     snippet: result.snippet || 'No description available',
@@ -524,9 +520,15 @@ export class ApiService {
      */
     public static async testApiConnection(apiKey: string): Promise<boolean> {
         try {
-            const models = await this.fetchAvailableModels(apiKey);
-            return models.length > 0;
+            const response = await axios.post(
+                'https://openrouter.ai/api/v1/auth/test',
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                { 'api_key': apiKey },
+                { timeout: 15000 }
+            );
+            return response.status === 200 && response.data?.valid === true;
         } catch (error) {
+            console.error('API connection test failed:', error);
             return false;
         }
     }
@@ -537,6 +539,7 @@ export class ApiService {
     private static handleApiError(error: AxiosError, attempt: number): Error {
         if (error.response) {
             const status = error.response.status;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const data = error.response.data as any;
 
             switch (status) {
@@ -552,7 +555,7 @@ export class ApiService {
                 case 502:
                 case 503:
                 case 504:
-                    if (attempt < this.MAX_RETRIES) {
+                    if (attempt < this.maxRetries) {
                         return new Error(`Server error (${status}). Retrying... (attempt ${attempt})`);
                     }
                     return new Error('Server is currently unavailable. Please try again later.');
@@ -574,6 +577,7 @@ export class ApiService {
     /**
      * Extract error message from various error types
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private static getErrorMessage(error: any): string {
         if (error?.response?.data?.error?.message) {
             return error.response.data.error.message;
@@ -599,8 +603,8 @@ export class ApiService {
             return 'Pricing N/A';
         }
 
-        const promptPrice = (model.pricing.prompt * 1000).toFixed(6);
-        const completionPrice = (model.pricing.completion * 1000).toFixed(6);
+        const promptPrice = (parseFloat(model.pricing.prompt) * 1000).toFixed(6);
+        const completionPrice = (parseFloat(model.pricing.completion) * 1000).toFixed(6);
 
         return `$${promptPrice}/$${completionPrice} per 1K tokens`;
     }

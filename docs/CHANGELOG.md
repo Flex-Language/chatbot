@@ -5,6 +5,35 @@ All notable changes to the Flex Chat Bot extension will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2024-XX-XX - The Architect's Refactor
+
+### 🏗️ Architectural Improvements
+- **Modularized Developer Tools**: Refactored the monolithic `DevTools` class into smaller, single-responsibility modules (`CodeAnalyzer`, `PerformanceProfiler`, `types/dev.ts`), significantly improving maintainability and separation of concerns.
+- **Separation of Presentation and Logic**: Extracted all inline HTML and CSS from `DevTools.ts` into dedicated external files (`dev-dashboard.html`, `dev-dashboard.css`), resulting in a cleaner, more focused TypeScript file.
+- **Centralized Configuration Logic**: Removed redundant AI model name validation from `ApiService` to enforce `ConfigService` as the single source of truth for all configuration.
+- **Streamlined Core Services**: Refactored `FlexDatasetService` to correctly parse the `flex_language_spec.json`, ensuring the AI uses its full, intended context.
+- **Refined Logger Utility**: Simplified the `Logger` utility by removing redundant methods and improving message formatting logic for better readability and maintainability.
+
+### ✨ Features & Enhancements
+- **Real-time AI Response Streaming**: Implemented full front-end support for streaming AI responses. The assistant's answers now appear dynamically with a "typing" cursor, significantly improving user experience.
+- **Robust Syntax Highlighting**: Fully implemented the `SyntaxHighlighter` module, restoring and improving Flex code highlighting within the chat. Also added support for basic Markdown formatting in AI responses.
+
+### 🐛 Bug Fixes
+- **CRITICAL**: Fixed a core logic bug where the AI system prompt was being constructed incorrectly, preventing the AI from using its full knowledge from the language specification.
+- **FIXED**: Restored broken syntax highlighting for all Flex code snippets in the chat.
+- **FIXED**: Corrected an issue where the developer dashboard's assets (HTML/CSS) were hardcoded, making them difficult to maintain. They are now loaded from external files.
+
+### 🗂️ File Structure Changes
+- **NEW**: `src/types/dev.ts` - Centralized type definitions for developer tools.
+- **NEW**: `src/dev/CodeAnalyzer.ts` - Dedicated module for code analysis logic.
+- **NEW**: `src/dev/PerformanceProfiler.ts` - Dedicated module for performance profiling logic.
+- **NEW**: `assets/webview/css/dev-dashboard.css` - External stylesheet for the dev dashboard.
+- **NEW**: `assets/webview/html/dev-dashboard.html` - External HTML structure for the dev dashboard.
+- **REFACTORED**: `src/dev/DevTools.ts` - Major refactor to act as a controller for the new dev modules.
+- **REFACTORED**: `src/services/flexDatasetService.ts` - Aligned with the correct data specification.
+- **REFACTORED**: `assets/webview/js/syntax/highlighter.js` - Completed implementation.
+- **REFACTORED**: `assets/webview/js/ui/domManager.js` - Implemented streaming logic.
+
 ## [2.0.0] - 2024-01-XX - Major Architecture Overhaul
 
 ### 🚀 **Major Features Added**

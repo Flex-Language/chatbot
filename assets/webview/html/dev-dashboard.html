@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#1e1e1e" />
+    <title>Flex Chatbot Development Dashboard</title>
+    <link rel="stylesheet" href="${cssUri}" nonce="${nonce}" />
+</head>
+
+<body>
+    <div class="container">
+        <h1>
+            <span class="icon">🛠️</span>
+            <span>Development Dashboard</span>
+        </h1>
+
+        <!-- System Metrics Panel -->
+        <div class="panel">
+            <h2>📊 System Metrics</h2>
+            <div class="metrics-grid">
+                <div class="metric">
+                    <div class="metric-value">
+                        ${(debugReport.memoryUsage.heapUsed / 1024 / 1024).toFixed(1)}
+                    </div>
+                    <div class="metric-label">Heap Used (MB)</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">${debugReport.activeSessions.length}</div>
+                    <div class="metric-label">Active Sessions</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">${debugReport.recentErrors.length}</div>
+                    <div class="metric-label">Recent Errors</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">
+                        ${debugReport.performanceIssues.length}
+                    </div>
+                    <div class="metric-label">Performance Issues</div>
+                </div>
+            </div>
+
+            <!-- System Status -->
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-dot ${debugReport.isDebugMode ? 'online' : 'error'}"></div>
+                    <span>Debug Mode</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot ${
+                debugReport.recentErrors.length === 0 ? 'online' : 'error'
+              }"></div>
+                    <span>Error Free</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot ${
+                debugReport.performanceIssues.length === 0 ? 'online' : 'warning'
+              }"></div>
+                    <span>Performance</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot online"></div>
+                    <span>System Online</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Development Tools Panel -->
+        <div class="panel">
+            <h2>🔧 Development Tools</h2>
+            <div class="actions-grid">
+                <button class="action-button test" onclick="runTests()" aria-label="Run all test suites">
+                    <span class="icon">🧪</span>
+                    <span>Run Tests</span>
+                </button>
+
+                <button class="action-button debug" onclick="showDebugReport()" aria-label="Show debug report">
+                    <span class="icon">🐛</span>
+                    <span>Debug Report</span>
+                </button>
+
+                <button class="action-button export" onclick="exportData()" aria-label="Export development data">
+                    <span class="icon">💾</span>
+                    <span>Export Data</span>
+                </button>
+
+                <button class="action-button analyze" onclick="analyzeCode()" aria-label="Analyze code quality">
+                    <span class="icon">📊</span>
+                    <span>Analyze Code</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Actions Panel -->
+        <div class="panel">
+            <h2>⚡ Quick Actions</h2>
+            <div class="actions-grid">
+                <button class="action-button" onclick="hotReload()" aria-label="Hot reload application">
+                    <span class="icon">🔄</span>
+                    <span>Hot Reload</span>
+                </button>
+
+                <button class="action-button" onclick="clearCache()" aria-label="Clear application cache">
+                    <span class="icon">🗑️</span>
+                    <span>Clear Cache</span>
+                </button>
+
+                <button class="action-button" onclick="showLogs()" aria-label="Show application logs">
+                    <span class="icon">📋</span>
+                    <span>Show Logs</span>
+                </button>
+
+                <button class="action-button" onclick="toggleDebug()" aria-label="Toggle debug mode">
+                    <span class="icon">🔍</span>
+                    <span>Toggle Debug</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer style="
+          text-align: center;
+          padding: var(--space-xl) 0;
+          color: var(--text-muted);
+          border-top: 1px solid var(--border);
+          margin-top: var(--space-2xl);
+        ">
+            <p>
+                Development Dashboard • Last Updated: ${new
+                Date().toLocaleTimeString()}
+            </p>
+            <p style="font-size: 0.75rem; margin-top: var(--space-sm)">
+                Use Ctrl+R to refresh • Ctrl+Shift+I for DevTools
+            </p>
+        </footer>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <script nonce="${nonce}">
+        const vscode = acquireVsCodeApi();
+
+        // Enhanced interaction functions
+        function runTests() {
+            showToast('Running test suites...', 'info');
+            setButtonLoading('test', true);
+            vscode.postMessage({ command: 'runTests' });
+        }
+
+        function showDebugReport() {
+            showToast('Opening debug report...', 'info');
+            vscode.postMessage({ command: 'showDebugReport' });
+        }
+
+        function exportData() {
+            showToast('Exporting development data...', 'info');
+            setButtonLoading('export', true);
+            vscode.postMessage({ command: 'exportData' });
+        }
+
+        function analyzeCode() {
+            showToast('Analyzing code quality...', 'info');
+            setButtonLoading('analyze', true);
+            vscode.postMessage({ command: 'analyzeCode' });
+        }
+
+        function hotReload() {
+            showToast('Initiating hot reload...', 'info');
+            vscode.postMessage({ command: 'hotReload' });
+        }
+
+        function clearCache() {
+            if (confirm('Are you sure you want to clear the cache?')) {
+                showToast('Clearing cache...', 'info');
+                vscode.postMessage({ command: 'clearCache' });
+            }
+        }
+
+        function showLogs() {
+            vscode.postMessage({ command: 'showLogs' });
+        }
+
+        function toggleDebug() {
+            showToast('Toggling debug mode...', 'info');
+            vscode.postMessage({ command: 'toggleDebug' });
+        }
+
+        // Utility functions
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+              <div style="display: flex; align-items: center; gap: var(--space-sm);">
+                <span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+                <span>${message}</span>
+              </div>
+            `;
+
+            container.appendChild(toast);
+
+            // Show toast
+            setTimeout(() => toast.classList.add('show'), 100);
+
+            // Hide toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => container.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        function setButtonLoading(buttonClass, loading) {
+            const button = document.querySelector(`.${buttonClass}`);
+            if (button) {
+                if (loading) {
+                    button.classList.add('loading');
+                    const icon = button.querySelector('.icon');
+                    if (icon) {
+                        icon.innerHTML = '<div class="spinner"></div>';
+                    }
+                } else {
+                    button.classList.remove('loading');
+                    // Restore original icon based on button class
+                    const icon = button.querySelector('.icon');
+                    if (icon) {
+                        switch (buttonClass) {
+                            case 'test':
+                                icon.textContent = '🧪';
+                                break;
+                            case 'export':
+                                icon.textContent = '💾';
+                                break;
+                            case 'analyze':
+                                icon.textContent = '📊';
+                                break;
+                            default:
+                                icon.textContent = '🔧';
+                        }
+                    }
+                }
+            }
+        }
+
+        // Handle messages from extension
+        window.addEventListener('message', (event) => {
+            const message = event.data;
+
+            switch (message.command) {
+                case 'testComplete':
+                    setButtonLoading('test', false);
+                    showToast('Tests completed successfully!', 'success');
+                    break;
+                case 'exportComplete':
+                    setButtonLoading('export', false);
+                    showToast('Data exported successfully!', 'success');
+                    break;
+                case 'analyzeComplete':
+                    setButtonLoading('analyze', false);
+                    showToast('Code analysis completed!', 'success');
+                    break;
+                case 'error':
+                    // Reset any loading states
+                    document.querySelectorAll('.loading').forEach((btn) => {
+                        btn.classList.remove('loading');
+                    });
+                    showToast(`Error: ${message.text}`, 'error');
+                    break;
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key) {
+                    case 't':
+                        e.preventDefault();
+                        runTests();
+                        break;
+                    case 'd':
+                        e.preventDefault();
+                        showDebugReport();
+                        break;
+                    case 'e':
+                        e.preventDefault();
+                        exportData();
+                        break;
+                    case 'a':
+                        e.preventDefault();
+                        analyzeCode();
+                        break;
+                }
+            }
+        });
+
+        // Auto-refresh metrics every 30 seconds
+        setInterval(() => {
+            vscode.postMessage({ command: 'refreshMetrics' });
+        }, 30000);
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            showToast('Development Dashboard loaded', 'success');
+            console.log('Development Dashboard initialized');
+        });
+    </script>
+</body>
+
+</html>

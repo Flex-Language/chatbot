@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import { debugManager } from './DebugManager';
-import { logger } from '../utils/logger';
 
 /**
  * Enterprise Error Handler
@@ -190,7 +189,7 @@ export class ErrorHandler {
     /**
      * Create technical details for debugging
      */
-    private createTechnicalDetails(error: Error, context?: ErrorContext): any {
+    private createTechnicalDetails(error: Error, context?: ErrorContext): Record<string, unknown> {
         return {
             error: {
                 name: error.name,
@@ -215,7 +214,7 @@ export class ErrorHandler {
         this.errorStrategies.set('authentication', {
             name: 'API Authentication Recovery',
             maxAttempts: 2,
-            execute: async (error, classification, context) => {
+            execute: async () => {
                 try {
                     await vscode.commands.executeCommand('flexChatbot.configure');
                     return { success: true, strategy: 'config_refresh', message: 'Configuration dialog opened' };
@@ -229,7 +228,7 @@ export class ErrorHandler {
         this.errorStrategies.set('configuration', {
             name: 'Configuration Recovery',
             maxAttempts: 2,
-            execute: async (error, classification, context) => {
+            execute: async () => {
                 try {
                     const config = vscode.workspace.getConfiguration('flexChatbot');
                     await config.update('model', 'openai/gpt-4-mini', vscode.ConfigurationTarget.Global);
@@ -307,13 +306,13 @@ export class ErrorHandler {
 }
 
 // Type definitions
-interface ErrorContext {
+interface ErrorContext extends Record<string, unknown> {
     component?: string;
     operation?: string;
     retryCount?: number;
     userAction?: string;
     sessionId?: string;
-    metadata?: any;
+    metadata?: Record<string, unknown>;
 }
 
 interface ErrorClassification {
@@ -322,13 +321,13 @@ interface ErrorClassification {
     code: string;
 }
 
-interface ErrorResult {
+interface ErrorResult extends Record<string, unknown> {
     handled: boolean;
     recovered: boolean;
     userMessage: string;
     classification: ErrorClassification;
     recoveryStrategy?: string;
-    technicalDetails?: any;
+    technicalDetails?: Record<string, unknown>;
 }
 
 interface ErrorStrategy {
